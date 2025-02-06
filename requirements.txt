@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy
+databases[sqlite]
+python-multipart
+opencv-python-headless
