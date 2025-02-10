@@ -1,6 +1,7 @@
 # app/main.py
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
 from . import models, database
@@ -13,6 +14,19 @@ app = FastAPI(
     title="Video Surveillance App",
     description="Приложение для видеонаблюдения",
     version="1.0.0",
+)
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(cameras.router)
