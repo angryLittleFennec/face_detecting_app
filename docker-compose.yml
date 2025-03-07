@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -10,3 +10,58 @@ services:
       - ./:/app
     environment:
       - DATABASE_URL=sqlite:///./app.db
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest-ffmpeg
+    container_name: mediamtx
+    ports:
+      - "8554:8554"
+      - "8888:8888"
+      - "1935:1935"
+    volumes:
+      - ./images/5/8.mp4:/app/video.mp4
+      - ./mediamtx.yml:/mediamtx.yml
+    restart: unless-stopped
+    hostname: mediamtx
+    environment:
+      MTX_PROTOCOLS: tcp
+
+  frames_streamer:
+    build:
+      context: ./test_camera_streamer
+      dockerfile: ./amd64.dockerfile
+    image: rtsp_streamer_amd64
+    container_name: frames_streamer
+    restart: always
+    working_dir: /app
+    volumes:
+      - .:/app
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python3 read_frames.py
+    depends_on:
+      - mediamtx
+    ports:
+      - "18554:8554"
+    hostname: frames_streamer
+    environment:
+      MTX_PROTOCOLS: tcp
+      TZ: "Europe/Moscow"
+    shm_size: "16gb"
+
+  face_recognition:
+    build: 
+        context: .
+        dockerfile: dockerFileDlib
+    container_name: face-recognition-service
+    hostname: face_recognition
+    ports:
+      - "8001:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+    depends_on:
+      - app

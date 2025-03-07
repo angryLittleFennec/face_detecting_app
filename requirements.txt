@@ -5,3 +5,4 @@ sqlalchemy
 databases[sqlite]
 python-multipart
 opencv-python-headless
+pillow
