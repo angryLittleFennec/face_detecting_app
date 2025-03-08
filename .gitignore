@@ -8,3 +8,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# frontend dependencies
+frontend/node_modules
+
+# frontend development
+frontend/public
+frontend/src/users.json
+frontend/src/models.json
