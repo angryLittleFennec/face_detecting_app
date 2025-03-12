@@ -17,7 +17,6 @@ WORKDIR /opencv
 RUN git clone --depth 1 --branch 4.8.1 https://github.com/opencv/opencv.git && \
     git clone --depth 1 --branch 4.8.1 https://github.com/opencv/opencv_contrib.git
 
-
 RUN mkdir build && cd build && \
     cmake \
     -D CMAKE_BUILD_TYPE=RELEASE \
@@ -37,9 +36,10 @@ RUN mkdir build && cd build && \
     rm -rf /opencv && \
     ldconfig
 
+# Set Python path
 ENV PYTHONPATH="/usr/local/lib/python3.12/dist-packages:${PYTHONPATH}"
 
-    # Verification step
+# Verify OpenCV and Numpy installation
 RUN python3 -c "import cv2; print(f'OpenCV version: {cv2.__version__}')" && \
     python3 -c "import numpy; print(f'Numpy version: {numpy.__version__}')"
 
@@ -56,4 +56,5 @@ RUN pip install --break-system-packages fastapi
 RUN pip install --break-system-packages python-multipart
 RUN pip install --break-system-packages sqlalchemy
 
+# Default command
 CMD ["/bin/bash"]

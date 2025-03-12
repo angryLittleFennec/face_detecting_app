@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3"
 
 services:
   app:
@@ -40,7 +40,7 @@ services:
       - /bin/bash
       - -c
       - |
-        python3 read_frames.py
+        python3 read_frames.py --parameters "person"
     depends_on:
       - mediamtx
     ports:
@@ -63,5 +63,18 @@ services:
       - .:/app
     environment:
       - DATABASE_URL=sqlite:///./app.db
+    depends_on:
+      - app
+
+  logging_service:
+    build:
+      context: .
+      dockerfile: logging.dockerfile
+    hostname: logging_service
+    container_name: logging
+    ports:
+      - "8002:8000"
+    volumes:
+      - .:/app
     depends_on:
       - app
