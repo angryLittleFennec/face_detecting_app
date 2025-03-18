@@ -117,6 +117,38 @@ def process_frames(parameters):
                                     # Добавление текста с именем на кадр
                                     cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                                    
+            if "car" in parameters or "cell phone" in parameters or "traffic light" in parameters:
+                # Обработка объектов
+                results = OBJECT_MODEL(frame)
+                annotated_frame = results[0].plot(conf=False)
+
+                # Фильтрация объектов по выбранным параметрам
+                for result in results:
+                    for box in result.boxes:
+                        class_id = int(box.cls)
+                        class_name = OBJECT_MODEL.names[class_id]
+                        if class_name in parameters:
+                            x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            # Добавление текста с именем класса на кадр
+                            cv2.putText(annotated_frame, class_name, (x1, y1 - 10),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+            if "helmet" in parameters:
+                # Обработка шлемов
+                results = HELMET_MODEL(frame)
+                annotated_frame = results[0].plot(conf=False)
+
+                # Фильтрация объектов по выбранным параметрам
+                for result in results:
+                    for box in result.boxes:
+                        class_id = int(box.cls)
+                        class_name = HELMET_MODEL.names[class_id]
+                        if class_name == "helmet":  # Проверка на класс "шлем"
+                            x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            # Добавление текста с именем класса на кадр
+                            cv2.putText(annotated_frame, class_name, (x1, y1 - 10),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
             # Отправка обработанного кадра в выходной RTSP-поток
             out.write(annotated_frame)
