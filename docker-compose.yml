@@ -43,6 +43,7 @@ services:
         python3 read_frames.py --parameters "person"
     depends_on:
       - mediamtx
+      - face_recognition
     ports:
       - "18554:8554"
     hostname: frames_streamer
@@ -72,6 +73,11 @@ services:
       dockerfile: logging.dockerfile
     hostname: logging_service
     container_name: logging
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python3 logging_service.py
     ports:
       - "8002:8000"
     volumes:

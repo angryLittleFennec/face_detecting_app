@@ -11,6 +11,7 @@ import os
 import telebot
 import schedule
 import time
+import uuid
 
 app = FastAPI()
 
@@ -27,7 +28,7 @@ logging.basicConfig(
 )
 
 # Функция для создания PDF из логов
-def create_pdf_from_logs():
+def create_pdf_from_logs(uid: str):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -36,20 +37,20 @@ def create_pdf_from_logs():
         for line in log_file:
             pdf.cell(200, 10, txt=line, ln=True)
 
-    pdf.output("person_detection_report.pdf")
+    pdf.output(f"person_detection_report_{uid}.pdf")
 
 # Функция для отправки PDF по email
-def send_email_with_pdf():
-    sender_email = "13x.skat.x13@gmail.com"
-    receiver_email = "kristy160803@gmail.com"
-    password = "fudf flab shjj izzc"
+def send_email_with_pdf(uid):
+    sender_email = "surveillanceappreport@gmail.com"
+    receiver_email = "13x.skat.x13@gmail.com"
+    password = "rcwx mrrb orbn ajpv"
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["To"] = receiver_email
     msg["Subject"] = "Monthly Person Detection Report"
 
-    with open("person_detection_report.pdf", "rb") as attachment:
+    with open(f"person_detection_report_{uid}.pdf", "rb") as attachment:
         part = MIMEBase("application", "octet-stream")
         part.set_payload(attachment.read())
 
@@ -73,9 +74,10 @@ def monthly_report():
     os.remove("person_detection_report.pdf")  # Удаление PDF после отправки
 
 def send_logs_every_minute():
-    create_pdf_from_logs()
-    send_email_with_pdf()
-    os.remove("person_detection_report.pdf")  # Удаление PDF после отправки
+    uid = str(uuid.uuid1())
+    create_pdf_from_logs(uid)
+    send_email_with_pdf(uid)
+    os.remove(f"person_detection_report_{uid}.pdf")  # Удаление PDF после отправки
 
 # Планирование задачи на конец каждого месяца
 #schedule.every().month.do(monthly_report)
@@ -91,9 +93,10 @@ def get_text_messages(message):
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши привет")
     elif message.text == "/report":
-        create_pdf_from_logs()
-        bot.send_document(message.from_user.id, open(r'person_detection_report.pdf', 'rb'))
-        os.remove("person_detection_report.pdf")
+        uid = str(uuid.uuid1())
+        create_pdf_from_logs(uid)
+        bot.send_document(message.from_user.id, open(f'person_detection_report_{uid}.pdf', 'rb'))
+        os.remove(f"person_detection_report_{uid}.pdf")
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
@@ -110,8 +113,9 @@ async def receive_log(log_message: LogMessage):
 # Эндпоинт для скачивания логов
 @app.get("/download-logs")
 async def download_logs():
-    create_pdf_from_logs()
-    if not os.path.exists("person_detection_report.pdf"):
+    uid = str(uuid.uuid1())
+    create_pdf_from_logs(uid)
+    if not os.path.exists("person_detection_report_{uid}.pdf"):
         raise HTTPException(status_code=404, detail="Log file not found")
 
     response = FileResponse(
@@ -119,7 +123,7 @@ async def download_logs():
         media_type="application/pdf",
         filename="person_detection_report.pdf"
     )
-    os.remove("person_detection_report.pdf")
+    os.remove("person_detection_report_{uid}.pdf")
     return response
 
 # Запуск планировщика

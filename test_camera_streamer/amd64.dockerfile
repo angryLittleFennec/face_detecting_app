@@ -55,6 +55,9 @@ RUN pip install --break-system-packages dlib
 RUN pip install --break-system-packages fastapi
 RUN pip install --break-system-packages python-multipart
 RUN pip install --break-system-packages sqlalchemy
+RUN pip install --break-system-packages schedule
+RUN pip install --break-system-packages fpdf
+RUN pip install --break-system-packages pytelegrambotapi
 
 # Default command
 CMD ["/bin/bash"]
