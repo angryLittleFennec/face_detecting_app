@@ -23,10 +23,15 @@ function LoginForm({ onLoginSuccess }) {
             });
 
             if (response.ok) {
+                const data = await response.json(); // Получаем данные от сервера
+                localStorage.setItem('token', data.token); // Сохраняем токен
                 onLoginSuccess('');
-                navigate('/profile');
+                navigate('/cameras');
             } else {
-                onLoginSuccess('Неверный логин или пароль');
+                const errorData = await response.json(); // Получаем сообщение об ошибке
+                onLoginSuccess(
+                    errorData.message || 'Неверный логин или пароль'
+                ); // Используем сообщение от сервера
             }
         } catch (error) {
             onLoginSuccess('Ошибка сети. Попробуйте позже.');
@@ -34,8 +39,8 @@ function LoginForm({ onLoginSuccess }) {
     };
 
     return (
-        <>
-            <form className="login-container" onSubmit={onSubmitHandler}>
+        <div className="login-container">
+            <form className="login-form" onSubmit={onSubmitHandler}>
                 <h2>ВХОД</h2>
                 <input
                     placeholder="ЛОГИН"
@@ -52,7 +57,7 @@ function LoginForm({ onLoginSuccess }) {
                 <br />
                 <button type="submit">ВОЙТИ</button>
             </form>
-        </>
+        </div>
     );
 }
 

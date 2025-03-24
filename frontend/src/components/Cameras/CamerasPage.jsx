@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { fetchCameras, addCamera, fetchCameraDetails } from './Api';
 import { videoPlayerHandler } from './CameraInfo';
 import Dropdown from '../UI/Dropdown';
+import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
@@ -19,13 +20,25 @@ function CamerasPage({ onLogout }) {
 
     const navigate = useNavigate();
 
+    const goToProfileHandler = () => {
+        navigate('/profile');
+    };
+
+    const goToSettingsHandler = () => {
+        navigate('/cameras/settings');
+    };
+
+    const goToReportsHandler = () => {
+        navigate('/report');
+    };
+
+    const goToDataHandler = () => {
+        navigate('/data');
+    };
+
     const logoutHandler = () => {
         onLogout();
         navigate('/');
-    };
-
-    const goToProfileHandler = () => {
-        navigate('/profile');
     };
 
     const completedGoal = () => {
@@ -54,7 +67,18 @@ function CamerasPage({ onLogout }) {
         }
     }, []);
 
+    const [cameraCount, setCameraCount] = useState(0);
+    const [buttons, setButtons] = useState([]);
+
     const handleAddCamera = async () => {
+        setCameraCount((prevCount) => prevCount + 1);
+        setButtons((prevButtons) => [
+            ...prevButtons,
+            `Камера ${cameraCount + 1}`,
+        ]);
+    };
+
+    /*const handleAddCamera = async () => {
         try {
             await addCamera(newCamera);
             loadCameras();
@@ -62,7 +86,7 @@ function CamerasPage({ onLogout }) {
         } catch (error) {
             handleError('Ошибка при добавлении камеры:', error);
         }
-    };
+    };*/
 
     const handleFetchCameraDetails = async (cameraId) => {
         try {
@@ -78,21 +102,8 @@ function CamerasPage({ onLogout }) {
     }, [loadCameras]);
 
     return (
-        <div>
-            <h1>CamerasPage</h1>
-            <div className="menu">
-                <button onClick={goToProfileHandler}>Профиль</button>
-                <p>Выберите видео для воспроизведения:</p>
-                <Dropdown children={modelOptions} />
-                <Dropdown children={trackingOptions} />
-                <Dropdown children={staffOptions} />
-                <button onClick={completedGoal}>Цель выполнена</button>
-                <button className="logout-button" onClick={logoutHandler}>
-                    Выход
-                </button>
-            </div>
-
-            <div className="main-content">
+        <div className="page-container">
+            <div className="main-content margin-right-250 margin-bottom-50">
                 <h2>Добавить новую камеру:</h2>
                 <input
                     type="text"
@@ -135,6 +146,13 @@ function CamerasPage({ onLogout }) {
                     />
                 </label>
                 <button onClick={handleAddCamera}>Добавить камеру</button>
+                <div>
+                    {buttons.map((buttonText, index) => (
+                        <Link key={index} to={`/cameras/${index + 1}`}>
+                            <button>{buttonText}</button>
+                        </Link>
+                    ))}
+                </div>
                 <br />
                 <ul>
                     {cameras.map((camera) => (
@@ -153,6 +171,72 @@ function CamerasPage({ onLogout }) {
                         </li>
                     ))}
                 </ul>
+            </div>
+            <div className="left-menu">
+                <div className="top-menu-part">
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/profile-icon-white.png"
+                        altText="Профиль"
+                        tooltipText="Профиль"
+                        onClick={goToProfileHandler}
+                    />
+                </div>
+                <div className="bottom-menu-part">
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/settings-icon-white.png"
+                        altText="Настройка камер"
+                        tooltipText="Настройка камер"
+                        onClick={goToSettingsHandler}
+                    />
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/files-icon-white.png"
+                        altText="Отчетность"
+                        tooltipText="Отчетность"
+                        onClick={goToReportsHandler}
+                    />
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/data-icon-white.png"
+                        altText="Загрузка данных"
+                        tooltipText="Загрузка данных"
+                        onClick={goToDataHandler}
+                    />
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/exit-icon-white.png"
+                        altText="Выход"
+                        tooltipText="Выход"
+                        onClick={logoutHandler}
+                    />
+                </div>
+            </div>
+
+            <div className="right-menu">
+                <div className="top-menu-part">
+                    <p>Выберите видео для воспроизведения:</p>
+                    <Dropdown children={modelOptions} text="Выбор модель" />
+                    <Dropdown children={trackingOptions} text="Виды трекинга" />
+                    <Dropdown children={staffOptions} text="Выбор сотрудника" />
+                    <button onClick={completedGoal}>Цель выполнена</button>
+                </div>
+            </div>
+
+            <div className="bottom-menu">
+                <button onClick={completedGoal} className="bottom-icon-button">
+                    <img src="/icons/format-icon-1-white.png" alt="Формат 1" />
+                </button>
+                <button onClick={completedGoal} className="bottom-icon-button">
+                    <img src="/icons/format-icon-2-white.png" alt="Формат 2" />
+                </button>
+                <button onClick={completedGoal} className="bottom-icon-button">
+                    <img src="/icons/format-icon-3-white.png" alt="Формат 3" />
+                </button>
+                <button onClick={completedGoal} className="bottom-icon-button">
+                    <img src="/icons/format-icon-4-white.png" alt="Формат 4" />
+                </button>
             </div>
         </div>
     );

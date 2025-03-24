@@ -1,0 +1,27 @@
+.tooltip {
+    visibility: hidden;
+    background-color: #2e2e2e;
+    color: #f8f8f8;
+    text-align: center;
+    height: 20px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-left: 10px;
+    border: 2px solid #131313;
+    position: fixed; /* Позиционирование относительно кнопки */
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%); /* Центрирование по вертикали */
+    z-index: 3; /* Поверх других элементов */
+    opacity: 0;
+    transition: opacity 0.3s; /* Плавный переход */
+    white-space: nowrap; /* Запрет на перенос текста */
+    display: flex;
+    align-items: center;
+}
+
+.icon-button:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+    z-index: 3; /* Поверх других элементов */
+}
