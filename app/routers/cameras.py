@@ -1,4 +1,6 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -68,3 +70,20 @@ def delete_camera(camera_id: int, db: Session = Depends(get_db)):
     db.delete(camera)
     db.commit()
     return {"detail": "Камера удалена"}
+
+@router.get("/camera/{camera_id}/log/download")
+async def download_camera_log(camera_id: int):
+    camera_service.create_pdf_from_logs()
+
+    if not os.path.exists("person_detection_report.pdf"):
+        raise HTTPException(status_code=404, detail="Log file not found")
+
+    response = FileResponse(
+        "person_detection_report.pdf",
+        media_type="application/pdf",
+        filename=f"camera_{camera_id}_logs.pdf"
+    )
+    
+    os.remove("person_detection_report.pdf")
+
+    return response
