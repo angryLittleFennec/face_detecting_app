@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
-import './ProfilePage.css';
+import './ReportPage.css';
 
-function ProfilePage({ onLogout }) {
+function ReportPage({ onLogout }) {
     const navigate = useNavigate();
 
     const logoutHandler = () => {
@@ -17,7 +17,7 @@ function ProfilePage({ onLogout }) {
     return (
         <div className="page-container">
             <div className="main-content">
-                <h1>ProfilePage</h1>
+                <h1>Отчетность</h1>
             </div>
             <div className="left-menu">
                 <div className="top-menu-part">
@@ -43,4 +43,4 @@ function ProfilePage({ onLogout }) {
     );
 }
 
-export default ProfilePage;
+export default ReportPage;

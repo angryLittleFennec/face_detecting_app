@@ -1,7 +1,6 @@
 /* Общие стили для body */
+html,
 body {
-    margin: 0;
-    padding: 0;
     height: 100vh;
 }
 
@@ -19,11 +18,13 @@ label {
 }
 
 button {
+    width: 100%;
     padding: 10px;
-    background-color: #28a745;
+    background-color: #007bff;
     color: white;
     border: none;
     cursor: pointer;
+    margin-bottom: 10px;
 }
 
 ul {
@@ -36,44 +37,103 @@ li {
     border-bottom: 1px solid #ccc;
 }
 
-/* Стили для левого меню */
-.menu {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    width: 250px;
-    height: 100%;
-    padding: 20px;
-    background-color: #f4f4f4;
-    border-right: 2px solid #ccc;
-    top: 0;
-    left: 0;
+.page-container {
+    position: relative;
+    display: flex; /* Для горизонтального размещения */
+    flex: 1; /* Основная часть будет занимать оставшееся пространство */
+    height: 100vh;
     box-sizing: border-box; /* Включает отступы и границы в общую ширину и высоту элементов */
 }
 
-.menu button {
-    width: 100%;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: block;
+.margin-right-250 {
+    margin-right: 250px;
+}
+
+.margin-bottom-50 {
+    margin-bottom: 50px;
+}
+
+.page-container p,
+.page-container h2 {
     margin-bottom: 10px;
 }
 
-.menu p {
-    margin-bottom: 10px;
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 80px;
+    background-color: #2e2e2e;
 }
 
-.logout-button {
+.right-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    width: 250px;
+    padding: 20px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-left: 2px solid #131313;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+}
+
+.left-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    width: 80px;
+    padding: 20px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-right: 2px solid #131313;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.page-container .bottom-menu-part {
     margin-top: auto; /* Нужно для размещения кнопки Выход внизу */
 }
 
-/* Стили для центральной части страницы */
-.main-content {
-    margin-left: 280px;
-    padding: 20px; /* Отступы внутри центральной части */
-    background-color: lightblue; /* Цвет фона центральной части (можно изменить) */
+.bottom-menu {
+    display: flex;
+    position: fixed;
+    height: 50px;
+    width: calc(100% - 80px - 250px);
+    padding: 10px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-top: 2px solid #131313;
+    bottom: 0;
+    left: 80px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.icon-button,
+.bottom-icon-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.icon-button img {
+    display: block; /* Убираем пробелы под изображением */
+    width: 40px;
+    height: auto;
+}
+
+.bottom-icon-button img {
+    display: block;
+    width: 20px;
+    height: auto;
 }
 
 .videoContainer {

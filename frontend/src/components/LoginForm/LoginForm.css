@@ -1,46 +1,51 @@
-body {
-    font-family: Montserrat;
+.login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
 }
-.login-container {
-    background-color: #bcbcbc;
+.login-form {
+    background-color: #2e2e2e;
     width: 600px;
     padding: 20px;
     margin: 10px;
     border-radius: 15px;
-    border: 1px solid #707070;
     margin-bottom: 400px;
 }
-.login-container h2 {
+.login-form h2 {
+    color: #f8f8f8;
     font-size: 40px;
     margin-bottom: 10px;
 }
-.login-container input {
+.login-form input {
     font-size: 15px;
     font-weight: 700;
     width: 500px;
     padding: 10px;
     margin: 10px;
-    background-color: #e6e6e6;
-    border: 1px solid #ccc;
+    color: #f8f8f8;
+    background-color: #5b5a5a;
+    border: 1px solid #000000;
     border-radius: 5px;
 }
-.login-container button {
+
+.login-form input::placeholder {
+    color: #d8d8d8; /* Цвет текста-заполнителя */
+}
+
+.login-form button {
     font-size: 25px;
     font-weight: bold;
     width: 150px;
     padding: 7px;
     margin-top: 10px;
-    color: black;
-    background-color: #e6e6e6;
-    border: 1px solid #ccc;
+    color: #f8f8f8;
+    background-color: #5b5a5a;
+    border: 1px solid #000000;
     border-radius: 5px;
     cursor: pointer;
 }
-.login-container button:hover {
-    background-color: white;
+.login-form button:hover {
+    background-color: #f8f8f8;
+    color: #131313;
 }

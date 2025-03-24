@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Dropdown.css';
 
 function Dropdown(props) {
-    const { children } = props;
+    const { children, text } = props;
     const [selectedValue, setSelectedValue] = useState('none');
 
     const handleDropdownChange = (event) => {
@@ -17,6 +17,9 @@ function Dropdown(props) {
             value={selectedValue}
             onChange={handleDropdownChange}
         >
+            <option value="none" disabled>
+                {text}
+            </option>
             {children.map((child) => (
                 <option key={child.value} value={child.value}>
                     {child.label}
