@@ -1,6 +1,7 @@
 const modelOptions = [
-    { value: 'yolo80', label: 'Yolo 80 классов' },
-    { value: 'yoloPretrained', label: 'Yolo предобученная' },
+    { value: 'yolo8', label: 'YOLO8' },
+    { value: 'yolo8faces', label: 'YOLO8 - лица' },
+    { value: 'yolo8helmets', label: 'YOLO8 - каски' },
     { value: 'other', label: 'Другая' },
 ];
 

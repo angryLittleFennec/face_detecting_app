@@ -12,8 +12,10 @@ function LoginForm({ onLoginSuccess }) {
         event.preventDefault();
         const user = { login, password };
 
+        navigate('/cameras'); // пока не работает логика входа
+
         // Проверка пользователя
-        try {
+        /*try {
             const response = await fetch(`${SERVER}/login`, {
                 method: 'POST',
                 headers: {
@@ -35,7 +37,7 @@ function LoginForm({ onLoginSuccess }) {
             }
         } catch (error) {
             onLoginSuccess('Ошибка сети. Попробуйте позже.');
-        }
+        }*/
     };
 
     return (

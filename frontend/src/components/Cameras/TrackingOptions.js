@@ -1,8 +1,8 @@
 const trackingOptions = [
     { value: 'faceDetection', label: 'Детекция лиц' },
-    { value: 'bodyDetection', label: 'Детекция силуэтов' },
+    { value: 'helmetDetection', label: 'Детекция касок' },
+    { value: 'objectDetection', label: 'Детекция объектов' },
     { value: 'faceRecognition', label: 'Распознавание лиц' },
-    { value: 'bodyRecognition', label: 'Распознавание силуэтов' },
 ];
 
 export default trackingOptions;
