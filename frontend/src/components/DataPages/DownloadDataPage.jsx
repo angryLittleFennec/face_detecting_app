@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
+import FileUploadButton from '../UI/FileUploadButton';
 import './DownloadDataPage.css';
 
 function DownloadDataPage({ onLogout }) {
@@ -28,8 +29,11 @@ function DownloadDataPage({ onLogout }) {
 
     return (
         <div className="page-container">
-            <div className="main-content">
-                <h1>Загрузить файлы</h1>
+            <div className="main-content justify-content-center">
+                <div className="download-data-container">
+                    <h1>Загрузите нужный файл</h1>
+                    <FileUploadButton />
+                </div>
             </div>
             <div className="left-menu">
                 <div className="top-menu-part">

@@ -1,0 +1,24 @@
+.cameras-settings-container-250px {
+    display: flex;
+    height: 250px;
+    margin: 30px;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.cameras-settings-container-200px {
+    display: flex;
+    height: 200px;
+    margin: 30px;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.cameras-settings-container-250px h2,
+.cameras-settings-container-200px h2 {
+    color: #131313;
+}

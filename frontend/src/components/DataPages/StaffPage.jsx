@@ -28,8 +28,10 @@ function StaffPage({ onLogout }) {
 
     return (
         <div className="page-container">
-            <div className="main-content">
-                <h1>Список сотрудников</h1>
+            <div className="main-content justify-content-center">
+                <div div className="staff-container">
+                    <h1>Список сотрудников</h1>
+                </div>
             </div>
             <div className="left-menu">
                 <div className="top-menu-part">

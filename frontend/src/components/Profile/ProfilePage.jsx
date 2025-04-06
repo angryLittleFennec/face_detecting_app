@@ -17,7 +17,18 @@ function ProfilePage({ onLogout }) {
     return (
         <div className="page-container">
             <div className="main-content">
-                <h1>ProfilePage</h1>
+                <div className="profile-container-250px">
+                    <h2>Основная информация</h2>
+                    <button>Редактировать</button>
+                </div>
+                <div className="profile-container-200px">
+                    <h2>Контактная информация</h2>
+                    <button>Редактировать</button>
+                </div>
+                <div className="profile-container-200px">
+                    <h2>Дополнительная информация</h2>
+                    <button>Редактировать</button>
+                </div>
             </div>
             <div className="left-menu">
                 <div className="top-menu-part">

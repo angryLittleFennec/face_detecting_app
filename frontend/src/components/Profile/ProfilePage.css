@@ -1,0 +1,42 @@
+.profile-container-250px {
+    display: flex;
+    height: 250px;
+    margin: 30px;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.profile-container-200px {
+    display: flex;
+    height: 200px;
+    margin: 30px;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.profile-container-250px h2,
+.profile-container-200px h2 {
+    color: #131313;
+}
+
+.profile-container-200px button,
+.profile-container-250px button {
+    font-size: 20px;
+    font-weight: 600;
+    width: 190px;
+    padding: 7px;
+    margin-top: auto;
+    margin-left: auto;
+    color: #131313;
+    background-color: white;
+    cursor: pointer;
+}
+
+.profile-container-200px button:hover,
+.profile-container-250px button:hover {
+    text-decoration: underline;
+}
