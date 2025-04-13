@@ -17,13 +17,18 @@ label {
     margin-bottom: 10px;
 }
 
-button {
+.main-content button,
+.right-menu button {
     width: 100%;
     padding: 10px;
     background-color: #007bff;
     color: white;
     border: none;
     cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.main-content select {
     margin-bottom: 10px;
 }
 
@@ -103,10 +108,9 @@ li {
 .bottom-menu {
     display: flex;
     position: fixed;
+    align-items: center;
     height: 50px;
     width: calc(100% - 80px - 250px);
-    padding: 10px;
-    color: #f8f8f8;
     background-color: #2e2e2e;
     border-top: 2px solid #131313;
     bottom: 0;
@@ -115,13 +119,26 @@ li {
     z-index: 1;
 }
 
+.bottom-menu-right-buttons {
+    margin-left: auto;
+    margin-right: 25px;
+}
+
 .icon-button,
 .bottom-icon-button {
     background: none;
     border: none;
-    padding: 0;
     cursor: pointer;
     position: relative;
+}
+
+.icon-button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.bottom-icon-button {
+    padding-left: 25px;
 }
 
 .icon-button img {

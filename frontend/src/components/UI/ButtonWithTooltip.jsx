@@ -2,7 +2,13 @@ import React from 'react';
 import { useRef, useState } from 'react';
 import './ButtonWithTooltip.css';
 
-const ButtonWithTooltip = ({ iconSrc, altText, tooltipText, onClick }) => {
+const ButtonWithTooltip = ({
+    className,
+    iconSrc,
+    altText,
+    tooltipText,
+    onClick,
+}) => {
     const buttonRef = useRef(null);
     const [tooltipStyle, setTooltipStyle] = useState({
         visibility: 'hidden',
@@ -35,7 +41,7 @@ const ButtonWithTooltip = ({ iconSrc, altText, tooltipText, onClick }) => {
         <button
             ref={buttonRef}
             onClick={onClick}
-            className="icon-button"
+            className={className}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import CameraSettingsWindow from './CameraSettingsWindow';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import modelOptions from './ModelOptions';
@@ -9,6 +11,7 @@ import './CameraPage.css';
 function CameraPage({ onLogout }) {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const logoutHandler = () => {
         onLogout();
@@ -19,8 +22,12 @@ function CameraPage({ onLogout }) {
         navigate('/cameras');
     };
 
-    const goToSettingsHandler = () => {
-        navigate('/cameras/settings');
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
     };
 
     return (
@@ -44,7 +51,7 @@ function CameraPage({ onLogout }) {
                         iconSrc="/icons/settings-icon-white.png"
                         altText="Настройка камер"
                         tooltipText="Настройка камер"
-                        onClick={goToSettingsHandler}
+                        onClick={openModal}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
@@ -54,6 +61,10 @@ function CameraPage({ onLogout }) {
                         onClick={logoutHandler}
                     />
                 </div>
+                <CameraSettingsWindow
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                />
             </div>
             <div className="results">
                 <h2>Результаты идентификации</h2>

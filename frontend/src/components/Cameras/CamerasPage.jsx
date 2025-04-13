@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchCameras, addCamera, fetchCameraDetails } from './Api';
 import { videoPlayerHandler } from './CameraInfo';
+import CamerasStatusWindow from './CamerasStatusWindow';
+import CameraLogsWindow from './CameraLogsWindow';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import modelOptions from './ModelOptions';
@@ -17,6 +19,25 @@ function CamerasPage({ onLogout }) {
         description: '',
         is_active: true,
     });
+    const [isModalSettingsOpen, setIsModalSettingsOpen] = useState(false);
+
+    const openModalSettings = () => {
+        setIsModalSettingsOpen(true);
+    };
+
+    const closeModalSettings = () => {
+        setIsModalSettingsOpen(false);
+    };
+
+    const [isModalLogsOpen, setIsModalLogsOpen] = useState(false);
+
+    const openModalLogs = () => {
+        setIsModalLogsOpen(true);
+    };
+
+    const closeModalLogs = () => {
+        setIsModalLogsOpen(false);
+    };
 
     const navigate = useNavigate();
 
@@ -68,14 +89,17 @@ function CamerasPage({ onLogout }) {
     }, []);
 
     const [cameraCount, setCameraCount] = useState(0);
-    const [buttons, setButtons] = useState([]);
+    const [selectedCamera, setSelectedCamera] = useState('');
 
     const handleAddCamera = async () => {
+        const newCamera = `Камера ${cameraCount + 1}`;
         setCameraCount((prevCount) => prevCount + 1);
-        setButtons((prevButtons) => [
-            ...prevButtons,
-            `Камера ${cameraCount + 1}`,
-        ]);
+        setCameras((prevCameras) => [...prevCameras, newCamera]);
+        setSelectedCamera(newCamera);
+    };
+
+    const handleSelectChange = (event) => {
+        setSelectedCamera(event.target.value);
     };
 
     /*const handleAddCamera = async () => {
@@ -145,33 +169,24 @@ function CamerasPage({ onLogout }) {
                         }
                     />
                 </label>
-                <button onClick={handleAddCamera}>Добавить камеру</button>
                 <div>
-                    {buttons.map((buttonText, index) => (
-                        <Link key={index} to={`/cameras/${index + 1}`}>
-                            <button>{buttonText}</button>
-                        </Link>
-                    ))}
+                    <button onClick={handleAddCamera}>Добавить камеру</button>
+                    <select
+                        value={selectedCamera}
+                        onChange={handleSelectChange}
+                    >
+                        <option value="" disabled>
+                            Выберите камеру
+                        </option>
+                        {cameras.map((camera, index) => (
+                            <option key={index} value={camera}>
+                                {camera}
+                            </option>
+                        ))}
+                    </select>
                 </div>
-                <br />
-                <ul>
-                    {cameras.map((camera) => (
-                        <li
-                            key={camera.id}
-                            onClick={() => handleFetchCameraDetails(camera.id)}
-                        >
-                            {camera.name} (ID: {camera.id})
-                            <br />
-                            <button
-                                onClick={() => videoPlayerHandler(camera.id)}
-                            >
-                                Посмотреть информацию о камере
-                            </button>
-                            <div id="camera-info"></div>
-                        </li>
-                    ))}
-                </ul>
             </div>
+
             <div className="left-menu">
                 <div className="top-menu-part">
                     <ButtonWithTooltip
@@ -181,7 +196,15 @@ function CamerasPage({ onLogout }) {
                         tooltipText="Профиль"
                         onClick={goToProfileHandler}
                     />
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/cameras-status-icon-white.png"
+                        altText="Статус камер"
+                        tooltipText="Статус камер"
+                        onClick={openModalSettings}
+                    />
                 </div>
+
                 <div className="bottom-menu-part">
                     <ButtonWithTooltip
                         className="icon-button"
@@ -212,6 +235,16 @@ function CamerasPage({ onLogout }) {
                         onClick={logoutHandler}
                     />
                 </div>
+
+                <CamerasStatusWindow
+                    isOpen={isModalSettingsOpen}
+                    onClose={closeModalSettings}
+                />
+
+                <CameraLogsWindow
+                    isOpen={isModalLogsOpen}
+                    onClose={closeModalLogs}
+                />
             </div>
 
             <div className="right-menu">
@@ -225,18 +258,69 @@ function CamerasPage({ onLogout }) {
             </div>
 
             <div className="bottom-menu">
-                <button onClick={completedGoal} className="bottom-icon-button">
-                    <img src="/icons/format-icon-1-white.png" alt="Формат 1" />
-                </button>
-                <button onClick={completedGoal} className="bottom-icon-button">
-                    <img src="/icons/format-icon-2-white.png" alt="Формат 2" />
-                </button>
-                <button onClick={completedGoal} className="bottom-icon-button">
-                    <img src="/icons/format-icon-3-white.png" alt="Формат 3" />
-                </button>
-                <button onClick={completedGoal} className="bottom-icon-button">
-                    <img src="/icons/format-icon-4-white.png" alt="Формат 4" />
-                </button>
+                <div className="bottom-menu-left-buttons">
+                    <button
+                        onClick={completedGoal}
+                        className="bottom-icon-button"
+                    >
+                        <img
+                            src="/icons/format-icon-1-white.png"
+                            alt="Формат 1"
+                        />
+                    </button>
+                    <button
+                        onClick={completedGoal}
+                        className="bottom-icon-button"
+                    >
+                        <img
+                            src="/icons/format-icon-2-white.png"
+                            alt="Формат 2"
+                        />
+                    </button>
+                    <button
+                        onClick={completedGoal}
+                        className="bottom-icon-button"
+                    >
+                        <img
+                            src="/icons/format-icon-3-white.png"
+                            alt="Формат 3"
+                        />
+                    </button>
+                    <button
+                        onClick={completedGoal}
+                        className="bottom-icon-button"
+                    >
+                        <img
+                            src="/icons/format-icon-4-white.png"
+                            alt="Формат 4"
+                        />
+                    </button>
+                </div>
+                <div className="bottom-menu-right-buttons">
+                    {selectedCamera && (
+                        <ButtonWithTooltip
+                            className="bottom-icon-button"
+                            iconSrc="/icons/files-icon-white.png"
+                            altText="Просмотр логов"
+                            tooltipText="Просмотр логов"
+                            onClick={openModalLogs}
+                        />
+                    )}
+                    {selectedCamera && (
+                        <Link
+                            to={`/cameras/${
+                                cameras.indexOf(selectedCamera) + 1
+                            }`}
+                        >
+                            <ButtonWithTooltip
+                                className="bottom-icon-button"
+                                iconSrc="/icons/camera-icon-white.png"
+                                altText="Перейти к камере"
+                                tooltipText="Перейти к камере"
+                            />
+                        </Link>
+                    )}
+                </div>
             </div>
         </div>
     );
