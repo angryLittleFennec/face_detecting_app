@@ -1,5 +1,4 @@
 const staffOptions = [
-    { value: 'none', label: 'Выбор сотрудника' },
     { value: 'staff01', label: 'Иван Иванов' },
     { value: 'staff02', label: 'Петр Петров' },
     { value: 'staff03', label: 'Александр Сидоров' },

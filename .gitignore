@@ -13,6 +13,8 @@ __pycache__/
 frontend/node_modules
 
 # frontend development
-frontend/public
+frontend/public/videos
 frontend/src/users.json
 frontend/src/models.json
+frontend/src/server.js
+frontend/build

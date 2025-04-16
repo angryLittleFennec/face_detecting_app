@@ -1,30 +1,45 @@
-import { useNavigate } from 'react-router-dom';
+import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
+import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './ProfilePage.css';
 
 function ProfilePage({ onLogout }) {
-    const navigate = useNavigate();
-
-    const logoutHandler = () => {
-        onLogout();
-        navigate('/');
-    };
-
-    const goToCamerasHandler = () => {
-        navigate('/cameras');
-    };
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
 
     return (
-        <>
+        <div className="page-container">
             <div className="main-content">
-                <h1>ProfilePage</h1>
+                <div className="profile-container-250px">
+                    <h2>Основная информация</h2>
+                    <button>Редактировать</button>
+                </div>
+                <div className="profile-container-200px">
+                    <h2>Контактная информация</h2>
+                    <button>Редактировать</button>
+                </div>
+                <div className="profile-container-200px">
+                    <h2>Дополнительная информация</h2>
+                    <button>Редактировать</button>
+                </div>
             </div>
-            <div className="menu">
-                <button onClick={goToCamerasHandler}>Назад</button>
-                <button className="logout-button" onClick={logoutHandler}>
-                    Выход
-                </button>
+            <div className="left-menu">
+                <div className="top-menu-part">
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/back-icon-white.png"
+                        altText="Назад"
+                        onClick={goToCamerasHandler}
+                    />
+                </div>
+                <div className="bottom-menu-part">
+                    <ButtonWithTooltip
+                        className="icon-button"
+                        iconSrc="/icons/exit-icon-white.png"
+                        altText="Выход"
+                        onClick={logoutHandler}
+                    />
+                </div>
             </div>
-        </>
+        </div>
     );
 }
 

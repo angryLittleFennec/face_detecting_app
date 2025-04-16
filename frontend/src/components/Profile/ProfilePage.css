@@ -1,21 +1,43 @@
-/* Общие стили для body */
-body {
-    margin: 0;
-    padding: 0;
-    height: 100vh; /* Высота на всю высоту окна браузера */
-}
-
-button {
+.profile-container-250px {
+    display: flex;
+    height: 250px;
+    margin: 30px;
     padding: 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
 }
 
-/* Стили для центральной части страницы */
-.main-content {
-    margin-left: 280px;
-    padding: 20px; /* Отступы внутри центральной части */
-    background-color: lightblue; /* Цвет фона центральной части (можно изменить) */
+.profile-container-200px {
+    display: flex;
+    height: 200px;
+    margin: 30px;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.profile-container-250px h2,
+.profile-container-200px h2 {
+    color: #131313;
+}
+
+.profile-container-200px button,
+.profile-container-250px button {
+    font-size: 20px;
+    font-weight: 600;
+    width: 190px;
+    padding: 7px;
+    margin-top: auto;
+    margin-left: auto;
+    color: #131313;
+    background-color: white;
+    cursor: pointer;
+    border: 0;
+}
+
+.profile-container-200px button:hover,
+.profile-container-250px button:hover {
+    text-decoration: underline;
 }

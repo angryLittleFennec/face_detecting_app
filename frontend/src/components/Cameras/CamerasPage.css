@@ -1,29 +1,7 @@
 /* Общие стили для body */
+html,
 body {
-    margin: 0;
-    padding: 0;
     height: 100vh;
-}
-
-input[type='text'] {
-    width: 50%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-}
-
-label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-button {
-    padding: 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
 }
 
 ul {
@@ -36,44 +14,148 @@ li {
     border-bottom: 1px solid #ccc;
 }
 
-/* Стили для левого меню */
-.menu {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    width: 250px;
-    height: 100%;
-    padding: 20px;
-    background-color: #f4f4f4;
-    border-right: 2px solid #ccc;
-    top: 0;
-    left: 0;
+.page-container {
+    position: relative;
+    display: flex; /* Для горизонтального размещения */
+    flex: 1; /* Основная часть будет занимать оставшееся пространство */
+    height: 100vh;
     box-sizing: border-box; /* Включает отступы и границы в общую ширину и высоту элементов */
 }
 
-.menu button {
+.page-container p,
+.page-container h2 {
+    margin-bottom: 10px;
+}
+
+.page-container .bottom-menu-part {
+    margin-top: auto; /* Нужно для размещения кнопки Выход внизу */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 80px;
+    background-color: #2e2e2e;
+}
+
+.main-content select {
+    margin-bottom: 10px;
+}
+
+.main-content select {
+    margin-bottom: 10px;
+}
+
+.cameras-container {
+    margin-top: 20px;
+}
+
+.camera {
+    border: 2px solid black;
+    background-color: white;
+    padding: 10px;
+    margin: 10px 0;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.left-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    width: 80px;
+    padding: 20px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-right: 2px solid #131313;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.right-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    width: 250px;
+    padding: 20px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-left: 2px solid #131313;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+}
+
+.right-menu button,
+.select-button {
     width: 100%;
+    padding: 10px;
     background-color: #007bff;
     color: white;
     border: none;
     cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.bottom-menu {
+    display: flex;
+    position: fixed;
+    align-items: center;
+    height: 50px;
+    width: calc(100% - 80px - 250px);
+    background-color: #2e2e2e;
+    border-top: 2px solid #131313;
+    bottom: 0;
+    left: 80px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.bottom-menu-right-buttons {
+    margin-left: auto;
+    margin-right: 25px;
+}
+
+.icon-button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.icon-button img {
+    display: block; /* Убираем пробелы под изображением */
+    width: 40px;
+    height: auto;
+}
+
+.bottom-icon-button {
+    padding-left: 25px;
+}
+
+.bottom-icon-button img {
     display: block;
-    margin-bottom: 10px;
+    width: 20px;
+    height: auto;
 }
 
-.menu p {
-    margin-bottom: 10px;
+.icon-button,
+.bottom-icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
 }
 
-.logout-button {
-    margin-top: auto; /* Нужно для размещения кнопки Выход внизу */
+.margin-right-250 {
+    margin-right: 250px;
 }
 
-/* Стили для центральной части страницы */
-.main-content {
-    margin-left: 280px;
-    padding: 20px; /* Отступы внутри центральной части */
-    background-color: lightblue; /* Цвет фона центральной части (можно изменить) */
+.margin-bottom-50 {
+    margin-bottom: 50px;
 }
 
 .videoContainer {
