@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import CameraSettingsWindow from './CameraSettingsWindow';
+import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import modelOptions from './ModelOptions';
@@ -9,31 +10,17 @@ import staffOptions from './StaffOptions';
 import './CameraPage.css';
 
 function CameraPage({ onLogout }) {
-    const navigate = useNavigate();
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
     const { id } = useParams();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const logoutHandler = () => {
-        onLogout();
-        navigate('/');
-    };
-
-    const goToCamerasHandler = () => {
-        navigate('/cameras');
-    };
-
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
 
     return (
         <div className="page-container">
             <div className="main-content margin-right-600 margin-bottom-250">
-                <h1>Камера №{id}</h1>
+                <h1>{id}</h1>
             </div>
             <div className="left-menu">
                 <div className="top-menu-part">
@@ -41,7 +28,6 @@ function CameraPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/back-icon-white.png"
                         altText="Назад"
-                        tooltipText="Назад"
                         onClick={goToCamerasHandler}
                     />
                 </div>
@@ -50,14 +36,12 @@ function CameraPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/settings-icon-white.png"
                         altText="Настройка камер"
-                        tooltipText="Настройка камер"
                         onClick={openModal}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/exit-icon-white.png"
                         altText="Выход"
-                        tooltipText="Выход"
                         onClick={logoutHandler}
                     />
                 </div>

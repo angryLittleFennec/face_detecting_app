@@ -34,6 +34,7 @@
     color: #131313;
     background-color: white;
     cursor: pointer;
+    border: 0;
 }
 
 .profile-container-200px button:hover,

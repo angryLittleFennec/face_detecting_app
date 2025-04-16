@@ -4,34 +4,6 @@ body {
     height: 100vh;
 }
 
-input[type='text'] {
-    width: 50%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-}
-
-label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.main-content button,
-.right-menu button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 10px;
-}
-
-.main-content select {
-    margin-bottom: 10px;
-}
-
 ul {
     list-style-type: none;
     padding: 0;
@@ -50,17 +22,13 @@ li {
     box-sizing: border-box; /* Включает отступы и границы в общую ширину и высоту элементов */
 }
 
-.margin-right-250 {
-    margin-right: 250px;
-}
-
-.margin-bottom-50 {
-    margin-bottom: 50px;
-}
-
 .page-container p,
 .page-container h2 {
     margin-bottom: 10px;
+}
+
+.page-container .bottom-menu-part {
+    margin-top: auto; /* Нужно для размещения кнопки Выход внизу */
 }
 
 .main-content {
@@ -70,19 +38,26 @@ li {
     background-color: #2e2e2e;
 }
 
-.right-menu {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    height: 100%;
-    width: 250px;
-    padding: 20px;
-    color: #f8f8f8;
-    background-color: #2e2e2e;
-    border-left: 2px solid #131313;
-    top: 0;
-    right: 0;
-    box-sizing: border-box;
+.main-content select {
+    margin-bottom: 10px;
+}
+
+.main-content select {
+    margin-bottom: 10px;
+}
+
+.cameras-container {
+    margin-top: 20px;
+}
+
+.camera {
+    border: 2px solid black;
+    background-color: white;
+    padding: 10px;
+    margin: 10px 0;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
 }
 
 .left-menu {
@@ -101,8 +76,30 @@ li {
     z-index: 2;
 }
 
-.page-container .bottom-menu-part {
-    margin-top: auto; /* Нужно для размещения кнопки Выход внизу */
+.right-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    width: 250px;
+    padding: 20px;
+    color: #f8f8f8;
+    background-color: #2e2e2e;
+    border-left: 2px solid #131313;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+}
+
+.right-menu button,
+.select-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .bottom-menu {
@@ -124,21 +121,9 @@ li {
     margin-right: 25px;
 }
 
-.icon-button,
-.bottom-icon-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    position: relative;
-}
-
 .icon-button {
     margin-top: 5px;
     margin-bottom: 5px;
-}
-
-.bottom-icon-button {
-    padding-left: 25px;
 }
 
 .icon-button img {
@@ -147,10 +132,30 @@ li {
     height: auto;
 }
 
+.bottom-icon-button {
+    padding-left: 25px;
+}
+
 .bottom-icon-button img {
     display: block;
     width: 20px;
     height: auto;
+}
+
+.icon-button,
+.bottom-icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.margin-right-250 {
+    margin-right: 250px;
+}
+
+.margin-bottom-50 {
+    margin-bottom: 50px;
 }
 
 .videoContainer {

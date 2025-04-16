@@ -1,18 +1,9 @@
-import { useNavigate } from 'react-router-dom';
+import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './CamerasSettingsPage.css';
 
 function CamerasSettingPage({ onLogout }) {
-    const navigate = useNavigate();
-
-    const logoutHandler = () => {
-        onLogout();
-        navigate('/');
-    };
-
-    const goToCamerasHandler = () => {
-        navigate('/cameras');
-    };
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
 
     return (
         <div className="page-container">
@@ -33,7 +24,6 @@ function CamerasSettingPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/back-icon-white.png"
                         altText="Назад"
-                        tooltipText="Назад"
                         onClick={goToCamerasHandler}
                     />
                 </div>
@@ -42,7 +32,6 @@ function CamerasSettingPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/exit-icon-white.png"
                         altText="Выход"
-                        tooltipText="Выход"
                         onClick={logoutHandler}
                     />
                 </div>

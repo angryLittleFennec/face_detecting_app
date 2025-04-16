@@ -1,189 +1,78 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { fetchCameras, addCamera, fetchCameraDetails } from './Api';
-import { videoPlayerHandler } from './CameraInfo';
+import { useState } from 'react';
+//import { useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+//import { fetchCameras, addCamera, fetchCameraDetails } from './Api';
+//import { videoPlayerHandler } from './CameraInfo';
+import CamerasHandlers from './CamerasHandlers';
 import CamerasStatusWindow from './CamerasStatusWindow';
 import CameraLogsWindow from './CameraLogsWindow';
+import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
+import IconButton from '../UI/IconButton';
 import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
 import './CamerasPage.css';
 
 function CamerasPage({ onLogout }) {
-    const [cameras, setCameras] = useState([]);
-    const [newCamera, setNewCamera] = useState({
-        name: '',
-        url: '',
-        description: '',
-        is_active: true,
-    });
     const [isModalSettingsOpen, setIsModalSettingsOpen] = useState(false);
-
-    const openModalSettings = () => {
-        setIsModalSettingsOpen(true);
-    };
-
-    const closeModalSettings = () => {
-        setIsModalSettingsOpen(false);
-    };
-
     const [isModalLogsOpen, setIsModalLogsOpen] = useState(false);
 
-    const openModalLogs = () => {
-        setIsModalLogsOpen(true);
-    };
+    const openModalSettings = () => setIsModalSettingsOpen(true);
+    const closeModalSettings = () => setIsModalSettingsOpen(false);
 
-    const closeModalLogs = () => {
-        setIsModalLogsOpen(false);
-    };
+    const openModalLogs = () => setIsModalLogsOpen(true);
+    const closeModalLogs = () => setIsModalLogsOpen(false);
 
-    const navigate = useNavigate();
+    const {
+        goToProfileHandler,
+        goToSettingsHandler,
+        goToReportsHandler,
+        goToDataHandler,
+        logoutHandler,
+    } = NavigationHandlers(onLogout);
 
-    const goToProfileHandler = () => {
-        navigate('/profile');
-    };
-
-    const goToSettingsHandler = () => {
-        navigate('/cameras/settings');
-    };
-
-    const goToReportsHandler = () => {
-        navigate('/report');
-    };
-
-    const goToDataHandler = () => {
-        navigate('/data');
-    };
-
-    const logoutHandler = () => {
-        onLogout();
-        navigate('/');
-    };
+    const {
+        selectedCamera,
+        selectedCameraIndex,
+        cameras,
+        handleAddCamera,
+        handleSelectChange,
+        handleCameraClick,
+    } = CamerasHandlers();
 
     const completedGoal = () => {
         alert('Внимание! Цель достигнута!');
     };
 
-    const handleError = (error) => {
-        console.error(error);
-    };
-
-    const resetNewCamera = () => {
-        setNewCamera({
-            name: '',
-            url: '',
-            description: '',
-            is_active: true,
-        });
-    };
-
-    const loadCameras = useCallback(async () => {
-        try {
-            const data = await fetchCameras();
-            setCameras(data);
-        } catch (error) {
-            handleError('Ошибка при получении камер:', error);
-        }
-    }, []);
-
-    const [cameraCount, setCameraCount] = useState(0);
-    const [selectedCamera, setSelectedCamera] = useState('');
-
-    const handleAddCamera = async () => {
-        const newCamera = `Камера ${cameraCount + 1}`;
-        setCameraCount((prevCount) => prevCount + 1);
-        setCameras((prevCameras) => [...prevCameras, newCamera]);
-        setSelectedCamera(newCamera);
-    };
-
-    const handleSelectChange = (event) => {
-        setSelectedCamera(event.target.value);
-    };
-
-    /*const handleAddCamera = async () => {
-        try {
-            await addCamera(newCamera);
-            loadCameras();
-            resetNewCamera();
-        } catch (error) {
-            handleError('Ошибка при добавлении камеры:', error);
-        }
-    };*/
-
-    const handleFetchCameraDetails = async (cameraId) => {
-        try {
-            const data = await fetchCameraDetails(cameraId);
-            console.log(data);
-        } catch (error) {
-            handleError('Ошибка при получении информации о камере:', error);
-        }
-    };
-
-    useEffect(() => {
-        loadCameras(); // Получаем список камер при первом рендере
-    }, [loadCameras]);
-
     return (
         <div className="page-container">
             <div className="main-content margin-right-250 margin-bottom-50">
                 <h2>Добавить новую камеру:</h2>
-                <input
-                    type="text"
-                    placeholder="Название камеры"
-                    value={newCamera.name}
-                    onChange={(e) =>
-                        setNewCamera({ ...newCamera, name: e.target.value })
-                    }
-                />
-                <input
-                    type="text"
-                    placeholder="URL видео"
-                    value={newCamera.url}
-                    onChange={(e) =>
-                        setNewCamera({ ...newCamera, url: e.target.value })
-                    }
-                />
-                <input
-                    type="text"
-                    placeholder="Описание"
-                    value={newCamera.description}
-                    onChange={(e) =>
-                        setNewCamera({
-                            ...newCamera,
-                            description: e.target.value,
-                        })
-                    }
-                />
-                <label>
-                    Активна:
-                    <input
-                        type="checkbox"
-                        checked={newCamera.is_active}
-                        onChange={(e) =>
-                            setNewCamera({
-                                ...newCamera,
-                                is_active: e.target.checked,
-                            })
-                        }
-                    />
-                </label>
-                <div>
-                    <button onClick={handleAddCamera}>Добавить камеру</button>
-                    <select
-                        value={selectedCamera}
-                        onChange={handleSelectChange}
-                    >
-                        <option value="" disabled>
-                            Выберите камеру
-                        </option>
-                        {cameras.map((camera, index) => (
-                            <option key={index} value={camera}>
-                                {camera}
-                            </option>
-                        ))}
-                    </select>
+                <div className="cameras-container">
+                    {cameras.map((camera, index) => (
+                        <div
+                            key={index}
+                            className="camera"
+                            onClick={() => handleCameraClick(index)}
+                            style={{
+                                border:
+                                    selectedCameraIndex === index
+                                        ? '2px solid blue'
+                                        : 'none',
+                            }}
+                        >
+                            {camera}
+                        </div>
+                    ))}
+                    {selectedCameraIndex !== null && (
+                        <Link to={`/cameras/${cameras[selectedCameraIndex]}`}>
+                            <button className="select-button">
+                                Выбрана камера: {cameras[selectedCameraIndex]}
+                            </button>
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -193,14 +82,12 @@ function CamerasPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/profile-icon-white.png"
                         altText="Профиль"
-                        tooltipText="Профиль"
                         onClick={goToProfileHandler}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/cameras-status-icon-white.png"
                         altText="Статус камер"
-                        tooltipText="Статус камер"
                         onClick={openModalSettings}
                     />
                 </div>
@@ -210,28 +97,24 @@ function CamerasPage({ onLogout }) {
                         className="icon-button"
                         iconSrc="/icons/settings-icon-white.png"
                         altText="Настройка камер"
-                        tooltipText="Настройка камер"
                         onClick={goToSettingsHandler}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/files-icon-white.png"
                         altText="Отчетность"
-                        tooltipText="Отчетность"
                         onClick={goToReportsHandler}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/data-icon-white.png"
                         altText="Загрузка данных"
-                        tooltipText="Загрузка данных"
                         onClick={goToDataHandler}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/exit-icon-white.png"
                         altText="Выход"
-                        tooltipText="Выход"
                         onClick={logoutHandler}
                     />
                 </div>
@@ -253,48 +136,53 @@ function CamerasPage({ onLogout }) {
                     <Dropdown children={modelOptions} text="Выбор модель" />
                     <Dropdown children={trackingOptions} text="Виды трекинга" />
                     <Dropdown children={staffOptions} text="Выбор сотрудника" />
-                    <button onClick={completedGoal}>Цель выполнена</button>
+                    <div>
+                        <button onClick={handleAddCamera}>
+                            Добавить камеру
+                        </button>
+                        <select
+                            value={selectedCamera}
+                            onChange={handleSelectChange}
+                        >
+                            <option value="" disabled>
+                                Выберите камеру
+                            </option>
+                            {cameras.map((camera, index) => (
+                                <option key={index} value={camera}>
+                                    {camera}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div className="bottom-menu">
                 <div className="bottom-menu-left-buttons">
-                    <button
+                    <IconButton
                         onClick={completedGoal}
+                        iconSrc="/icons/format-icon-1-white.png"
+                        altText="Формат 1"
                         className="bottom-icon-button"
-                    >
-                        <img
-                            src="/icons/format-icon-1-white.png"
-                            alt="Формат 1"
-                        />
-                    </button>
-                    <button
+                    />
+                    <IconButton
                         onClick={completedGoal}
+                        iconSrc="/icons/format-icon-2-white.png"
+                        altText="Формат 2"
                         className="bottom-icon-button"
-                    >
-                        <img
-                            src="/icons/format-icon-2-white.png"
-                            alt="Формат 2"
-                        />
-                    </button>
-                    <button
+                    />
+                    <IconButton
                         onClick={completedGoal}
+                        iconSrc="/icons/format-icon-3-white.png"
+                        altText="Формат 3"
                         className="bottom-icon-button"
-                    >
-                        <img
-                            src="/icons/format-icon-3-white.png"
-                            alt="Формат 3"
-                        />
-                    </button>
-                    <button
+                    />
+                    <IconButton
                         onClick={completedGoal}
+                        iconSrc="/icons/format-icon-4-white.png"
+                        altText="Формат 4"
                         className="bottom-icon-button"
-                    >
-                        <img
-                            src="/icons/format-icon-4-white.png"
-                            alt="Формат 4"
-                        />
-                    </button>
+                    />
                 </div>
                 <div className="bottom-menu-right-buttons">
                     {selectedCamera && (
@@ -302,21 +190,15 @@ function CamerasPage({ onLogout }) {
                             className="bottom-icon-button"
                             iconSrc="/icons/files-icon-white.png"
                             altText="Просмотр логов"
-                            tooltipText="Просмотр логов"
                             onClick={openModalLogs}
                         />
                     )}
                     {selectedCamera && (
-                        <Link
-                            to={`/cameras/${
-                                cameras.indexOf(selectedCamera) + 1
-                            }`}
-                        >
+                        <Link to={`/cameras/${cameras[selectedCameraIndex]}`}>
                             <ButtonWithTooltip
                                 className="bottom-icon-button"
                                 iconSrc="/icons/camera-icon-white.png"
                                 altText="Перейти к камере"
-                                tooltipText="Перейти к камере"
                             />
                         </Link>
                     )}
