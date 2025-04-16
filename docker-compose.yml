@@ -1,15 +1,30 @@
-version: "3"
+# version: "3"
 
 services:
-  app:
-    build: .
-    container_name: surveillance-app
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./:/app
-    environment:
-      - DATABASE_URL=sqlite:///./app.db
+#   postgres:
+#     image: postgres:15
+#     container_name: postgres
+#     environment:
+#       POSTGRES_USER: admin
+#       POSTGRES_PASSWORD: secret
+#       POSTGRES_DB: surveillance_db
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+#     restart: unless-stopped
+
+#   app:
+#     build: .
+#     container_name: surveillance-app
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./:/app
+#     environment:
+#       - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+#     depends_on:
+#       - postgres
 
   mediamtx:
     image: bluenviron/mediamtx:latest-ffmpeg
@@ -19,68 +34,73 @@ services:
       - "8888:8888"
       - "1935:1935"
     volumes:
-      - ./images/5/8.mp4:/app/video.mp4
+      - ./images/video_2025-03-04_21-08-19.mp4:/app/video.mp4
       - ./mediamtx.yml:/mediamtx.yml
     restart: unless-stopped
     hostname: mediamtx
     environment:
       MTX_PROTOCOLS: tcp
 
-  frames_streamer:
-    build:
-      context: ./test_camera_streamer
-      dockerfile: ./amd64.dockerfile
-    image: rtsp_streamer_amd64
-    container_name: frames_streamer
-    restart: always
-    working_dir: /app
-    volumes:
-      - .:/app
-    command:
-      - /bin/bash
-      - -c
-      - |
-        python3 read_frames.py --parameters "person"
-    depends_on:
-      - mediamtx
-      - face_recognition
-    ports:
-      - "18554:8554"
-    hostname: frames_streamer
-    environment:
-      MTX_PROTOCOLS: tcp
-      TZ: "Europe/Moscow"
-    shm_size: "16gb"
+  # frames_streamer:
+  #   build:
+  #     context: ./test_camera_streamer
+  #     dockerfile: ./amd64.dockerfile
+  #   image: rtsp_streamer_amd64
+  #   container_name: frames_streamer
+  #   restart: always
+  #   working_dir: /app
+  #   volumes:
+  #     - .:/app
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #       python3 read_frames.py --parameters helmet
+  #   depends_on:
+  #     - mediamtx
+  #     - face_recognition
+  #   ports:
+  #     - "18554:8554"
+  #   hostname: frames_streamer
+  #   environment:
+  #     MTX_PROTOCOLS: tcp
+  #     TZ: "Europe/Moscow"
+  #   shm_size: "16gb"
 
-  face_recognition:
-    build: 
-        context: .
-        dockerfile: dockerFileDlib
-    container_name: face-recognition-service
-    hostname: face_recognition
-    ports:
-      - "8001:8000"
-    volumes:
-      - .:/app
-    environment:
-      - DATABASE_URL=sqlite:///./app.db
-    depends_on:
-      - app
+  # face_recognition:
+  #   build: 
+  #     context: .
+  #     dockerfile: dockerFileDlib
+  #   container_name: face-recognition-service
+  #   hostname: face_recognition
+  #   ports:
+  #     - "8001:8000"
+  #   volumes:
+  #     - .:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+  #   depends_on:
+  #     - postgres
 
-  logging_service:
-    build:
-      context: .
-      dockerfile: logging.dockerfile
-    hostname: logging_service
-    container_name: logging
-    command:
-      - /bin/bash
-      - -c
-      - |
-        python3 logging_service.py
-    ports:
-      - "8002:8000"
-    volumes:
-      - .:/app
-    depends_on:
-      - app
+  # logging_service:
+  #   build:
+  #     context: .
+  #     dockerfile: logging.dockerfile
+  #   hostname: logging_service
+  #   container_name: logging
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #       python3 logging_service.py
+  #   ports:
+  #     - "8002:8000"
+  #   volumes:
+  #     - .:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+  #   depends_on:
+  #     - postgres
+
+volumes:
+  postgres_data:

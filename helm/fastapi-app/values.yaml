@@ -1,0 +1,55 @@
+# Default values for fastapi-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# fastapi-app/values.yaml
+replicaCount: 1
+
+image:
+  repository: angrylittlefennec/surveillance_app # Your Docker image
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80      # Port exposed by FastAPI (usually 8000, adjust if needed)
+  targetPort: 8000
+  nodePort: 30007 
+
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+env:  # Environment variables (e.g., DB connection)
+  - name: DATABASE_URL
+    value: postgresql://admin:secret@postgres-postgresql:5432/surveillance_db
+
+# Дополните ваш существующий values.yaml
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000  # Порт, на котором работает FastAPI
+
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    yandex.cloud/load-balancer-type: "external"
+    yandex.cloud/subnet-id: "e2lafcbevjq0o2rn6qdn"  # Ваш subnet-id
+    # nginx.ingress.kubernetes.io/use-regex: "true" 
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  hosts:
+    - host: ""
+      paths:
+      - path: /api
+        pathType: Prefix
+  tls: []

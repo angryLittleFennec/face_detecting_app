@@ -1,19 +1,23 @@
-# app/main.py
-
+import logging
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
 from . import models, database
-from .routers import cameras, stream
+from .routers import cameras, stream, persons, faces
+import dlib
 
-# Инициализируем базу данных и создаем таблицы
+
+logger = logging.getLogger(__name__)
+
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(
     title="Video Surveillance App",
     description="Приложение для видеонаблюдения",
     version="1.0.0",
+    openapi_url="/api/openapi.json",
+    docs_url="/api/docs"
 )
 
 origins = [
@@ -29,8 +33,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(cameras.router)
-app.include_router(stream.router)
+
+app.include_router(cameras.router, prefix='/api')
+app.include_router(stream.router, prefix='/api')
+app.include_router(persons.router, prefix="/api")
+app.include_router(faces.router, prefix="/api")
 
 # Добавляем тестовую камеру
 from sqlalchemy.orm import Session
@@ -71,3 +78,22 @@ async def websocket_endpoint(websocket: WebSocket):
             # Здесь можно обработать входящие данные от клиента
     except WebSocketDisconnect:
         connected_clients.remove(websocket)
+
+
+def load_ml_models(app: FastAPI):
+    try:
+        app.state.face_detector = dlib.get_frontal_face_detector()
+        app.state.shape_predictor = dlib.shape_predictor("ml_models/shape_predictor_68_face_landmarks.dat")
+        app.state.face_rec_model = dlib.face_recognition_model_v1("ml_models/dlib_face_recognition_resnet_model_v1.dat")
+        logger.info("ML models loaded successfully")
+    except Exception as e:
+        logger.error(f"Error loading models: {e}")
+        raise
+
+@app.on_event("startup")
+async def startup_event():
+        # Load ML models
+    load_ml_models(app)
+        
+        # Any other startup tasks
+    logger.info("Application startup complete")

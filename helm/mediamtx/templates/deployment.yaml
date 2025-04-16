@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: mediamtx
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          volumeMounts:
+            - name: video-storage
+              mountPath: {{ .Values.persistence.mountPath }}
+            - name: mediamtx-config
+              mountPath: /config
+          ports:
+            - containerPort: {{ .Values.service.ports.rtsp }}
+            - containerPort: {{ .Values.service.ports.http }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          args: ["/config/mediamtx.yml"]
+      volumes:
+        - name: video-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+        - name: mediamtx-config
+          configMap:
+            name: mediamtx-config

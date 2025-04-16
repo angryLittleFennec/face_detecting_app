@@ -1,7 +1,7 @@
-from fastapi import FastAPI, File, Query, UploadFile, HTTPException
+from fastapi import FastAPI, Query, HTTPException
 import dlib
 import numpy as np
-from app.models import Face, Person
+from .models import Face, Person
 from PIL import Image
 
 from sqlalchemy import create_engine
@@ -15,10 +15,10 @@ face_rec_model = dlib.face_recognition_model_v1("ml_models/dlib_face_recognition
 
 app = FastAPI()
 
-DATABASE_URL = "sqlite:///./app.db"
+DATABASE_URL = "postgresql://admin:secret@localhost:5432/surveillance_db"
 
 engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL
 )
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 

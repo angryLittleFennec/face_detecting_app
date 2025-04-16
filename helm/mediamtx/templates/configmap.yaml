@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mediamtx-config
+data:
+  mediamtx.yml: |
+    paths:
+      # stream:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video.mp4  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream   
+      #   runOnInitRestart: yes
+      stream1:
+         runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video1.avi -vf "setpts=N/30/TB" -c:v libx264 -preset ultrafast -an -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream1
+         runOnInitRestart: yes
+      stream3:
+         runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video3.avi  -vf "setpts=N/30/TB" -c:v libx264 -preset ultrafast -an -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream3   
+         runOnInitRestart: yes
+      # stream4:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video4.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream4   
+      #   runOnInitRestart: yes
+      # stream5:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video5.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream5   
+      #   runOnInitRestart: yes
+      # stream6:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video6.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream6   
+      #   runOnInitRestart: yes
+      # stream7:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video7.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream7   
+      #   runOnInitRestart: yes
+      # stream8:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video8.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream8   
+      #   runOnInitRestart: yes
+      # stream9:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video9.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream9   
+      #   runOnInitRestart: yes
+      # stream10:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video10.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream10   
+      #   runOnInitRestart: yes
+      # stream11:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video11.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream11   
+      #   runOnInitRestart: yes
+      # stream13:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video13.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream13   
+      #   runOnInitRestart: yes
+      # stream14:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video14.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream14   
+      #   runOnInitRestart: yes
+      # stream15:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video15.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream15   
+      #   runOnInitRestart: yes
+      # stream16:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video16.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream16   
+      #   runOnInitRestart: yes
+      # stream17:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video17.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream17   
+      #   runOnInitRestart: yes
+      # stream18:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video18.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream18   
+      #   runOnInitRestart: yes
+      # stream19:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video19.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream19   
+      #   runOnInitRestart: yes
+      # stream20:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video20.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream20   
+      #   runOnInitRestart: yes
+      # stream21:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video21.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream21   
+      #   runOnInitRestart: yes
+      # stream22:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video22.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream22   
+      #   runOnInitRestart: yes
+      # stream23:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video23.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream23   
+      #   runOnInitRestart: yes
+      # stream24:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video24.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream24   
+      #   runOnInitRestart: yes
+      # stream25:
+      #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video25.avi  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream25   
+      #   runOnInitRestart: yes
+
+      all_others:

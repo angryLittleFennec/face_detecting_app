@@ -1,0 +1,14 @@
+auth:
+  postgresPassword: "secret"
+  database: "surveillance_db"
+  username: "admin"
+  password: "secret"
+
+persistence:
+  size: 1Gi
+  enabled: true
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"

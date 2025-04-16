@@ -81,7 +81,7 @@ def send_logs_every_minute():
 
 # Планирование задачи на конец каждого месяца
 #schedule.every().month.do(monthly_report)
-schedule.every(1).minutes.do(send_logs_every_minute)
+schedule.every(60).minutes.do(send_logs_every_minute)
 
 # Telegram Bot
 bot = telebot.TeleBot('8155077211:AAH_Wm2udjRTkd5xFiHYVC8BEYv2r9JGv58')

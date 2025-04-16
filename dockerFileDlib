@@ -11,7 +11,7 @@ RUN pip install dlib --break-system-packages
 
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
-COPY . .
+COPY app/ .
 
 EXPOSE 8000
 

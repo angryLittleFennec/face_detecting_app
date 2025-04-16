@@ -13,6 +13,6 @@ RUN apt-get update
 
 RUN pip install schedule fastapi uvicorn[standard] pydantic fpdf pytelegrambotapi
 
-COPY . .
+COPY /app .
 
 EXPOSE 8090
