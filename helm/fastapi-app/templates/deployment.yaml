@@ -12,6 +12,7 @@ spec:
       labels:
         app: {{ include "fastapi-app.fullname" . }}
     spec:
+      serviceAccountName: {{ include "fastapi-app.fullname" . }}-deployer
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "fastapi-app.fullname" . }}-deployer-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "fastapi-app.fullname" . }}
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["create", "delete", "patch", "get", "list"]
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["*"]

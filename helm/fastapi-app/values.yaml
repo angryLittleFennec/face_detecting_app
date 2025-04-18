@@ -19,6 +19,15 @@ service:
   targetPort: 8000
   nodePort: 30007 
 
+# Включаем/выключаем создание RBAC
+rbac:
+  create: true
+
+serviceAccount:
+  # Если нужно создать новый аккаунт
+  create: true
+  # Или использовать существующий
+  # name: "custom-service-account"
 
 resources:
   limits:

@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "fastapi-app.fullname" . }}-deployer-binding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "fastapi-app.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "fastapi-app.fullname" . }}-deployer
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "fastapi-app.fullname" . }}-deployer-role
+  apiGroup: rbac.authorization.k8s.io
