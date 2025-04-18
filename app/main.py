@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from kubernetes import client, config
 from typing import List
 
 from . import models, database
@@ -19,6 +20,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     docs_url="/api/docs"
 )
+
+config.load_incluster_config()
+
 
 origins = [
     "http://localhost:3000",

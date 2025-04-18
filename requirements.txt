@@ -9,3 +9,4 @@ pillow
 schedule
 psycopg2-binary
 dlib
+kubernetes

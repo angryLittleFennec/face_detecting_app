@@ -26,7 +26,7 @@ def create_camera(camera: schemas.CameraCreate, db: Session = Depends(get_db)):
         name=camera.name,
         url=str(camera.url),  # Преобразуем HttpUrl в строку
         description=camera.description,
-        is_active=camera.is_active
+        is_active=camera.is_active,
     )
     db.add(db_camera)
     db.commit()
