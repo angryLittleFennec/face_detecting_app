@@ -54,7 +54,11 @@ def update_camera(camera_id: int, camera_update: schemas.CameraUpdate, db: Sessi
     if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена")
     for var, value in vars(camera_update).items():
+        if var == 'url':
+            setattr(camera, var, str(value))
+            continue
         setattr(camera, var, value) if value else None
+    
     db.add(camera)
     db.commit()
     db.refresh(camera)
