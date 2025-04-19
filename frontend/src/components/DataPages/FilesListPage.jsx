@@ -16,6 +16,7 @@ function FileListPage({ onLogout }) {
             <div className="main-content justify-content-center">
                 <div div className="files-list-container">
                     <h1>Список файлов</h1>
+                    <p>Здесь будет отображаться список файлов...</p>
                 </div>
             </div>
             <div className="left-menu">

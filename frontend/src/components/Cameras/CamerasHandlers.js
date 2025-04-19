@@ -1,28 +1,24 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { setSelectedCameraIndexRedux } from './actions';
+import {
+    fetchCameras,
+    addCamera,
+    deleteCamera,
+    updateCamera,
+    fetchCameraDetails,
+    downloadCameraLogs,
+} from './Api';
 
 const CamerasHandlers = (initialCameras = []) => {
-    const [cameraCount, setCameraCount] = useState(0);
+    const dispatch = useDispatch();
+    const [cameras, setCameras] = useState(initialCameras);
+    const [cameraInfo, setCameraInfo] = useState(null);
     const [selectedCamera, setSelectedCamera] = useState('');
     const [selectedCameraIndex, setSelectedCameraIndex] = useState(null);
-    const [cameras, setCameras] = useState(initialCameras);
-
-    const handleAddCamera = async () => {
-        const newCamera = `Камера ${cameraCount + 1}`;
-        setCameraCount((prevCount) => prevCount + 1);
-        setCameras((prevCameras) => [...prevCameras, newCamera]);
-    };
-
-    const handleSelectChange = (event) => {
-        setSelectedCamera(event.target.value);
-        setSelectedCameraIndex(cameras.indexOf(event.target.value));
-    };
-
-    const handleCameraClick = (index) => {
-        setSelectedCamera(cameras[index]);
-        setSelectedCameraIndex(index);
-    };
-
-    /*
+    const [isVideoVisible, setIsVideoVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [newCamera, setNewCamera] = useState({
         name: '',
         url: '',
@@ -30,17 +26,63 @@ const CamerasHandlers = (initialCameras = []) => {
         is_active: true,
     });
 
-    useEffect(() => {
-        loadCameras(); // Получаем список камер при первом рендере
-    }, [loadCameras]);
-
     const handleAddCamera = async () => {
         try {
             await addCamera(newCamera);
-            loadCameras();
             resetNewCamera();
+            handleFetchCameras();
         } catch (error) {
             handleError('Ошибка при добавлении камеры:', error);
+        }
+    };
+
+    const handleUpdateCamera = async () => {
+        if (selectedCameraIndex === null) {
+            console.log('Камера не выбрана');
+            return;
+        }
+
+        const cameraToUpdate = cameras[selectedCameraIndex];
+
+        try {
+            /*const updatedCameraData = {
+                ...cameraToUpdate,
+                ...newCamera,
+            };*/
+            console.log(newCamera);
+            await updateCamera(cameraToUpdate.id, newCamera);
+            //const updatedCameras = [...cameras];
+            //updatedCameras[selectedCameraIndex] = updatedCameraData;
+            //setCameras(updatedCameras);
+            setSelectedCamera('');
+            setSelectedCameraIndex(null);
+            handleFetchCameras();
+        } catch (error) {
+            handleError('Ошибка при обновлении камеры: ' + error);
+        }
+    };
+
+    const handleDeleteCamera = async (cameraId) => {
+        try {
+            await deleteCamera(cameraId);
+            // Обновляем состояние, удаляя камеру из списка
+            setCameras(cameras.filter((camera) => camera.id !== cameraId));
+            setSelectedCamera('');
+            setSelectedCameraIndex(null);
+        } catch (error) {
+            handleError('Ошибка при удалении камеры: ' + error);
+        }
+    };
+
+    const handleFetchCameras = async () => {
+        try {
+            const data = await fetchCameras();
+            setCameras(data);
+            console.log(data);
+        } catch (error) {
+            handleError('Ошибка при получении информации о камерах:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -48,19 +90,29 @@ const CamerasHandlers = (initialCameras = []) => {
         try {
             const data = await fetchCameraDetails(cameraId);
             console.log(data);
+            setCameraInfo(data);
+            setIsVideoVisible(false);
         } catch (error) {
             handleError('Ошибка при получении информации о камере:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const loadCameras = useCallback(async () => {
+    const handleDownloadCameraLogs = async (cameraId) => {
         try {
-            const data = await fetchCameras();
-            setCameras(data);
+            const data = await downloadCameraLogs(cameraId);
+            console.log(data);
         } catch (error) {
-            handleError('Ошибка при получении камер:', error);
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
         }
-    }, []);
+    };
+
+    const toggleVideo = () => {
+        setIsVideoVisible(!isVideoVisible); // Переключаем видимость видео
+    };
 
     const resetNewCamera = () => {
         setNewCamera({
@@ -71,19 +123,53 @@ const CamerasHandlers = (initialCameras = []) => {
         });
     };
 
-        const handleError = (error) => {
+    const handleSelectChange = (event) => {
+        const selectedValue = event.target.value;
+        setSelectedCamera(selectedValue);
+        const index = cameras.findIndex(
+            (camera) => camera.name === selectedValue
+        );
+        setSelectedCameraIndex(index);
+    };
+
+    const handleCameraClick = (index) => {
+        const camera = cameras[index];
+        setSelectedCamera(camera.name);
+        setSelectedCameraIndex(index);
+    };
+
+    const handleSelectCamera = (index) => {
+        dispatch(setSelectedCameraIndexRedux(index)); // Устанавливаем индекс в Redux
+    };
+
+    const handleError = (error) => {
+        setError(error);
         console.error(error);
     };
-    */
 
     return {
-        cameraCount,
+        cameras,
+        cameraInfo,
+        newCamera,
         selectedCamera,
         selectedCameraIndex,
-        cameras,
+        isVideoVisible,
+        loading,
+        error,
+        setCameras,
+        setNewCamera,
+        setLoading,
         handleAddCamera,
+        handleUpdateCamera,
+        handleDeleteCamera,
+        handleSelectCamera,
+        handleFetchCameras,
+        handleFetchCameraDetails,
+        handleDownloadCameraLogs,
         handleSelectChange,
         handleCameraClick,
+        handleError,
+        toggleVideo,
     };
 };
 

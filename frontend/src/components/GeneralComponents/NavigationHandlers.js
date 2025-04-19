@@ -5,7 +5,11 @@ const NavigationHandlers = (onLogout) => {
 
     const goToProfileHandler = () => navigate('/profile');
     const goToCamerasHandler = () => navigate('/cameras');
-    const goToSettingsHandler = () => navigate('/cameras/settings');
+    const goToSettingsHandler = () => navigate('/cameras/settings/main');
+    const goToNotificationSettingsHandler = () =>
+        navigate('/cameras/settings/notification');
+    const goToAdditionalSettingsHandler = () =>
+        navigate('/cameras/settings/additional');
     const goToReportsHandler = () => navigate('/report');
     const goToDataHandler = () => navigate('/data');
     const goToFilesHandler = () => navigate('/files');
@@ -19,6 +23,8 @@ const NavigationHandlers = (onLogout) => {
         goToProfileHandler,
         goToCamerasHandler,
         goToSettingsHandler,
+        goToNotificationSettingsHandler,
+        goToAdditionalSettingsHandler,
         goToReportsHandler,
         goToDataHandler,
         goToFilesHandler,

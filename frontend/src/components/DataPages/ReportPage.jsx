@@ -10,6 +10,8 @@ function ReportPage({ onLogout }) {
             <div className="main-content justify-content-center">
                 <div div className="report-container">
                     <h1>Отчетность</h1>
+                    <p>Здесь можно будет просмотреть отчетность...</p>
+                    <button>Скачать отчет</button>
                 </div>
             </div>
             <div className="left-menu">

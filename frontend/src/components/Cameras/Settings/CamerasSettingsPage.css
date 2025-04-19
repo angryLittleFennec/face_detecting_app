@@ -1,0 +1,97 @@
+.settings-page-container {
+    display: flex;
+    height: 90vh;
+    padding: 10px;
+    border: 10px solid black;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    align-items: center;
+}
+
+.settings-container button {
+    font-size: 16px;
+    font-weight: 500;
+    width: 50%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.settings-container .delete-button {
+    background-color: #db001a;
+}
+
+.settings-container label {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.settings-container select {
+    width: 50%;
+    padding: 5px;
+    margin-top: 10px;
+}
+
+.settings-container h3 {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.choose-settings-container {
+    text-align: left;
+}
+
+.choose-settings-button {
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: white;
+    color: #131313;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.choose-settings-button:hover {
+    background-color: #e5e5e5;
+}
+
+.selected-button {
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #d1d1d1;
+    color: #131313;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.text-input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 10px;
+}
+
+.checkbox-input,
+.number-input {
+    margin: 5px;
+    margin-top: 10px;
+}
+
+.text-align-left {
+    text-align: left;
+}

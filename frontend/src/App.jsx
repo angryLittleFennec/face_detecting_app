@@ -8,7 +8,9 @@ import DownloadDataPage from './components/DataPages/DownloadDataPage';
 import FilesListPage from './components/DataPages/FilesListPage';
 import StaffPage from './components/DataPages/StaffPage';
 import ReportPage from './components/DataPages/ReportPage';
-import CamerasSettingsPage from './components/Cameras/CamerasSettingsPage';
+import CamerasSettingsPage from './components/Cameras/Settings/CamerasSettingsPage';
+import NotificationSettingsPage from './components/Cameras/Settings/NotificationSettingsPage';
+import AdditionalSettingsPage from './components/Cameras/Settings/AdditionalSettingsPage';
 import './App.css';
 
 function App() {
@@ -60,9 +62,23 @@ function App() {
                         }
                     />
                     <Route
-                        path="/cameras/settings"
+                        path="/cameras/settings/main"
                         element={
                             <CamerasSettingsPage onLogout={handleLogout} />
+                            //isLoggedIn ? (<CamerasSettingsPage onLogout={handleLogout} />) : (<Navigate to="/" />)
+                        }
+                    />
+                    <Route
+                        path="/cameras/settings/notification"
+                        element={
+                            <NotificationSettingsPage onLogout={handleLogout} />
+                            //isLoggedIn ? (<CamerasSettingsPage onLogout={handleLogout} />) : (<Navigate to="/" />)
+                        }
+                    />
+                    <Route
+                        path="/cameras/settings/additional"
+                        element={
+                            <AdditionalSettingsPage onLogout={handleLogout} />
                             //isLoggedIn ? (<CamerasSettingsPage onLogout={handleLogout} />) : (<Navigate to="/" />)
                         }
                     />

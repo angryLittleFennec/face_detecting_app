@@ -1,4 +1,4 @@
-import ModalWindow from '../UI/ModalWindow';
+import ModalWindow from '../../UI/ModalWindow';
 import './CameraSettingsWindow.css';
 
 const CameraSettingsWindow = ({ isOpen, onClose }) => {

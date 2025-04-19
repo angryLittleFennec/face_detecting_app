@@ -16,6 +16,7 @@ function StaffPage({ onLogout }) {
             <div className="main-content justify-content-center">
                 <div div className="staff-container">
                     <h1>Список сотрудников</h1>
+                    <p>Здесь будет отображаться список сотрудников...</p>
                 </div>
             </div>
             <div className="left-menu">

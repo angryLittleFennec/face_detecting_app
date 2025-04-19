@@ -1,8 +1,5 @@
-import { useState } from 'react';
-//import { useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-//import { fetchCameras, addCamera, fetchCameraDetails } from './Api';
-//import { videoPlayerHandler } from './CameraInfo';
 import CamerasHandlers from './CamerasHandlers';
 import CamerasStatusWindow from './CamerasStatusWindow';
 import CameraLogsWindow from './CameraLogsWindow';
@@ -37,19 +34,33 @@ function CamerasPage({ onLogout }) {
         selectedCamera,
         selectedCameraIndex,
         cameras,
-        handleAddCamera,
+        loading,
+        error,
+        handleSelectCamera,
+        handleFetchCameras,
         handleSelectChange,
         handleCameraClick,
     } = CamerasHandlers();
+
+    useEffect(() => {
+        handleFetchCameras();
+    }, []);
+
+    if (loading) {
+        return <h2>Загрузка...</h2>;
+    }
+
+    if (error) {
+        return <h2>Ошибка: {error}</h2>;
+    }
 
     const completedGoal = () => {
         alert('Внимание! Цель достигнута!');
     };
 
     return (
-        <div className="page-container">
-            <div className="main-content margin-right-250 margin-bottom-50">
-                <h2>Добавить новую камеру:</h2>
+        <div className="page-container cameras-page-container">
+            <div className="main-content margin-right-250 margin-bottom-50 white-text">
                 <div className="cameras-container">
                     {cameras.map((camera, index) => (
                         <div
@@ -63,16 +74,9 @@ function CamerasPage({ onLogout }) {
                                         : 'none',
                             }}
                         >
-                            {camera}
+                            {camera.name}
                         </div>
                     ))}
-                    {selectedCameraIndex !== null && (
-                        <Link to={`/cameras/${cameras[selectedCameraIndex]}`}>
-                            <button className="select-button">
-                                Выбрана камера: {cameras[selectedCameraIndex]}
-                            </button>
-                        </Link>
-                    )}
                 </div>
             </div>
 
@@ -130,15 +134,15 @@ function CamerasPage({ onLogout }) {
                 />
             </div>
 
-            <div className="right-menu">
+            <div className="right-menu white-text">
                 <div className="top-menu-part">
                     <p>Выберите видео для воспроизведения:</p>
                     <Dropdown children={modelOptions} text="Выбор модель" />
                     <Dropdown children={trackingOptions} text="Виды трекинга" />
                     <Dropdown children={staffOptions} text="Выбор сотрудника" />
                     <div>
-                        <button onClick={handleAddCamera}>
-                            Добавить камеру
+                        <button onClick={handleFetchCameras}>
+                            Просмотреть камеры
                         </button>
                         <select
                             value={selectedCamera}
@@ -148,11 +152,23 @@ function CamerasPage({ onLogout }) {
                                 Выберите камеру
                             </option>
                             {cameras.map((camera, index) => (
-                                <option key={index} value={camera}>
-                                    {camera}
+                                <option key={index} value={camera.name}>
+                                    {camera.name}
                                 </option>
                             ))}
                         </select>
+                        {selectedCameraIndex !== null && (
+                            <Link to={`/cameras/${selectedCameraIndex}`}>
+                                <button
+                                    onClick={() =>
+                                        handleSelectCamera(selectedCameraIndex)
+                                    }
+                                >
+                                    Выбрана камера:{' '}
+                                    {cameras[selectedCameraIndex].name}
+                                </button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
@@ -194,11 +210,14 @@ function CamerasPage({ onLogout }) {
                         />
                     )}
                     {selectedCamera && (
-                        <Link to={`/cameras/${cameras[selectedCameraIndex]}`}>
+                        <Link to={`/cameras/${selectedCameraIndex}`}>
                             <ButtonWithTooltip
                                 className="bottom-icon-button"
                                 iconSrc="/icons/camera-icon-white.png"
                                 altText="Перейти к камере"
+                                onClick={() =>
+                                    handleSelectCamera(selectedCameraIndex)
+                                }
                             />
                         </Link>
                     )}
