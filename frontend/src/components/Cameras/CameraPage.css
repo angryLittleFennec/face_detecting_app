@@ -2,6 +2,10 @@ video {
     width: 100%;
 }
 
+.camera-container {
+    width: 100%;
+}
+
 .results {
     display: flex;
     flex-direction: column;
@@ -34,11 +38,12 @@ video {
 
 .filters {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     position: fixed;
     height: 250px;
     width: 600px;
-    padding: 10px;
+    padding: 20px;
     color: #f8f8f8;
     background-color: #2e2e2e;
     border-left: 2px solid #131313;
@@ -46,6 +51,16 @@ video {
     bottom: 0;
     right: 0;
     box-sizing: border-box;
+}
+
+.filters select {
+    margin: 10px;
+    padding: 5px;
+    width: calc(50% - 20px);
+    height: 40px;
+    background-color: #414141;
+    color: #f8f8f8;
+    border: 1px solid black;
 }
 
 .margin-right-600 {

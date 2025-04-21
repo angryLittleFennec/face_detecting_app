@@ -1,4 +1,3 @@
-import CamerasHandlers from '../CamerasHandlers';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 import './CamerasSettingsPage.css';

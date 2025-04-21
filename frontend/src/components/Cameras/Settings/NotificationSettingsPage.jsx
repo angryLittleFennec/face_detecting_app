@@ -1,4 +1,3 @@
-import CamerasHandlers from '../CamerasHandlers';
 import NotificationSelector from './NotificationSelector';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';

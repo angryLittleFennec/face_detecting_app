@@ -1,9 +1,6 @@
-import CamerasHandlers from '../CamerasHandlers';
 import './CamerasInputInfo.css';
 
-const CamerasInputInfo = () => {
-    const { newCamera, setNewCamera } = CamerasHandlers();
-
+const CamerasInputInfo = ({ newCamera, setNewCamera }) => {
     return (
         <div className="cameras-input-info-container">
             <input
@@ -49,12 +46,10 @@ const CamerasInputInfo = () => {
                     className="checkbox-input"
                     type="checkbox"
                     checked={newCamera.is_active}
-                    onChange={(e) =>
-                        setNewCamera({
-                            ...newCamera,
-                            is_active: e.target.checked,
-                        })
-                    }
+                    onChange={(e) => {
+                        const isActive = e.target.checked;
+                        setNewCamera({ ...newCamera, is_active: isActive });
+                    }}
                 />
             </label>
         </div>

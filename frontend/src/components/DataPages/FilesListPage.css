@@ -1,8 +1,6 @@
 .files-list-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
     height: 85vh;
     width: 90%;
     margin: 30px;
@@ -15,4 +13,23 @@
 .files-list-container h1 {
     font-size: 40px;
     margin-top: 10px;
+}
+
+.files-list-container li {
+    font-size: 18px;
+    text-align: left;
+}
+
+.files-list {
+    margin-left: 50px;
+    margin-top: 10px;
+}
+
+.files-list-element {
+    display: flex;
+    align-items: center;
+}
+
+.files-list-element img {
+    width: 16px;
 }

@@ -7,17 +7,24 @@ function ProfilePage({ onLogout }) {
 
     return (
         <div className="page-container">
-            <div className="main-content">
+            <div className="profile-main-content">
                 <div className="profile-container-250px">
                     <h2>Основная информация</h2>
+                    <p>Имя: </p>
+                    <p>Фамилия: </p>
+                    <p>Отчество: </p>
+                    <p>Должность: </p>
                     <button>Редактировать</button>
                 </div>
                 <div className="profile-container-200px">
                     <h2>Контактная информация</h2>
+                    <p>Адрес электронной почты: </p>
+                    <p>Номер телефона: </p>
                     <button>Редактировать</button>
                 </div>
                 <div className="profile-container-200px">
                     <h2>Дополнительная информация</h2>
+                    <p>О себе: </p>
                     <button>Редактировать</button>
                 </div>
             </div>

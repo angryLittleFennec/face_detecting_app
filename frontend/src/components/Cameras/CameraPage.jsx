@@ -25,20 +25,19 @@ function CameraPage({ onLogout }) {
     const {
         cameras,
         cameraInfo,
-        isVideoVisible,
         loading,
         error,
         handleFetchCameras,
         handleFetchCameraDetails,
         handleDownloadCameraLogs,
-        toggleVideo,
     } = CamerasHandlers();
 
-    useEffect(() => {
+    /*useEffect(() => {
         handleFetchCameras();
-    }, []);
+    }, [handleFetchCameras]);*/
 
     if (loading) {
+        handleFetchCameras();
         return <h2>Загрузка...</h2>;
     }
 
@@ -50,11 +49,9 @@ function CameraPage({ onLogout }) {
         <div className="page-container">
             <div className="main-content margin-right-600 margin-bottom-250 white-text">
                 {cameras.length > 1 ? (
-                    <div style={{ marginTop: '10px' }}>
-                        {console.log(id)}
-                        {console.log(selectedCameraIndex)}
+                    <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        <video width="400" controls autoPlay>
+                        <video controls autoPlay>
                             <source src={cameras[id].url} type="video/mp4" />
                             Ваш браузер не поддерживает видео.
                         </video>
@@ -125,9 +122,11 @@ function CameraPage({ onLogout }) {
                 </button>
             </div>
             <div className="filters white-text">
-                <Dropdown children={modelOptions} text="Выбор модель" />
+                <Dropdown children={modelOptions} text="Выбор модели" />
                 <Dropdown children={trackingOptions} text="Виды трекинга" />
                 <Dropdown children={staffOptions} text="Выбор сотрудника" />
+                <Dropdown children={staffOptions} text="Признаки лица" />
+                <Dropdown children={staffOptions} text="Другое" />
             </div>
             <div className="faces-feed white-text">
                 <h2>Лента выявленных лиц</h2>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setSelectedCameraIndexRedux } from './actions';
+import { setSelectedCameraIndexRedux } from '../../actions';
 import {
     fetchCameras,
     addCamera,
@@ -23,8 +23,32 @@ const CamerasHandlers = (initialCameras = []) => {
         name: '',
         url: '',
         description: '',
-        is_active: true,
+        is_active: false,
     });
+    const [newCameraUpdate, setNewCameraUpdate] = useState({
+        name: '',
+        url: '',
+        description: '',
+        is_active: false,
+    });
+
+    const resetNewCamera = () => {
+        setNewCamera({
+            name: '',
+            url: '',
+            description: '',
+            is_active: false,
+        });
+    };
+
+    const resetNewCameraUpdate = () => {
+        setNewCameraUpdate({
+            name: '',
+            url: '',
+            description: '',
+            is_active: false,
+        });
+    };
 
     const handleAddCamera = async () => {
         try {
@@ -45,17 +69,10 @@ const CamerasHandlers = (initialCameras = []) => {
         const cameraToUpdate = cameras[selectedCameraIndex];
 
         try {
-            /*const updatedCameraData = {
-                ...cameraToUpdate,
-                ...newCamera,
-            };*/
-            console.log(newCamera);
-            await updateCamera(cameraToUpdate.id, newCamera);
-            //const updatedCameras = [...cameras];
-            //updatedCameras[selectedCameraIndex] = updatedCameraData;
-            //setCameras(updatedCameras);
+            await updateCamera(cameraToUpdate.id, newCameraUpdate);
             setSelectedCamera('');
             setSelectedCameraIndex(null);
+            resetNewCameraUpdate();
             handleFetchCameras();
         } catch (error) {
             handleError('Ошибка при обновлении камеры: ' + error);
@@ -69,6 +86,7 @@ const CamerasHandlers = (initialCameras = []) => {
             setCameras(cameras.filter((camera) => camera.id !== cameraId));
             setSelectedCamera('');
             setSelectedCameraIndex(null);
+            resetNewCamera();
         } catch (error) {
             handleError('Ошибка при удалении камеры: ' + error);
         }
@@ -114,22 +132,24 @@ const CamerasHandlers = (initialCameras = []) => {
         setIsVideoVisible(!isVideoVisible); // Переключаем видимость видео
     };
 
-    const resetNewCamera = () => {
-        setNewCamera({
-            name: '',
-            url: '',
-            description: '',
-            is_active: true,
-        });
-    };
-
     const handleSelectChange = (event) => {
         const selectedValue = event.target.value;
         setSelectedCamera(selectedValue);
         const index = cameras.findIndex(
             (camera) => camera.name === selectedValue
         );
+        const selected = cameras.find(
+            (camera) => camera.name === selectedValue
+        );
         setSelectedCameraIndex(index);
+        if (selected) {
+            setNewCameraUpdate({
+                name: selected.name,
+                url: selected.url,
+                description: selected.description,
+                is_active: selected.is_active,
+            });
+        }
     };
 
     const handleCameraClick = (index) => {
@@ -151,6 +171,7 @@ const CamerasHandlers = (initialCameras = []) => {
         cameras,
         cameraInfo,
         newCamera,
+        newCameraUpdate,
         selectedCamera,
         selectedCameraIndex,
         isVideoVisible,
@@ -158,6 +179,7 @@ const CamerasHandlers = (initialCameras = []) => {
         error,
         setCameras,
         setNewCamera,
+        setNewCameraUpdate,
         setLoading,
         handleAddCamera,
         handleUpdateCamera,

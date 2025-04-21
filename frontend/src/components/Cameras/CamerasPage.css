@@ -11,13 +11,16 @@ ul {
 
 li {
     padding: 10px;
-    border-bottom: 1px solid #ccc;
 }
 
 select {
     float: left;
     margin-bottom: 20px;
+    padding: 5px;
     width: 100%;
+    background-color: #414141;
+    color: #f8f8f8;
+    border: 1px black;
 }
 
 .page-container {
@@ -48,10 +51,14 @@ select {
 }
 
 .main-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     flex-grow: 1;
     padding: 20px;
     margin-left: 80px;
     background-color: #2e2e2e;
+    overflow: hidden;
 }
 
 .main-content select {
@@ -63,15 +70,20 @@ select {
 }
 
 .cameras-container {
-    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    text-align: center;
+    align-items: center;
+    width: 100%;
 }
 
 .camera {
-    border: 2px solid black;
     background-color: white;
-    padding: 10px;
-    margin: 10px 0;
-    width: 200px;
+    padding: 1px;
+    margin: 10px;
+    width: 47%;
+    height: auto;
     text-align: center;
     cursor: pointer;
 }
@@ -107,7 +119,8 @@ select {
     box-sizing: border-box;
 }
 
-.right-menu button {
+.right-menu button,
+.results button {
     width: 100%;
     padding: 10px;
     background-color: #007bff;

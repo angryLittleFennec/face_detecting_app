@@ -24,6 +24,10 @@ function CamerasSettingPage({ onLogout }) {
         cameras,
         loading,
         error,
+        newCamera,
+        newCameraUpdate,
+        setNewCamera,
+        setNewCameraUpdate,
         handleAddCamera,
         handleUpdateCamera,
         handleDeleteCamera,
@@ -49,11 +53,13 @@ function CamerasSettingPage({ onLogout }) {
         });
     };
 
+    /*
     useEffect(() => {
         handleFetchCameras();
-    }, []);
+    }, [handleFetchCameras]);*/
 
     if (loading) {
+        handleFetchCameras();
         return <h2>Загрузка...</h2>;
     }
 
@@ -107,14 +113,17 @@ function CamerasSettingPage({ onLogout }) {
                             <div className="cameras-settings-container">
                                 <div>
                                     <h3>Добавление камер</h3>
-                                    <CamerasInputInfo />
+                                    <CamerasInputInfo
+                                        newCamera={newCamera}
+                                        setNewCamera={setNewCamera}
+                                    />
                                     <button onClick={handleAddCamera}>
                                         Добавить камеру
                                     </button>
                                 </div>
                                 <div>
                                     <h3>Изменение камер</h3>
-                                    <div className="cameras-container">
+                                    <div>
                                         <div className="text-align-left">
                                             <select
                                                 value={selectedCamera}
@@ -135,8 +144,11 @@ function CamerasSettingPage({ onLogout }) {
                                                 )}
                                             </select>
                                         </div>
-                                        <CamerasInputInfo />
-                                        {selectedCameraIndex !== null && (
+                                        <CamerasInputInfo
+                                            newCamera={newCameraUpdate}
+                                            setNewCamera={setNewCameraUpdate}
+                                        />
+                                        {selectedCamera && (
                                             <div>
                                                 <button
                                                     onClick={handleUpdateCamera}

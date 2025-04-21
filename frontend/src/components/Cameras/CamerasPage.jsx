@@ -42,11 +42,13 @@ function CamerasPage({ onLogout }) {
         handleCameraClick,
     } = CamerasHandlers();
 
+    /*
     useEffect(() => {
         handleFetchCameras();
-    }, []);
+    }, [handleFetchCameras]);*/
 
     if (loading) {
+        handleFetchCameras();
         return <h2>Загрузка...</h2>;
     }
 
@@ -62,21 +64,30 @@ function CamerasPage({ onLogout }) {
         <div className="page-container cameras-page-container">
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
                 <div className="cameras-container">
-                    {cameras.map((camera, index) => (
-                        <div
-                            key={index}
-                            className="camera"
-                            onClick={() => handleCameraClick(index)}
-                            style={{
-                                border:
-                                    selectedCameraIndex === index
-                                        ? '2px solid blue'
-                                        : 'none',
-                            }}
-                        >
-                            {camera.name}
-                        </div>
-                    ))}
+                    {cameras.length > 0 ? (
+                        cameras.map((camera, index) => (
+                            <div
+                                key={index}
+                                className="camera"
+                                onClick={() => handleCameraClick(index)}
+                                onDoubleClick={() => handleSelectCamera(index)}
+                                style={{
+                                    border:
+                                        selectedCameraIndex === index
+                                            ? '2px solid blue'
+                                            : 'none',
+                                }}
+                            >
+                                <video controls autoPlay>
+                                    <source src={camera.url} type="video/mp4" />
+                                    Ваш браузер не поддерживает видео.
+                                </video>
+                                {camera.name}
+                            </div>
+                        ))
+                    ) : (
+                        <h1>Камеры не найдены</h1>
+                    )}
                 </div>
             </div>
 
@@ -126,6 +137,7 @@ function CamerasPage({ onLogout }) {
                 <CamerasStatusWindow
                     isOpen={isModalSettingsOpen}
                     onClose={closeModalSettings}
+                    cameras={cameras}
                 />
 
                 <CameraLogsWindow
@@ -137,7 +149,7 @@ function CamerasPage({ onLogout }) {
             <div className="right-menu white-text">
                 <div className="top-menu-part">
                     <p>Выберите видео для воспроизведения:</p>
-                    <Dropdown children={modelOptions} text="Выбор модель" />
+                    <Dropdown children={modelOptions} text="Выбор модели" />
                     <Dropdown children={trackingOptions} text="Виды трекинга" />
                     <Dropdown children={staffOptions} text="Выбор сотрудника" />
                     <div>

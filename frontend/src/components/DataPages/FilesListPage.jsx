@@ -1,8 +1,11 @@
+import { useSelector } from 'react-redux';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './FilesListPage.css';
 
 function FileListPage({ onLogout }) {
+    const files = useSelector((state) => state.files);
+
     const {
         goToCamerasHandler,
         goToFilesHandler,
@@ -16,7 +19,20 @@ function FileListPage({ onLogout }) {
             <div className="main-content justify-content-center">
                 <div div className="files-list-container">
                     <h1>Список файлов</h1>
-                    <p>Здесь будет отображаться список файлов...</p>
+                    <ul className="files-list">
+                        {files.length > 0 ? (
+                            files.map((file, index) => (
+                                <div className="files-list-element">
+                                    <img src={'/icons/list-element.png'} />
+                                    <li key={index}>{file.name}</li>
+                                </div>
+                            ))
+                        ) : (
+                            <div>
+                                <p>Файлы отсутствуют</p>
+                            </div>
+                        )}
+                    </ul>
                 </div>
             </div>
             <div className="left-menu">
