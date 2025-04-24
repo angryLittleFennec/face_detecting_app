@@ -51,8 +51,15 @@ function CameraPage({ onLogout }) {
                 {cameras.length > 1 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        <video controls autoPlay>
+                        {/* <video controls autoPlay>
                             <source src={cameras[id].url} type="video/mp4" />
+                            Ваш браузер не поддерживает видео.
+                        </video> */}
+                        <video controls autoPlay loop>
+                            <source
+                                src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                type="video/mp4"
+                            />
                             Ваш браузер не поддерживает видео.
                         </video>
                     </div>
@@ -130,6 +137,16 @@ function CameraPage({ onLogout }) {
             </div>
             <div className="faces-feed white-text">
                 <h2>Лента выявленных лиц</h2>
+                <div className="images-container">
+                    <img
+                        src={`${process.env.PUBLIC_URL}/videos/человек.png`}
+                        alt="Человек"
+                    />
+                    <img
+                        src={`${process.env.PUBLIC_URL}/videos/кот.png`}
+                        alt="Кот"
+                    />
+                </div>
             </div>
         </div>
     );

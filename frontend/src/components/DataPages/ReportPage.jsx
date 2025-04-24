@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import DataHandlers from './DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import PdfViewer from '../GeneralComponents/PdfViewer';
@@ -8,7 +7,7 @@ import './ReportPage.css';
 function ReportPage({ onLogout }) {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
 
-    const { files, extractText, handleDownload } = DataHandlers();
+    const { files, handleDownload } = DataHandlers();
 
     return (
         <div className="page-container">

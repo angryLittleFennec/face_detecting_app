@@ -1,9 +1,26 @@
 import { SERVER_URL } from '../../config';
 
+export const loginUser = async (user) => {
+    const response = await fetch(`${SERVER_URL}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка авторизации: ${response.status}`);
+    }
+    return response.json();
+};
+
 export const fetchCameras = async () => {
     const response = await fetch(`${SERVER_URL}cameras/`);
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(
+            `Ошибка при получении списка камер: ${response.status}`
+        );
     }
     return response.json();
 };
@@ -64,6 +81,54 @@ export const downloadCameraLogs = async (cameraId) => {
         throw new Error(
             `Ошибка при получении логов камеры: ${response.status}`
         );
+    }
+    return response.json();
+};
+
+export const fetchStream = async (cameraId) => {
+    const response = await fetch(`${SERVER_URL}stream/${cameraId}`);
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении видео с камеры ${cameraId}: ${response.status}`
+        );
+    }
+    return response.json();
+};
+
+export const fetchPersons = async () => {
+    const response = await fetch(`${SERVER_URL}persons/`);
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении списка сотрудников: ${response.status}`
+        );
+    }
+    return response.json();
+};
+
+export const addPerson = async (newPerson) => {
+    const response = await fetch(`${SERVER_URL}persons/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPerson),
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при добавлении сотрудника: ${response.status}`);
+    }
+    return response.json();
+};
+
+export const addFace = async (personId, newFace) => {
+    const response = await fetch(`${SERVER_URL}faces/upload/${personId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newFace),
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при добавлении лиц: ${response.status}`);
     }
     return response.json();
 };

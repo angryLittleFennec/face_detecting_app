@@ -27,7 +27,7 @@ const NotificationSelector = () => {
                 >
                     <option value="">Выберите способ уведомления</option>
                     <option value="email">Письмом на email</option>
-                    <option value="phone">СМС на телефон</option>
+                    <option value="telegram">Телеграм ботом</option>
                 </select>
             </div>
 
@@ -36,8 +36,8 @@ const NotificationSelector = () => {
                     <label htmlFor="notification-input">
                         {selectedOption === 'email' &&
                             'Введите почтовый адрес:'}
-                        {selectedOption === 'phone' &&
-                            'Введите номер телефона:'}
+                        {selectedOption === 'telegram' &&
+                            'Введите ник телеграм:'}
                     </label>
                     <br />
                     <input
@@ -49,7 +49,7 @@ const NotificationSelector = () => {
                         placeholder={
                             selectedOption === 'email'
                                 ? 'example@email.com'
-                                : '+79876543210'
+                                : '@example_nickname'
                         }
                     />
                 </div>

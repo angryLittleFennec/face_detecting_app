@@ -78,8 +78,15 @@ function CamerasPage({ onLogout }) {
                                             : 'none',
                                 }}
                             >
-                                <video controls autoPlay>
+                                {/* <video controls autoPlay>
                                     <source src={camera.url} type="video/mp4" />
+                                    Ваш браузер не поддерживает видео.
+                                </video> */}
+                                <video controls autoPlay loop>
+                                    <source
+                                        src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                        type="video/mp4"
+                                    />
                                     Ваш браузер не поддерживает видео.
                                 </video>
                                 {camera.name}
@@ -148,7 +155,7 @@ function CamerasPage({ onLogout }) {
 
             <div className="right-menu white-text">
                 <div className="top-menu-part">
-                    <p>Выберите видео для воспроизведения:</p>
+                    <p>Настройки просмотра:</p>
                     <Dropdown children={modelOptions} text="Выбор модели" />
                     <Dropdown children={trackingOptions} text="Виды трекинга" />
                     <Dropdown children={staffOptions} text="Выбор сотрудника" />
@@ -176,7 +183,7 @@ function CamerasPage({ onLogout }) {
                                         handleSelectCamera(selectedCameraIndex)
                                     }
                                 >
-                                    Выбрана камера:{' '}
+                                    Перейти к камере:{' '}
                                     {cameras[selectedCameraIndex].name}
                                 </button>
                             </Link>

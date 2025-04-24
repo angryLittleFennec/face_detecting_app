@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../Cameras/Api';
 import './LoginForm.css';
 
 function LoginForm({ onLoginSuccess }) {
-    const SERVER = 'http://localhost:8000';
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
@@ -15,28 +15,10 @@ function LoginForm({ onLoginSuccess }) {
         navigate('/cameras'); // пока не работает логика входа
 
         // Проверка пользователя
-        /*try {
-            const response = await fetch(`${SERVER}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user),
-            });
-
-            if (response.ok) {
-                const data = await response.json(); // Получаем данные от сервера
-                localStorage.setItem('token', data.token); // Сохраняем токен
-                onLoginSuccess('');
-                navigate('/cameras');
-            } else {
-                const errorData = await response.json(); // Получаем сообщение об ошибке
-                onLoginSuccess(
-                    errorData.message || 'Неверный логин или пароль'
-                ); // Используем сообщение от сервера
-            }
-        } catch (error) {
-            onLoginSuccess('Ошибка сети. Попробуйте позже.');
+        /*const data = await loginUser(user);
+        localStorage.setItem('token', data.token); // Сохраняем токен
+        onLoginSuccess('');
+        navigate('/cameras');
         }*/
     };
 

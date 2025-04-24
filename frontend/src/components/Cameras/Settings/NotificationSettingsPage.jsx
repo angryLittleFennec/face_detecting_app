@@ -25,12 +25,12 @@ function NotificationSettingsPage({ onLogout }) {
                         <br />
                         <button className="selected-button">Уведомления</button>
                         <br />
-                        <button
+                        {/* <button
                             className="choose-settings-button"
                             onClick={goToAdditionalSettingsHandler}
                         >
                             Дополнительно
-                        </button>
+                        </button> */}
                     </div>
                     <div className="settings-container">
                         <h1>Уведомление о событиях</h1>

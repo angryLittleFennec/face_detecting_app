@@ -10,21 +10,21 @@ function ProfilePage({ onLogout }) {
             <div className="profile-main-content">
                 <div className="profile-container-250px">
                     <h2>Основная информация</h2>
-                    <p>Имя: </p>
-                    <p>Фамилия: </p>
-                    <p>Отчество: </p>
-                    <p>Должность: </p>
+                    <p>Имя: Админ</p>
+                    <p>Фамилия: Админов</p>
+                    <p>Отчество: Админович</p>
+                    <p>Должность: безработный</p>
                     <button>Редактировать</button>
                 </div>
                 <div className="profile-container-200px">
                     <h2>Контактная информация</h2>
-                    <p>Адрес электронной почты: </p>
-                    <p>Номер телефона: </p>
+                    <p>Адрес электронной почты: example@email.com</p>
+                    <p>Номер телефона: +79876543210</p>
                     <button>Редактировать</button>
                 </div>
                 <div className="profile-container-200px">
                     <h2>Дополнительная информация</h2>
-                    <p>О себе: </p>
+                    <p>О себе: пусто</p>
                     <button>Редактировать</button>
                 </div>
             </div>

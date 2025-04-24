@@ -81,12 +81,12 @@ function CamerasSettingPage({ onLogout }) {
                             Уведомления
                         </button>
                         <br />
-                        <button
+                        {/* <button
                             className="choose-settings-button"
                             onClick={goToAdditionalSettingsHandler}
                         >
                             Дополнительно
-                        </button>
+                        </button> */}
                     </div>
                     <div className="settings-container">
                         <h1>Камеры</h1>

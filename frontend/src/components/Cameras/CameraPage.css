@@ -3,7 +3,7 @@ video {
 }
 
 .camera-container {
-    width: 100%;
+    width: 90%;
 }
 
 .results {
@@ -23,7 +23,9 @@ video {
 
 .faces-feed {
     display: flex;
+    flex-direction: column;
     position: fixed;
+    text-align: left;
     height: 250px;
     width: calc(100% - 80px - 600px);
     padding: 10px;
@@ -34,6 +36,20 @@ video {
     left: 80px;
     box-sizing: border-box;
     z-index: 1;
+    /* overflow: scroll; */
+}
+
+.images-container {
+    display: flex;
+    margin-top: 5px;
+}
+
+.faces-feed img {
+    margin-left: 10px;
+    width: 170px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid white;
 }
 
 .filters {
