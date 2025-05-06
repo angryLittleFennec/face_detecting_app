@@ -56,4 +56,6 @@ def save_faces_from_directory(name, directory):
     conn.close()
     print(f"Все лица для {name} добавлены в базу.")
 
-save_faces_from_directory("Kristina", "images/kristina")
+
+for name in ['Alexander', 'Anastasia', 'Darya', 'Dmitriy', 'Georgiy', 'Ivan', 'Mikhail', 'Natasha', 'Oksana', 'Sergey', 'Stanislav', 'Svetlana', 'Valentina', 'Vladimir']:
+    save_faces_from_directory(name, f"images/all_photos/{name}")

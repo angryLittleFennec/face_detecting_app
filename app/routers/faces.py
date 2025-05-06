@@ -2,7 +2,8 @@ from http.client import HTTPException
 from fastapi import APIRouter, Depends, File, UploadFile, status, Request
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
-from ..models import Face as FaceDB
+from ..models import Face as FaceDB, Person, User
+from .. import auth
 from typing import List
 import numpy as np
 from PIL import Image
@@ -23,8 +24,17 @@ async def upload_faces(
     person_id: int,
     request: Request,
     files: List[UploadFile] = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_active_user)
 ):
+    # Проверяем, принадлежит ли человек текущему пользователю
+    person = db.query(Person).filter(Person.id == person_id).first()
+    if not person:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Person not found"
+        )
+    
     processed = 0
     for file in files:
         try:

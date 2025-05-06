@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import cv2
 
-from .. import models, database
+from .. import models, database, auth
 
 router = APIRouter(
     prefix="/stream",
@@ -34,8 +34,16 @@ def gen_frames(camera_url: str):
     cap.release()
 
 @router.get("/{camera_id}")
-def video_stream(camera_id: int, db: Session = Depends(get_db)):
-    camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
-    if camera is None or not camera.is_active:
+def video_stream(
+    camera_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
+    camera = db.query(models.Camera).filter(
+        models.Camera.id == camera_id,
+        models.Camera.owner_id == current_user.id,
+        models.Camera.is_active == True
+    ).first()
+    if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена или неактивна")
     return StreamingResponse(gen_frames(camera.url), media_type="multipart/x-mixed-replace; boundary=frame")

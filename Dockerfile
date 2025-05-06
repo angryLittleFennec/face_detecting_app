@@ -2,9 +2,7 @@ FROM ubuntu:24.04
 
 WORKDIR /app
 
-COPY requirements.txt .
-
-RUN apt-get update && apt-get install -y curl ca-certificates cmake python3-pip && pip install --no-cache-dir -r requirements.txt --break-system-packages
+RUN apt-get update && apt-get install -y curl ca-certificates cmake python3-pip
 
 # Install kubectl
 ARG KUBECTL_VERSION=1.30.0
@@ -28,6 +26,15 @@ ENV PYTHONPATH=/app
 
 COPY ml_models ml_models
 
+COPY helm/fastapi-app fastapi
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+
+
 COPY app app
+
+RUN pip install --no-cache-dir pydantic[email] --break-system-packages
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

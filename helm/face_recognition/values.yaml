@@ -1,0 +1,50 @@
+
+image:
+  repository: angrylittlefennec/face-recognition # Your Docker image
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80      # Port exposed by FastAPI (usually 8000, adjust if needed)
+  targetPort: 8000
+  nodePort: 30007 
+
+# Включаем/выключаем создание RBAC
+rbac:
+  create: true
+
+serviceAccount:
+  # Если нужно создать новый аккаунт
+  create: true
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+env:  # Environment variables (e.g., DB connection)
+  DATABASE_URL: postgresql://admin:secret@postgres-postgresql:5432/surveillance_db
+
+# Дополните ваш существующий values.yaml
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000  # Порт, на котором работает FastAPI
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    yandex.cloud/load-balancer-type: "external"
+    yandex.cloud/subnet-id: "e2lafcbevjq0o2rn6qdn"  # Ваш subnet-id
+    # nginx.ingress.kubernetes.io/use-regex: "true" 
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  hosts:
+    - host: ""
+      paths:
+      - path: /api
+        pathType: Prefix
+  tls: []

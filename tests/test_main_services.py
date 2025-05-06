@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import numpy as np
 import cv2
 import os
-from read_frames import (
+from test_camera_streamer.read_frames import (
     get_face_embedding,
     find_matching_face,
     send_log_to_service,

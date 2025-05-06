@@ -9,7 +9,7 @@ import argparse
 import time
 
 # Настройки RTSP
-RTSP_INPUT_URL = "rtsp://mediamtx:8554/stream"
+RTSP_INPUT_URL = "rtsp://mediamtx:8554/mediamtx/stream"
 RTSP_OUTPUT_URL = "rtsp://mediamtx:8554/5"
 
 # Загрузка моделей
@@ -115,8 +115,9 @@ def process_frames(parameters):
                                         used_faces.append((match, embedding))
                                 if match:
                                     # Добавление текста с именем на кадр
-                                    cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
+                                    cv2.putText(frame, match, (x1, y1 - 10),
                                                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                                    cv2.rectangle(frame, (x1, y1), (x2, y2), color=(0, 255, 0))
                                     
             if "car" in parameters or "cell phone" in parameters or "traffic light" in parameters:
                 # Обработка объектов
@@ -151,7 +152,7 @@ def process_frames(parameters):
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
             # Отправка обработанного кадра в выходной RTSP-поток
-            out.write(annotated_frame)
+            out.write(frame)
 
 # Парсинг аргументов командной строки
 parser = argparse.ArgumentParser(description="Process video stream with specific parameters.")

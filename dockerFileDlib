@@ -7,9 +7,9 @@ COPY requirements.txt .
 RUN apt-get update
 RUN apt-get install -y  cmake python3-pip
 
-RUN pip install dlib --break-system-packages
+RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy pillow dlib numpy psycopg2-binary --break-system-packages
 
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+COPY ml_models ml_models
 
 COPY app/ .
 

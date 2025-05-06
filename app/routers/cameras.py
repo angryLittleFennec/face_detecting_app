@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List
 
-from .. import models, schemas, database
+from .. import models, schemas, database, auth
 from ..services import camera_service
 
 router = APIRouter(
@@ -21,12 +21,16 @@ def get_db():
         
 
 @router.post("/", response_model=schemas.Camera)
-def create_camera(camera: schemas.CameraCreate, db: Session = Depends(get_db)):
+def create_camera(
+    camera: schemas.CameraCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     db_camera = models.Camera(
         name=camera.name,
         url=str(camera.url),  # Преобразуем HttpUrl в строку
         description=camera.description,
-        is_active=camera.is_active,
+        is_active=camera.is_active
     )
     db.add(db_camera)
     db.commit()
@@ -37,19 +41,33 @@ def create_camera(camera: schemas.CameraCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[schemas.Camera])
-def read_cameras(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_cameras(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     cameras = db.query(models.Camera).offset(skip).limit(limit).all()
     return cameras
 
 @router.get("/{camera_id}", response_model=schemas.Camera)
-def read_camera(camera_id: int, db: Session = Depends(get_db)):
+def read_camera(
+    camera_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
     if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена")
     return camera
 
 @router.put("/{camera_id}", response_model=schemas.Camera)
-def update_camera(camera_id: int, camera_update: schemas.CameraUpdate, db: Session = Depends(get_db)):
+def update_camera(
+    camera_id: int,
+    camera_update: schemas.CameraUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
     if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена")
@@ -65,7 +83,11 @@ def update_camera(camera_id: int, camera_update: schemas.CameraUpdate, db: Sessi
     return camera
 
 @router.delete("/{camera_id}")
-def delete_camera(camera_id: int, db: Session = Depends(get_db)):
+def delete_camera(
+    camera_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
     camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
     if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена")
@@ -76,7 +98,15 @@ def delete_camera(camera_id: int, db: Session = Depends(get_db)):
     return {"detail": "Камера удалена"}
 
 @router.get("/camera/{camera_id}/log/download")
-async def download_camera_log(camera_id: int):
+async def download_camera_log(
+    camera_id: int,
+    current_user: models.User = Depends(auth.get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
+    if camera is None:
+        raise HTTPException(status_code=404, detail="Камера не найдена")
+
     camera_service.create_pdf_from_logs()
 
     if not os.path.exists("person_detection_report.pdf"):

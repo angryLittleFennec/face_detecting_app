@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from read_frames import FrameReader
+from test_camera_streamer.read_frames import FrameReader
 from app.models import Base, Camera
 from app.database import engine, SessionLocal
 import cv2

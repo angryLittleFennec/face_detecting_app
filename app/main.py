@@ -5,7 +5,7 @@ from kubernetes import client, config
 from typing import List
 
 from . import models, database
-from .routers import cameras, stream, persons, faces
+from .routers import cameras, stream, persons, faces, kuber, auth
 import dlib
 
 
@@ -21,7 +21,7 @@ app = FastAPI(
     docs_url="/api/docs"
 )
 
-config.load_incluster_config()
+#config.load_incluster_config()
 
 
 origins = [
@@ -31,17 +31,19 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+app.include_router(auth.router, prefix='/api')
 app.include_router(cameras.router, prefix='/api')
 app.include_router(stream.router, prefix='/api')
 app.include_router(persons.router, prefix="/api")
 app.include_router(faces.router, prefix="/api")
+app.include_router(kuber.router, prefix="/api")
 
 # Добавляем тестовую камеру
 from sqlalchemy.orm import Session

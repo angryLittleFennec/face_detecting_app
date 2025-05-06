@@ -1,6 +1,7 @@
+hls: yes
+
 paths:
   stream:
       runOnInit: ffmpeg -re -stream_loop -1 -i /app/video.mp4 -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream
       runOnInitRestart: yes
-    
   all_others:

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "stream-processor.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "stream-processor.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "stream-processor.fullname" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          {{- if or .Values.command .Values.customScript }}
+          command: {{ if .Values.customScript }}["/bin/sh"]{{ else }}{{ toYaml .Values.command | nindent 10 }}{{ end }}
+          {{- end }}
+          args:
+          {{- if .Values.customScript }}
+            - "-c"
+            - |
+              {{ .Values.customScript | nindent 14 }}
+          {{- else if .Values.args }}
+            {{- toYaml .Values.args | nindent 12 }}
+          {{- end }}
