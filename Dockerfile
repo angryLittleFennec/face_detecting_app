@@ -26,14 +26,17 @@ ENV PYTHONPATH=/app
 
 COPY ml_models ml_models
 
-COPY helm/fastapi-app fastapi
+
 
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
-
 COPY app app
+
+# Копируем оба чарта
+COPY helm/fastapi-app fastapi
+COPY helm/stream-processor helm/stream-processor
 
 RUN pip install --no-cache-dir pydantic[email] --break-system-packages
 

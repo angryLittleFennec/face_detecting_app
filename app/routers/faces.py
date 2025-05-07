@@ -1,9 +1,10 @@
 from http.client import HTTPException
 from fastapi import APIRouter, Depends, File, UploadFile, status, Request
 from sqlalchemy.orm import Session
-from ..database import SessionLocal
+from ..database import get_db
 from ..models import Face as FaceDB, Person, User
 from .. import auth
+from ..schemas import Face as FaceSchema, FaceCreate
 from typing import List
 import numpy as np
 from PIL import Image
@@ -12,12 +13,14 @@ from fastapi import HTTPException
 
 router = APIRouter(prefix="/faces", tags=["faces"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@router.get("/", response_model=List[FaceSchema])
+def get_all_faces(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_active_user)
+):
+    return db.query(FaceDB).offset(skip).limit(limit).all()
 
 @router.post("/upload/{person_id}", status_code=status.HTTP_201_CREATED)
 async def upload_faces(
@@ -27,7 +30,7 @@ async def upload_faces(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth.get_current_active_user)
 ):
-    # Проверяем, принадлежит ли человек текущему пользователю
+    # Проверяем существование человека
     person = db.query(Person).filter(Person.id == person_id).first()
     if not person:
         raise HTTPException(
@@ -51,7 +54,8 @@ async def upload_faces(
             continue
     
     try:
-        db.commit()
+        if processed > 0:
+            db.commit()
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -61,7 +65,6 @@ async def upload_faces(
     
     return {"message": f"Processed {processed} of {len(files)} files"}
 
-
 def get_face_embedding(image_data: bytes, app) -> np.ndarray:
     try:
         image = Image.open(BytesIO(image_data))
@@ -70,13 +73,18 @@ def get_face_embedding(image_data: bytes, app) -> np.ndarray:
         # Detect faces
         dets = app.state.face_detector(img_array, 1)
         if not dets:
-            return None
+            raise HTTPException(
+                status_code=400,
+                detail="No face detected in the image"
+            )
             
         # Get face descriptor
         shape = app.state.shape_predictor(img_array, dets[0])
         descriptor = app.state.face_rec_model.compute_face_descriptor(img_array, shape)
         return np.array(descriptor)
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=400,

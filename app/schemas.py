@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, validator, EmailStr
+from pydantic import BaseModel, HttpUrl, field_validator, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -16,9 +16,7 @@ class CameraUpdate(CameraBase):
 
 class Camera(CameraBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PersonBase(BaseModel):
     name: str
@@ -29,37 +27,31 @@ class PersonCreate(PersonBase):
 class Person(PersonBase):
     id: int
     faces: List['Face'] = []
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class FaceBase(BaseModel):
     person_id: int
-    encoding: List[float]  # Change from str to List[float]
+    encoding: List[float]
 
-    @validator('encoding', pre=True)
+    @field_validator('encoding', mode='before')
+    @classmethod
     def parse_encoding(cls, value):
         """Convert comma-separated string to list of floats"""
         if isinstance(value, str):
             return [float(x) for x in value.split(',')]
         return value
 
-
 class PersonSimple(PersonBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class FaceCreate(FaceBase):
     pass
 
 class Face(FaceBase):
     id: int
-    person: PersonSimple  # Use simple version here
-
-    class Config:
-        orm_mode = True
+    person: PersonSimple
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -76,9 +68,7 @@ class User(UserBase):
     is_active: bool
     is_superuser: bool
     created_at: datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     access_token: str
@@ -86,3 +76,22 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+class StreamProcessorConfig(BaseModel):
+    input_stream: str
+    output_stream: str
+    name: str
+    camera_id: Optional[int] = None
+
+    @field_validator('input_stream', 'output_stream')
+    @classmethod
+    def validate_stream_url(cls, v):
+        if not v.startswith(('rtsp://', 'http://', 'https://')):
+            raise ValueError("Stream URL must start with rtsp://, http:// or https://")
+        return v
+
+class StreamProcessorResponse(BaseModel):
+    name: str
+    container_name: str
+    status: str
+    message: str

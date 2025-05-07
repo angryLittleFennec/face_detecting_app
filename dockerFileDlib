@@ -10,9 +10,9 @@ RUN apt-get install -y  cmake python3-pip
 RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy pillow dlib numpy psycopg2-binary --break-system-packages
 
 COPY ml_models ml_models
-
-COPY app/ .
+COPY app app
 
 EXPOSE 8000
 
-CMD ["uvicorn", "face_recognition:app", "--host", "0.0.0.0", "--port", "8000"]
+# Изменяем команду запуска, указывая правильный путь к модулю
+CMD ["uvicorn", "app.face_recognition:app", "--host", "0.0.0.0", "--port", "8000"]
