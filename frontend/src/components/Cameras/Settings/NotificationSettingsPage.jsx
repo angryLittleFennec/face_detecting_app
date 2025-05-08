@@ -1,37 +1,17 @@
 import NotificationSelector from './NotificationSelector';
+import SettingsMenu from './SettingsMenu';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 import './CamerasSettingsPage.css';
 
-function NotificationSettingsPage({ onLogout }) {
-    const {
-        goToCamerasHandler,
-        logoutHandler,
-        goToSettingsHandler,
-        goToAdditionalSettingsHandler,
-    } = NavigationHandlers(onLogout);
+function NotificationSettingsPage() {
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
     return (
         <div className="page-container">
             <div className="main-content">
                 <div className="settings-page-container">
-                    <div className="choose-settings-container">
-                        <button
-                            className="choose-settings-button"
-                            onClick={goToSettingsHandler}
-                        >
-                            Камеры
-                        </button>
-                        <br />
-                        <button className="selected-button">Уведомления</button>
-                        <br />
-                        {/* <button
-                            className="choose-settings-button"
-                            onClick={goToAdditionalSettingsHandler}
-                        >
-                            Дополнительно
-                        </button> */}
-                    </div>
+                    <SettingsMenu activePage="notifications" />
                     <div className="settings-container">
                         <h1>Уведомление о событиях</h1>
                         <NotificationSelector />

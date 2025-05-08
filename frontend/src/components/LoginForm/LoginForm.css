@@ -10,7 +10,6 @@
     padding: 20px;
     margin: 10px;
     border-radius: 15px;
-    margin-bottom: 400px;
 }
 .login-form h2 {
     color: #f8f8f8;
@@ -36,7 +35,7 @@
 .login-form button {
     font-size: 25px;
     font-weight: bold;
-    width: 150px;
+    width: 200px;
     padding: 7px;
     margin-top: 10px;
     color: #f8f8f8;
@@ -45,7 +44,40 @@
     border-radius: 5px;
     cursor: pointer;
 }
+
 .login-form button:hover {
     background-color: #f8f8f8;
     color: #131313;
+}
+
+.underform-buttons-container {
+    display: flex;
+    justify-content: right;
+}
+
+.underform-buttons-container p {
+    color: #f8f8f8;
+    margin-top: 7px;
+}
+
+.underform-button {
+    font-size: 16px;
+    font-weight: 600;
+    width: auto;
+    padding: 7px;
+    text-align: right;
+    margin-top: auto;
+    color: #f8f8f8;
+    background-color: #131313;
+    cursor: pointer;
+    border: 0;
+    margin-bottom: 400px;
+}
+
+.underform-button:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #f8f8f8;
 }

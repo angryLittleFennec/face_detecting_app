@@ -3,14 +3,14 @@ import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import FileUploadButton from '../UI/FileUploadButton';
 import './DownloadDataPage.css';
 
-function DownloadDataPage({ onLogout }) {
+function DownloadDataPage() {
     const {
         goToCamerasHandler,
         goToFilesHandler,
         goToStaffHandler,
         goToDataHandler,
         logoutHandler,
-    } = NavigationHandlers(onLogout);
+    } = NavigationHandlers();
 
     return (
         <div className="page-container">

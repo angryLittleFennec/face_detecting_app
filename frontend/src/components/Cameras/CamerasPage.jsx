@@ -12,7 +12,7 @@ import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
 import './CamerasPage.css';
 
-function CamerasPage({ onLogout }) {
+function CamerasPage() {
     const [isModalSettingsOpen, setIsModalSettingsOpen] = useState(false);
     const [isModalLogsOpen, setIsModalLogsOpen] = useState(false);
 
@@ -22,13 +22,16 @@ function CamerasPage({ onLogout }) {
     const openModalLogs = () => setIsModalLogsOpen(true);
     const closeModalLogs = () => setIsModalLogsOpen(false);
 
+    const [currentPage, setCurrentPage] = useState(0);
+    const camerasPerPage = 4;
+
     const {
         goToProfileHandler,
         goToSettingsHandler,
         goToReportsHandler,
         goToDataHandler,
         logoutHandler,
-    } = NavigationHandlers(onLogout);
+    } = NavigationHandlers();
 
     const {
         selectedCamera,
@@ -60,20 +63,43 @@ function CamerasPage({ onLogout }) {
         alert('Внимание! Цель достигнута!');
     };
 
+    const pagesCount = Math.ceil(cameras.length / camerasPerPage) - 1;
+
+    const handleNextPage = () => {
+        if (currentPage < pagesCount) {
+            setCurrentPage((prevPage) => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage((prevPage) => prevPage - 1);
+        }
+    };
+
+    const startIndex = currentPage * camerasPerPage;
+    const endIndex = startIndex + camerasPerPage;
+    const currentCameras = cameras.slice(startIndex, endIndex);
+
     return (
         <div className="page-container cameras-page-container">
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
                 <div className="cameras-container">
-                    {cameras.length > 0 ? (
-                        cameras.map((camera, index) => (
+                    {currentCameras.length > 0 ? (
+                        currentCameras.map((camera, index) => (
                             <div
-                                key={index}
+                                key={startIndex + index}
                                 className="camera"
-                                onClick={() => handleCameraClick(index)}
-                                onDoubleClick={() => handleSelectCamera(index)}
+                                onClick={() =>
+                                    handleCameraClick(startIndex + index)
+                                }
+                                onDoubleClick={() =>
+                                    handleSelectCamera(startIndex + index)
+                                }
                                 style={{
                                     border:
-                                        selectedCameraIndex === index
+                                        selectedCameraIndex ===
+                                        startIndex + index
                                             ? '2px solid blue'
                                             : 'none',
                                 }}
@@ -160,7 +186,10 @@ function CamerasPage({ onLogout }) {
                     <Dropdown children={trackingOptions} text="Виды трекинга" />
                     <Dropdown children={staffOptions} text="Выбор сотрудника" />
                     <div>
-                        <button onClick={handleFetchCameras}>
+                        <button
+                            onClick={handleFetchCameras}
+                            className="right-menu-button"
+                        >
                             Просмотреть камеры
                         </button>
                         <select
@@ -182,6 +211,7 @@ function CamerasPage({ onLogout }) {
                                     onClick={() =>
                                         handleSelectCamera(selectedCameraIndex)
                                     }
+                                    className="right-menu-button"
                                 >
                                     Перейти к камере:{' '}
                                     {cameras[selectedCameraIndex].name}
@@ -189,6 +219,23 @@ function CamerasPage({ onLogout }) {
                             </Link>
                         )}
                     </div>
+                </div>
+                <div className="change-page-menu">
+                    <IconButton
+                        onClick={handlePrevPage}
+                        iconSrc="/icons/left-arrows-icon.png"
+                        altText="Предыдущая страница"
+                        className="right-icon-button"
+                    />
+                    <p>
+                        Страница {currentPage + 1}/{pagesCount + 1}
+                    </p>
+                    <IconButton
+                        onClick={handleNextPage}
+                        iconSrc="/icons/right-arrows-icon.png"
+                        altText="Следующая страница"
+                        className="right-icon-button"
+                    />
                 </div>
             </div>
 

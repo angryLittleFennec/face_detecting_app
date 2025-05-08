@@ -2,14 +2,14 @@ import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './StaffPage.css';
 
-function StaffPage({ onLogout }) {
+function StaffPage() {
     const {
         goToCamerasHandler,
         goToFilesHandler,
         goToStaffHandler,
         goToDataHandler,
         logoutHandler,
-    } = NavigationHandlers(onLogout);
+    } = NavigationHandlers();
 
     return (
         <div className="page-container">

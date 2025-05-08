@@ -119,7 +119,7 @@ select {
     box-sizing: border-box;
 }
 
-.right-menu button,
+.right-menu-button,
 .results button {
     width: 100%;
     padding: 10px;
@@ -144,6 +144,16 @@ select {
     z-index: 1;
 }
 
+.change-page-menu {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+.change-page-menu p {
+    margin-top: 10px;
+}
+
 .bottom-menu-right-buttons {
     margin-left: auto;
     margin-right: 25px;
@@ -160,6 +170,12 @@ select {
     height: auto;
 }
 
+.right-icon-button img {
+    display: block; /* Убираем пробелы под изображением */
+    width: 30px;
+    height: auto;
+}
+
 .bottom-icon-button {
     padding-left: 25px;
 }
@@ -171,6 +187,7 @@ select {
 }
 
 .icon-button,
+.right-icon-button,
 .bottom-icon-button {
     background: none;
     border: none;

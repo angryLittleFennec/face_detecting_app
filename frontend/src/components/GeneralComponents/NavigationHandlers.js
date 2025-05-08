@@ -1,11 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 
-const NavigationHandlers = (onLogout) => {
+const NavigationHandlers = () => {
     const navigate = useNavigate();
 
     const goToProfileHandler = () => navigate('/profile');
     const goToCamerasHandler = () => navigate('/cameras');
     const goToSettingsHandler = () => navigate('/cameras/settings/main');
+    const goToDetectionSettingsHandler = () =>
+        navigate('/cameras/settings/detection');
+    const goToFaceRecognitionSettingsPageHandler = () =>
+        navigate('/cameras/settings/recognition');
     const goToNotificationSettingsHandler = () =>
         navigate('/cameras/settings/notification');
     const goToAdditionalSettingsHandler = () =>
@@ -15,7 +19,7 @@ const NavigationHandlers = (onLogout) => {
     const goToFilesHandler = () => navigate('/files');
     const goToStaffHandler = () => navigate('/staff');
     const logoutHandler = () => {
-        onLogout();
+        localStorage.removeItem('token');
         navigate('/');
     };
 
@@ -23,6 +27,8 @@ const NavigationHandlers = (onLogout) => {
         goToProfileHandler,
         goToCamerasHandler,
         goToSettingsHandler,
+        goToDetectionSettingsHandler,
+        goToFaceRecognitionSettingsPageHandler,
         goToNotificationSettingsHandler,
         goToAdditionalSettingsHandler,
         goToReportsHandler,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+//import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
 import CameraSettingsWindow from './Settings/CameraSettingsWindow';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
@@ -11,12 +11,12 @@ import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
 import './CameraPage.css';
 
-function CameraPage({ onLogout }) {
-    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
+function CameraPage() {
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
     const { id } = useParams();
-    const selectedCameraIndex = useSelector(
-        (state) => state.selectedCameraIndex
-    );
+    // const selectedCameraIndex = useSelector(
+    //     (state) => state.selectedCameraIndex
+    // );
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const openModal = () => setIsModalOpen(true);

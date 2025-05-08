@@ -4,8 +4,8 @@ import PdfViewer from '../GeneralComponents/PdfViewer';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './ReportPage.css';
 
-function ReportPage({ onLogout }) {
-    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
+function ReportPage() {
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
     const { files, handleDownload } = DataHandlers();
 

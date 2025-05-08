@@ -2,8 +2,8 @@ import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './ProfilePage.css';
 
-function ProfilePage({ onLogout }) {
-    const { goToCamerasHandler, logoutHandler } = NavigationHandlers(onLogout);
+function ProfilePage() {
+    const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
     return (
         <div className="page-container">

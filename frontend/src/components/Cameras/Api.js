@@ -1,12 +1,18 @@
 import { SERVER_URL } from '../../config';
 
 export const loginUser = async (user) => {
-    const response = await fetch(`${SERVER_URL}/login`, {
+    const params = new URLSearchParams();
+    params.append('grant_type', 'password');
+    params.append('username', user.username);
+    params.append('password', user.password);
+
+    const response = await fetch(`${SERVER_URL}auth/token`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify(user),
+        body: params.toString(),
     });
 
     if (!response.ok) {
@@ -15,8 +21,31 @@ export const loginUser = async (user) => {
     return response.json();
 };
 
+export const registerUser = async (user) => {
+    console.log(JSON.stringify(user));
+    const response = await fetch(`${SERVER_URL}auth/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка регистрации: ${response.status}`);
+    }
+    return response.json();
+};
+
 export const fetchCameras = async () => {
-    const response = await fetch(`${SERVER_URL}cameras/`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}cameras/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении списка камер: ${response.status}`

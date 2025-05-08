@@ -3,7 +3,7 @@ import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './FilesListPage.css';
 
-function FileListPage({ onLogout }) {
+function FileListPage() {
     const files = useSelector((state) => state.files);
 
     const {
@@ -12,7 +12,7 @@ function FileListPage({ onLogout }) {
         goToStaffHandler,
         goToDataHandler,
         logoutHandler,
-    } = NavigationHandlers(onLogout);
+    } = NavigationHandlers();
 
     return (
         <div className="page-container">
@@ -23,7 +23,10 @@ function FileListPage({ onLogout }) {
                         {files.length > 0 ? (
                             files.map((file, index) => (
                                 <div className="files-list-element">
-                                    <img src={'/icons/list-element.png'} />
+                                    <img
+                                        src={'/icons/list-element.png'}
+                                        alt="элемент списка"
+                                    />
                                     <li key={index}>{file.name}</li>
                                 </div>
                             ))
