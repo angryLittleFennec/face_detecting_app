@@ -22,7 +22,6 @@ export const loginUser = async (user) => {
 };
 
 export const registerUser = async (user) => {
-    console.log(JSON.stringify(user));
     const response = await fetch(`${SERVER_URL}auth/register`, {
         method: 'POST',
         headers: {
@@ -55,9 +54,13 @@ export const fetchCameras = async () => {
 };
 
 export const addCamera = async (newCamera) => {
+    const token = localStorage.getItem('token');
+
     const response = await fetch(`${SERVER_URL}cameras/`, {
         method: 'POST',
         headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(newCamera),
@@ -69,8 +72,13 @@ export const addCamera = async (newCamera) => {
 };
 
 export const deleteCamera = async (cameraId) => {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
         method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
     });
     if (!response.ok) {
         throw new Error(`Ошибка при удалении камеры: ${response.status}`);
@@ -79,9 +87,12 @@ export const deleteCamera = async (cameraId) => {
 };
 
 export const updateCamera = async (cameraId, updatedCameraData) => {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
         method: 'PUT',
         headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatedCameraData),
@@ -93,7 +104,14 @@ export const updateCamera = async (cameraId, updatedCameraData) => {
 };
 
 export const fetchCameraDetails = async (cameraId) => {
-    const response = await fetch(`${SERVER_URL}cameras/${cameraId}`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении информации о камере: ${response.status}`
@@ -103,8 +121,16 @@ export const fetchCameraDetails = async (cameraId) => {
 };
 
 export const downloadCameraLogs = async (cameraId) => {
+    const token = localStorage.getItem('token');
     const response = await fetch(
-        `${SERVER_URL}cameras/camera/${cameraId}/log/download`
+        `${SERVER_URL}cameras/camera/${cameraId}/log/download`,
+        {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+            },
+        }
     );
     if (!response.ok) {
         throw new Error(
@@ -115,7 +141,14 @@ export const downloadCameraLogs = async (cameraId) => {
 };
 
 export const fetchStream = async (cameraId) => {
-    const response = await fetch(`${SERVER_URL}stream/${cameraId}`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}stream/${cameraId}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении видео с камеры ${cameraId}: ${response.status}`
@@ -125,7 +158,14 @@ export const fetchStream = async (cameraId) => {
 };
 
 export const fetchPersons = async () => {
-    const response = await fetch(`${SERVER_URL}persons/`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}persons/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении списка сотрудников: ${response.status}`
@@ -135,9 +175,12 @@ export const fetchPersons = async () => {
 };
 
 export const addPerson = async (newPerson) => {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${SERVER_URL}persons/`, {
         method: 'POST',
         headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(newPerson),
@@ -148,10 +191,77 @@ export const addPerson = async (newPerson) => {
     return response.json();
 };
 
+export const fetchPerson = async (personId) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}persons/${personId}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении данных о сотруднике: ${response.status}`
+        );
+    }
+    return response.json();
+};
+
+export const deletePerson = async (personId) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}cameras/${personId}`, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при удалении данных: ${response.status}`);
+    }
+    return response.json();
+};
+
+export const updatePerson = async (personId, updatedPersonData) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}cameras/${personId}`, {
+        method: 'PUT',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedPersonData),
+    });
+    if (!response.ok) {
+        throw new Error('Ошибка при обновлении данных: ' + response.statusText);
+    }
+    return await response.json();
+};
+
+export const fetchFaces = async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${SERVER_URL}faces/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при получении лиц: ${response.status}`);
+    }
+    return response.json();
+};
+
 export const addFace = async (personId, newFace) => {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${SERVER_URL}faces/upload/${personId}`, {
         method: 'POST',
         headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(newFace),

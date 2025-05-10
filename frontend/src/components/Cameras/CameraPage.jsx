@@ -48,15 +48,12 @@ function CameraPage() {
     return (
         <div className="page-container">
             <div className="main-content margin-right-600 margin-bottom-250 white-text">
-                {cameras.length > 1 ? (
+                {cameras.length > 0 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        {/* <video controls autoPlay>
-                            <source src={cameras[id].url} type="video/mp4" />
-                            Ваш браузер не поддерживает видео.
-                        </video> */}
                         <video controls autoPlay loop>
                             <source
+                                //src={cameras[id].url}
                                 src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
                                 type="video/mp4"
                             />

@@ -23,7 +23,8 @@ function CamerasPage() {
     const closeModalLogs = () => setIsModalLogsOpen(false);
 
     const [currentPage, setCurrentPage] = useState(0);
-    const camerasPerPage = 4;
+    const [camerasPerPage, setCamerasPerPage] = useState(4);
+    const [camerasLocation, setCamerasLocation] = useState('second');
 
     const {
         goToProfileHandler,
@@ -59,10 +60,6 @@ function CamerasPage() {
         return <h2>Ошибка: {error}</h2>;
     }
 
-    const completedGoal = () => {
-        alert('Внимание! Цель достигнута!');
-    };
-
     const pagesCount = Math.ceil(cameras.length / camerasPerPage) - 1;
 
     const handleNextPage = () => {
@@ -81,15 +78,165 @@ function CamerasPage() {
     const endIndex = startIndex + camerasPerPage;
     const currentCameras = cameras.slice(startIndex, endIndex);
 
+    const firstCameraLocationType = () => {
+        setCamerasLocation('first');
+        setCamerasPerPage(1);
+    };
+    const secondCameraLocationType = () => {
+        setCamerasLocation('second');
+        setCamerasPerPage(4);
+    };
+    const thirdCameraLocationType = () => {
+        setCamerasLocation('third');
+        setCamerasPerPage(6);
+    };
+    const fourthCameraLocationType = () => {
+        setCamerasLocation('fourth');
+        setCamerasPerPage(9);
+    };
+
     return (
         <div className="page-container cameras-page-container">
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
-                <div className="cameras-container">
-                    {currentCameras.length > 0 ? (
+                <div
+                    className={
+                        camerasLocation === 'first'
+                            ? 'cameras-container-one'
+                            : 'cameras-container-many'
+                    }
+                >
+                    {currentCameras.length > 0 &&
+                    camerasLocation === 'third' ? (
+                        <>
+                            {/* Большая камера */}
+                            {
+                                <div className="cameras-row">
+                                    <div
+                                        className="cameras-third-location-big"
+                                        onClick={() =>
+                                            handleCameraClick(startIndex)
+                                        }
+                                        onDoubleClick={() =>
+                                            handleSelectCamera(startIndex)
+                                        }
+                                        style={{
+                                            border:
+                                                selectedCameraIndex ===
+                                                startIndex
+                                                    ? '2px solid blue'
+                                                    : 'none',
+                                        }}
+                                    >
+                                        <video controls autoPlay loop>
+                                            <source
+                                                src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                                type="video/mp4"
+                                            />
+                                            Ваш браузер не поддерживает видео.
+                                        </video>
+                                    </div>
+                                    <div className="cameras-column">
+                                        {currentCameras
+                                            .slice(1, 3)
+                                            .map((camera, index) => (
+                                                <div
+                                                    key={startIndex + index + 1}
+                                                    className="cameras-third-location-small-right"
+                                                    onClick={() =>
+                                                        handleCameraClick(
+                                                            startIndex +
+                                                                index +
+                                                                1
+                                                        )
+                                                    }
+                                                    onDoubleClick={() =>
+                                                        handleSelectCamera(
+                                                            startIndex +
+                                                                index +
+                                                                1
+                                                        )
+                                                    }
+                                                    style={{
+                                                        border:
+                                                            selectedCameraIndex ===
+                                                            startIndex +
+                                                                index +
+                                                                1
+                                                                ? '2px solid blue'
+                                                                : 'none',
+                                                    }}
+                                                >
+                                                    <video
+                                                        controls
+                                                        autoPlay
+                                                        loop
+                                                    >
+                                                        <source
+                                                            src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                                            type="video/mp4"
+                                                        />
+                                                        Ваш браузер не
+                                                        поддерживает видео.
+                                                    </video>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+                            }
+
+                            {/* Три маленькие камеры */}
+                            <div className="cameras-row">
+                                {currentCameras
+                                    .slice(3, 6)
+                                    .map((camera, index) => (
+                                        <div
+                                            key={startIndex + index + 3}
+                                            className="cameras-third-location-small"
+                                            onClick={() =>
+                                                handleCameraClick(
+                                                    startIndex + index + 3
+                                                )
+                                            }
+                                            onDoubleClick={() =>
+                                                handleSelectCamera(
+                                                    startIndex + index + 3
+                                                )
+                                            }
+                                            style={{
+                                                border:
+                                                    selectedCameraIndex ===
+                                                    startIndex + index + 3
+                                                        ? '2px solid blue'
+                                                        : 'none',
+                                            }}
+                                        >
+                                            <video controls autoPlay loop>
+                                                <source
+                                                    src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                                    type="video/mp4"
+                                                />
+                                                Ваш браузер не поддерживает
+                                                видео.
+                                            </video>
+                                        </div>
+                                    ))}
+                            </div>
+                        </>
+                    ) : currentCameras.length > 0 ? (
                         currentCameras.map((camera, index) => (
                             <div
                                 key={startIndex + index}
-                                className="camera"
+                                className={
+                                    camerasLocation === 'first'
+                                        ? 'cameras-first-location'
+                                        : camerasLocation === 'second'
+                                        ? 'cameras-second-location'
+                                        : camerasLocation === 'fourth'
+                                        ? 'cameras-fourth-location'
+                                        : index === 0
+                                        ? 'cameras-third-location-big'
+                                        : 'cameras-third-location-small'
+                                }
                                 onClick={() =>
                                     handleCameraClick(startIndex + index)
                                 }
@@ -104,12 +251,9 @@ function CamerasPage() {
                                             : 'none',
                                 }}
                             >
-                                {/* <video controls autoPlay>
-                                    <source src={camera.url} type="video/mp4" />
-                                    Ваш браузер не поддерживает видео.
-                                </video> */}
                                 <video controls autoPlay loop>
                                     <source
+                                        //src={camera.url}
                                         src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
                                         type="video/mp4"
                                     />
@@ -242,25 +386,25 @@ function CamerasPage() {
             <div className="bottom-menu">
                 <div className="bottom-menu-left-buttons">
                     <IconButton
-                        onClick={completedGoal}
+                        onClick={firstCameraLocationType}
                         iconSrc="/icons/format-icon-1-white.png"
                         altText="Формат 1"
                         className="bottom-icon-button"
                     />
                     <IconButton
-                        onClick={completedGoal}
+                        onClick={secondCameraLocationType}
                         iconSrc="/icons/format-icon-2-white.png"
                         altText="Формат 2"
                         className="bottom-icon-button"
                     />
                     <IconButton
-                        onClick={completedGoal}
+                        onClick={thirdCameraLocationType}
                         iconSrc="/icons/format-icon-3-white.png"
                         altText="Формат 3"
                         className="bottom-icon-button"
                     />
                     <IconButton
-                        onClick={completedGoal}
+                        onClick={fourthCameraLocationType}
                         iconSrc="/icons/format-icon-4-white.png"
                         altText="Формат 4"
                         className="bottom-icon-button"
