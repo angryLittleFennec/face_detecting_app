@@ -28,3 +28,5 @@ spec:
           {{- else if .Values.args }}
             {{- toYaml .Values.args | nindent 12 }}
           {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

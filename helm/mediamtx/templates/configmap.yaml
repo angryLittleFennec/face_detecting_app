@@ -4,6 +4,12 @@ metadata:
   name: mediamtx-config
 data:
   mediamtx.yml: |
+    protocols: [tcp]
+    rtspAddress: :8554
+    readTimeout: 10s
+    writeTimeout: 10s
+    writeQueueSize: 1024
+    udpMaxPayloadSize: 1472
     paths:
       # stream:
       #   runOnInit: ffmpeg -re -stream_loop -1 -i /media/videos/video.mp4  -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream   
