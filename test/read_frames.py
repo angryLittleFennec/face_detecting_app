@@ -5,172 +5,306 @@ import numpy as np
 import dlib
 import requests
 from ultralytics import YOLO
-from threading import Thread
+from threading import Thread, Lock
 from queue import Queue
-import argparse
 import time
+from datetime import datetime
+import torch
 
 # Настройки RTSP
-RTSP_INPUT_URL = os.getenv("RTSP_IN", "rtsp://mediamtx-svc:8554/mediamtx/stream1")
+RTSP_INPUT_URL = os.getenv("RTSP_IN", "rtsp://mediamtx-svc:8554/mediamtx/stream3")
 RTSP_OUTPUT_URL = os.getenv("RTSP_OUT", "rtsp://mediamtx-svc:8554/mediamtx/newstream1")
 
-logger = logging.Logger(__name__ )
+# Настройка логгера
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('frame_processing.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
+logger.info(f"RTSP_INPUT_URL: {RTSP_INPUT_URL}")
+logger.info(f"RTSP_OUTPUT_URL: {RTSP_OUTPUT_URL}")
 
-# Загрузка моделей
-FACE_MODEL = YOLO("ml_models/yolov8n-face.pt")  # Модель для распознавания лиц
-OBJECT_MODEL = YOLO("ml_models/yolov8n.pt")  # Модель для обнаружения объектов
-HELMET_MODEL = YOLO("ml_models/hemletYoloV8_100epochs.pt")  # Модель для обнаружения шлемов
+# Глобальные переменные для синхронизации
+face_lock = Lock()
+used_faces = []  # Список для хранения уже распознанных лиц
+url = "http://face-recognition-svc:80/find_face"
+LOGGING_SERVICE_URL = "http://logging_service:8000/log"
+
+# Очереди для кадров и результатов
+frame_queue = Queue(maxsize=30)
+result_queue = Queue(maxsize=30)
+
+# Загрузка моделей с оптимизацией
+FACE_MODEL = YOLO("ml_models/yolov8n-face.pt")
+
+# Оптимизация YOLO
+FACE_MODEL.conf = 0.7  # Увеличиваем порог уверенности
+FACE_MODEL.iou = 0.3   # Низкий IoU для ускорения
+FACE_MODEL.verbose = False
+FACE_MODEL.max_det = 3  # Уменьшаем максимальное количество детекций
+FACE_MODEL.agnostic = True
+FACE_MODEL.classes = [0]  # Только лица
+
+# Настройка для CPU
+FACE_MODEL.to('cpu')
+logger.info("Using CPU for YOLO inference")
+
+# Предварительная инициализация детектора лиц
 face_detector = dlib.get_frontal_face_detector()
 shape_predictor = dlib.shape_predictor("ml_models/shape_predictor_68_face_landmarks.dat")
 face_rec_model = dlib.face_recognition_model_v1("ml_models/dlib_face_recognition_resnet_model_v1.dat")
 
-used_faces = []  # Список для хранения уже распознанных лиц
-url = "http://face-recognition-svc:8000/find_face"
-LOGGING_SERVICE_URL = "http://logging_service:8000/log"  # URL сервиса логирования
+# Словари для хранения информации о лицах
+tracked_faces = {}  # {track_id: {"name": name, "first_seen": timestamp, "last_seen": timestamp}}
+active_tracks = set()  # Множество активных track_id в текущем кадре
+frame_count = 0
 
-# Очередь для кадров
-frame_queue = Queue(maxsize=10)
+def log_face_event(track_id, event_type, name=None):
+    """Логирование событий с лицами"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if event_type == "enter":
+        logger.info(f"🟢 {timestamp} - Человек {name or track_id} вошел в кадр")
+    elif event_type == "exit":
+        duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
+        logger.info(f"🔴 {timestamp} - Человек {name or track_id} вышел из кадра. Время в кадре: {duration:.1f} сек")
+    elif event_type == "recognized":
+        logger.info(f"👤 {timestamp} - Распознан человек: {name} (ID: {track_id})")
 
-# Функция для извлечения эмбеддинга лица
 def get_face_embedding(image: np.ndarray):
     if image.size == 0:
         return None
 
-    # Преобразование изображения в RGB
-    if image.shape[2] == 3 and image.dtype == np.uint8:
+    try:
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    else:
-        rgb_image = image
+        dets = face_detector(rgb_image, 1)
+        if len(dets) == 0:
+            return None
 
-    # Обнаружение лиц
-    dets = face_detector(rgb_image, 1)
-    if len(dets) == 0:
+        shape = shape_predictor(rgb_image, dets[0])
+        face_descriptor = face_rec_model.compute_face_descriptor(rgb_image, shape, num_jitters=1)
+        return np.array(face_descriptor)
+    except Exception as e:
+        logger.error(f"Error in get_face_embedding: {e}")
         return None
 
-    # Получение ключевых точек лица
-    shape = shape_predictor(rgb_image, dets[0])
-
-    # Извлечение эмбеддинга лица
-    face_descriptor = face_rec_model.compute_face_descriptor(rgb_image, shape, num_jitters=1)
-    return np.array(face_descriptor)
-
-# Функция для поиска совпадения лица
 def find_matching_face(embedding):
-    encoding_str = ",".join(map(str, embedding))
-    params = {"embedding_str": encoding_str}
-
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        js = response.json()
-        if js['status'] == 'success':
-            return js['person']
-        else:
-            return None
-        
-    else:
-        logger.log('info', response.status_code)
-
-# Функция для отправки логов в сервис логирования
-def send_log_to_service(log_message):
     try:
-        response = requests.post(LOGGING_SERVICE_URL, json={"message": log_message})
-        if response.status_code != 200:
-            print(f"Failed to send log: {response.text}")
+        encoding_str = ",".join(map(str, embedding))
+        params = {"embedding_str": encoding_str}
+        response = requests.get(url, params=params, timeout=1)
+        if response.status_code == 200:
+            js = response.json()
+            return js['person'] if js['status'] == 'success' else None
     except Exception as e:
-        print(f"Error sending log: {e}")
+        logger.error(f"Error in find_matching_face: {e}")
+    return None
 
-# Функция для обработки кадров
-def process_frames(parameters):
+def process_frame(frame, frame_id):
+    global frame_count, active_tracks
+    start_time = time.time()
+    try:
+        # Копирование кадра
+        copy_start = time.time()
+        annotated_frame = frame.copy()
+        copy_time = time.time() - copy_start
+        
+        # Оптимизация размера изображения
+        resize_start = time.time()
+        scale_percent = 20  # Уменьшаем размер изображения
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        resized_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)
+        resize_time = time.time() - resize_start
+        
+        logger.info(f"Original frame size: {frame.shape}, Resized frame size: {resized_frame.shape}")
+        
+        # Запускаем YOLO с отслеживанием
+        yolo_start = time.time()
+        with torch.no_grad():  # Отключаем градиенты для ускорения
+            results = FACE_MODEL.track(
+                resized_frame,
+                verbose=False,
+                stream=False,
+                persist=True,
+                conf=0.7,  # Дополнительно указываем порог уверенности
+                iou=0.3,   # Дополнительно указываем IoU
+                max_det=3  # Дополнительно указываем максимальное количество детекций
+            )
+        yolo_time = time.time() - yolo_start
+        
+        # Масштабируем координаты обратно к оригинальному размеру
+        scale_x = frame.shape[1] / width
+        scale_y = frame.shape[0] / height
+        
+        face_recognition_time = 0
+        faces_processed = 0
+        
+        # Очищаем множество активных треков для нового кадра
+        current_tracks = set()
+        
+        # Обрабатываем результаты из генератора
+        process_results_start = time.time()
+        
+        # Получаем все боксы сразу
+        boxes_start = time.time()
+        boxes = []
+        if results[0].boxes.id is not None:
+            boxes = results[0].boxes
+        boxes_time = time.time() - boxes_start
+        
+        # Предварительно вычисляем масштабированные координаты
+        scaling_start = time.time()
+        scaled_boxes = []
+        if len(boxes) > 0:
+            for box in boxes:
+                if int(box.cls) == 0:  # Класс 0 соответствует лицу
+                    # Получаем координаты
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    track_id = int(box.id.item())
+                    
+                    # Масштабируем координаты
+                    x1 = int(x1 * scale_x)
+                    y1 = int(y1 * scale_y)
+                    x2 = int(x2 * scale_x)
+                    y2 = int(y2 * scale_y)
+                    
+                    # Добавляем отступы
+                    padding = 20
+                    x1 = max(0, x1 - padding)
+                    y1 = max(0, y1 - padding)
+                    x2 = min(frame.shape[1], x2 + padding)
+                    y2 = min(frame.shape[0], y2 + padding)
+                    
+                    scaled_boxes.append({
+                        'track_id': track_id,
+                        'coords': (x1, y1, x2, y2),
+                        'face_image': frame[y1:y2, x1:x2]
+                    })
+        scaling_time = time.time() - scaling_start
+        
+        # Обрабатываем все боксы
+        processing_start = time.time()
+        face_recognition_total = 0
+        face_embedding_total = 0
+        face_matching_total = 0
+        drawing_total = 0
+        
+        for box_data in scaled_boxes:
+            faces_processed += 1
+            track_id = box_data['track_id']
+            x1, y1, x2, y2 = box_data['coords']
+            face_image = box_data['face_image']
+            current_tracks.add(track_id)
+            
+            # Проверяем, новый ли это трек
+            if track_id not in tracked_faces:
+                tracked_faces[track_id] = {
+                    "name": None,
+                    "first_seen": time.time(),
+                    "last_seen": time.time()
+                }
+                log_face_event(track_id, "enter")
+            
+            # Обновляем время последнего появления
+            tracked_faces[track_id]["last_seen"] = time.time()
+            
+            # Если лицо еще не распознано, пробуем распознать
+            if tracked_faces[track_id]["name"] is None:
+                face_start = time.time()
+                embedding = get_face_embedding(face_image)
+                face_embedding_total += time.time() - face_start
+                
+                if embedding is not None:
+                    match_start = time.time()
+                    with face_lock:
+                        match = find_matching_face(embedding)
+                        if match:
+                            tracked_faces[track_id]["name"] = match
+                            log_face_event(track_id, "recognized", match)
+                    face_matching_total += time.time() - match_start
+                face_recognition_total += time.time() - face_start
+            
+            # Отображаем информацию о лице
+            draw_start = time.time()
+            name = tracked_faces[track_id]["name"] or f"Unknown-{track_id}"
+            cv2.putText(annotated_frame, name, (x1 + 100, y1 - 10),
+                      cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
+                      cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+            drawing_total += time.time() - draw_start
+        
+        processing_time = time.time() - processing_start
+        process_results_time = time.time() - process_results_start
+        
+        # Проверяем, какие треки исчезли
+        check_tracks_start = time.time()
+        for track_id in active_tracks - current_tracks:
+            if track_id in tracked_faces:
+                log_face_event(track_id, "exit", tracked_faces[track_id]["name"])
+        check_tracks_time = time.time() - check_tracks_start
+        
+        # Обновляем множество активных треков
+        active_tracks = current_tracks
+        
+        total_time = time.time() - start_time
+        
+        # Логируем время обработки с детальной разбивкой
+        logger.info(
+            f"Frame {frame_id} processed in {process_results_time:.3f}s | "
+            f"Copy: {copy_time:.3f}s | "
+            f"Resize: {resize_time:.3f}s | "
+            f"YOLO: {yolo_time:.3f}s | "
+            f"Process results: {process_results_time:.3f}s ("
+            f"boxes: {boxes_time:.3f}s, "
+            f"scaling: {scaling_time:.3f}s, "
+            f"processing: {processing_time:.3f}s ["
+            f"embedding: {face_embedding_total:.3f}s, "
+            f"matching: {face_matching_total:.3f}s, "
+            f"drawing: {drawing_total:.3f}s]) | "
+            f"Faces detected: {faces_processed} | "
+            f"Active tracks: {len(active_tracks)}"
+        )
+        
+        return annotated_frame
+    except Exception as e:
+        logger.error(f"Error in process_frame: {e}")
+        return frame
+
+def process_frames():
+    frame_count = 0
+    total_processing_time = 0
+    
     while True:
         if not frame_queue.empty():
             frame = frame_queue.get()
             if frame is None:
+                # Логируем среднее время обработки перед выходом
+                if frame_count > 0:
+                    avg_time = total_processing_time / frame_count
+                    logger.info(f"Average frame processing time: {avg_time:.3f}s over {frame_count} frames")
                 break
+            
+            start_time = time.time()
+            processed_frame = process_frame(frame, frame_count)
+            processing_time = time.time() - start_time
+            
+            total_processing_time += processing_time
+            frame_count += 1
+            
+            result_queue.put(processed_frame)
 
-            annotated_frame = frame.copy()
-
-            # Применение модели в зависимости от параметров
-            if "person" in parameters:
-                # Обработка лиц
-                results = FACE_MODEL(frame)
-                annotated_frame = results[0].plot(conf=False)
-
-                # Распознавание лиц с помощью dlib
-                for result in results:
-                    for box in result.boxes:
-                        if int(box.cls) == 0:  # Класс 0 соответствует лицу в YOLO
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            face_image = frame[y1:y2, x1:x2]
-
-                            # Извлечение эмбеддинга лица
-                            embedding = get_face_embedding(face_image)
-                            if embedding is not None:
-                                # Поиск совпадения в базе данных
-                                match = None
-                                for name, encoding in used_faces:
-                                    dist = np.linalg.norm(encoding - embedding)
-                                    min_dist = float("inf")
-                                    if dist < 0.6 and dist < min_dist:
-                                        match = name
-                                        min_dist = dist
-                                # if match is None:
-                                #     #match = find_matching_face(embedding)
-                                #     if match:
-                                #         # Логирование нового лица
-                                     #   log_message = f"Person '{match}' entered the camera vision."
-                                     #   send_log_to_service(log_message)
-                                     #   used_faces.append((match, embedding))
-                                #if match:
-                                    # Добавление текста с именем на кадр
-                                    # cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
-                                    #             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-                                    
-            if "car" in parameters or "cell phone" in parameters or "traffic light" in parameters:
-                # Обработка объектов
-                results = OBJECT_MODEL(frame)
-                annotated_frame = results[0].plot(conf=False)
-
-                # Фильтрация объектов по выбранным параметрам
-                for result in results:
-                    for box in result.boxes:
-                        class_id = int(box.cls)
-                        class_name = OBJECT_MODEL.names[class_id]
-                        if class_name in parameters:
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            # Добавление текста с именем класса на кадр
-                            cv2.putText(annotated_frame, class_name, (x1, y1 - 10),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-            if "helmet" in parameters:
-                # Обработка шлемов
-                results = HELMET_MODEL(frame)
-                annotated_frame = results[0].plot(conf=False)
-
-                # Фильтрация объектов по выбранным параметрам
-                for result in results:
-                    for box in result.boxes:
-                        class_id = int(box.cls)
-                        class_name = HELMET_MODEL.names[class_id]
-                        if class_name == "helmet":  # Проверка на класс "шлем"
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            # Добавление текста с именем класса на кадр
-                            cv2.putText(annotated_frame, class_name, (x1, y1 - 10),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-            # Отправка обработанного кадра в выходной RTSP-поток
-            out.write(annotated_frame)
-
-# Парсинг аргументов командной строки
-parser = argparse.ArgumentParser(description="Process video stream with specific parameters.")
-parser.add_argument(
-    "--parameters", 
-    nargs="+", 
-    choices=["person", "car", "cell phone", "traffic light", "helmet"], 
-    default=["person"],  # Changed default to an empty list
-    help="List of parameters to process: person, car, cell phone, traffic light, helmet."
-)
-args = parser.parse_args()
+def write_frames():
+    while True:
+        if not result_queue.empty():
+            frame = result_queue.get()
+            if frame is None:
+                break
+            out.write(frame)
 
 def open_capture_with_retry(url, max_retries=5, retry_delay=3):
     for attempt in range(max_retries):
@@ -182,25 +316,21 @@ def open_capture_with_retry(url, max_retries=5, retry_delay=3):
         time.sleep(retry_delay)
     return None
 
-# Replace the current capture opening with:
+# Инициализация захвата видео
 cap = open_capture_with_retry(RTSP_INPUT_URL)
 if cap is None:
     print("❌ Error: Could not connect to RTSP stream after multiple attempts!")
     exit()
 
-# Получение параметров видео
+# Настройка параметров видео
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = cap.get(cv2.CAP_PROP_FPS)
-
-if fps <= 0:
-    print("⚠️ Warning: FPS retrieval failed, setting default FPS to 30")
-    fps = 30
+fps = cap.get(cv2.CAP_PROP_FPS) or 30
 
 print(f"🎥 Input stream opened: {frame_width}x{frame_height} at {fps} FPS")
 print(f"🔄 Forwarding to {RTSP_OUTPUT_URL}")
 
-# Настройка GStreamer для вывода RTSP
+# Настройка GStreamer для вывода RTSP с оптимизацией
 out = cv2.VideoWriter(
     f'appsrc ! videoconvert ! video/x-raw,format=I420 ! '
     f'x264enc speed-preset=ultrafast bitrate=1024 key-int-max={int(fps*2)} ! '
@@ -213,11 +343,16 @@ if not out.isOpened():
     cap.release()
     exit()
 
-# Запуск потока для обработки кадров
-processor_thread = Thread(target=process_frames, args=(args.parameters,))
+# Запуск потоков обработки
+processor_thread = Thread(target=process_frames)
+writer_thread = Thread(target=write_frames)
 processor_thread.start()
+writer_thread.start()
 
-frame_ind = 0
+# Основной цикл чтения кадров
+frame_count = 0
+start_time = time.time()
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -225,11 +360,21 @@ while cap.isOpened():
         break
 
     frame_queue.put(frame)
-    frame_ind += 1
+    frame_count += 1
 
-# Остановка потока обработки
+    # Вывод FPS каждые 30 секунд
+    if frame_count % 900 == 0:  # 30 секунд при 30 FPS
+        elapsed_time = time.time() - start_time
+        current_fps = frame_count / elapsed_time
+        print(f"Current FPS: {current_fps:.2f}")
+        frame_count = 0
+        start_time = time.time()
+
+# Остановка потоков
 frame_queue.put(None)
+result_queue.put(None)
 processor_thread.join()
+writer_thread.join()
 
 # Освобождение ресурсов
 out.release()

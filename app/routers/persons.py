@@ -37,6 +37,40 @@ def get_all_persons(
 ):
     return db.query(PersonDB).offset(skip).limit(limit).all()
 
+@router.get("/{person_id}", response_model=Person)
+def get_person(
+    person_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_active_user)
+):
+    person = db.query(PersonDB).filter(PersonDB.id == person_id).first()
+    if not person:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Person not found"
+        )
+    return person
+
+@router.put("/{person_id}", response_model=Person)
+def update_person(
+    person_id: int,
+    person_update: PersonCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_active_user)
+):
+    person = db.query(PersonDB).filter(PersonDB.id == person_id).first()
+    if not person:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Person not found"
+        )
+    for var, value in vars(person_update).items():
+        setattr(person, var, value)
+    db.add(person)
+    db.commit()
+    db.refresh(person)
+    return person
+
 @router.delete("/{person_id}")
 def delete_person(
     person_id: int,

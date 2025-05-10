@@ -20,7 +20,7 @@ def get_db():
         db.close()
         
 
-@router.post("/", response_model=schemas.Camera)
+@router.post("/", response_model=schemas.Camera, status_code=201)
 def create_camera(
     camera: schemas.CameraCreate,
     db: Session = Depends(get_db),
@@ -28,7 +28,7 @@ def create_camera(
 ):
     db_camera = models.Camera(
         name=camera.name,
-        url=str(camera.url),  # Преобразуем HttpUrl в строку
+        url=camera.url,  # URL уже строка
         description=camera.description,
         is_active=camera.is_active
     )

@@ -24,6 +24,7 @@ class Camera(Base):
     url = Column(String)
     description = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    stream_processors = relationship("StreamProcessor", back_populates="camera")
 
 class Person(Base):
     __tablename__ = "persons"
@@ -37,3 +38,16 @@ class Face(Base):
     person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"))
     encoding = Column(Text, nullable=False)  # Храним embedding как строку
     person = relationship("Person", back_populates="faces")
+
+class StreamProcessor(Base):
+    __tablename__ = "stream_processors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    camera_id = Column(Integer, ForeignKey("cameras.id"))
+    input_stream = Column(String)
+    output_stream = Column(String)
+    release_name = Column(String, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    camera = relationship("Camera", back_populates="stream_processors")

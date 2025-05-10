@@ -6,7 +6,7 @@ from kubernetes import client, config
 from typing import List
 
 from . import models, database
-from .routers import cameras, persons, faces, kuber, auth
+from .routers import cameras, persons, faces, kuber, auth, db
 import dlib
 
 
@@ -58,6 +58,7 @@ app.include_router(cameras.router, prefix='/api')
 app.include_router(persons.router, prefix="/api")
 app.include_router(faces.router, prefix="/api")
 app.include_router(kuber.router, prefix="/api")
+app.include_router(db.router, prefix="/api")
 
 # WebSocket для взаимодействия с фронтендом
 connected_clients: List[WebSocket] = []
