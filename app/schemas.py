@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, field_validator, EmailStr, ConfigDict
+from pydantic import BaseModel, HttpUrl, field_validator, EmailStr, ConfigDict, constr
 from typing import Optional, List
 from datetime import datetime
 
@@ -27,7 +27,7 @@ class Camera(CameraBase):
     model_config = ConfigDict(from_attributes=True)
 
 class PersonBase(BaseModel):
-    name: str
+    name: constr(min_length=1)
 
 class PersonCreate(PersonBase):
     pass
@@ -51,8 +51,8 @@ class Face(FaceBase):
     model_config = ConfigDict(from_attributes=True)
 
 class UserBase(BaseModel):
-    email: str
-    username: str
+    email: EmailStr
+    username: constr(min_length=1)
 
 class UserCreate(UserBase):
     password: str

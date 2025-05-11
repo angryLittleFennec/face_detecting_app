@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import Base, get_db
-from app.models import User, Camera, Person, Face
+from app.models import User, Camera, Person, Face, StreamProcessor
 from app.auth import create_access_token
 from datetime import datetime, timedelta
 
@@ -22,6 +22,18 @@ def db():
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(autouse=True)
+def setup_database(db):
+    # Очищаем все таблицы перед каждым тестом
+    for table in reversed(Base.metadata.sorted_tables):
+        db.execute(table.delete())
+    db.commit()
+    yield
+    # Очищаем все таблицы после каждого теста
+    for table in reversed(Base.metadata.sorted_tables):
+        db.execute(table.delete())
+    db.commit()
 
 @pytest.fixture(scope="module")
 def client(db):
@@ -41,7 +53,8 @@ def test_user(db):
     user = User(
         username="testuser",
         email="test@example.com",
-        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW"  # "testpassword"
+        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "testpassword"
+        is_superuser=True  # Добавляем права суперпользователя
     )
     db.add(user)
     db.commit()
@@ -89,4 +102,18 @@ def test_face(db, test_person):
     db.add(face)
     db.commit()
     db.refresh(face)
-    return face 
+    return face
+
+@pytest.fixture
+def test_stream_processor(db, test_camera):
+    processor = StreamProcessor(
+        name="test-processor",
+        camera_id=test_camera.id,
+        input_stream=test_camera.url,
+        output_stream="rtsp://localhost:8554/processed/test",
+        release_name="stream-processor-test-processor"
+    )
+    db.add(processor)
+    db.commit()
+    db.refresh(processor)
+    return processor 

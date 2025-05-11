@@ -4,7 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 ENV PYTHON_VERSION=3.10.17
 
-# Base packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl gnupg netbase wget git mercurial openssh-client subversion procps \
     autoconf automake bzip2 default-libmysqlclient-dev dpkg-dev file g++ gcc imagemagick \
@@ -19,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg gstreamer1.0-plugins-good gstreamer1.0-libav \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python from source
 RUN wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz" && \
     mkdir -p /usr/src/python && \
     tar -xJf python.tar.xz -C /usr/src/python --strip-components=1 && \
@@ -34,11 +32,9 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf && ldconfig
 
-# Python pip essentials
 RUN python3.10 -m pip install --no-cache-dir --disable-pip-version-check --no-compile \
     setuptools==65.5.1 wheel numpy
 
-# Link python3.10 to standard python commands
 RUN for bin in idle pydoc python python-config pip; do \
       ln -s /usr/local/bin/${bin}3.10 /usr/local/bin/${bin}; \
     done
@@ -67,10 +63,8 @@ RUN cmake -D CMAKE_BUILD_TYPE=Release \
 
 RUN make -j"$(nproc)" && make install
 
-# Confirm OpenCV Python module
 RUN python3.10 -c "import cv2; print('OpenCV version:', cv2.__version__)"
 
-# Set Python path explicitly
 ENV PYTHONPATH="/usr/local/lib/python3.10/site-packages:$PYTHONPATH"
 
 WORKDIR /app
@@ -84,6 +78,10 @@ RUN python3.10 -m pip install numpy
 COPY ml_models ml_models
 
 RUN apt-get update && apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-rtsp
+
+RUN python3.10 -m pip install lap
+
+RUN python3.10 -m pip install sqlalchemy alembic psycopg2-binary
 
 COPY read_frames.py .
 

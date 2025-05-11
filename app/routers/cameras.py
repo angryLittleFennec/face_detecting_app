@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas, database, auth
-from ..services import camera_service
+
 
 router = APIRouter(
     prefix="/cameras",
@@ -36,7 +36,6 @@ def create_camera(
     db.commit()
     db.refresh(db_camera)
     # Запускаем обработку видеопотока для новой камеры
-    camera_service.start_video_processing(db_camera.id)
     return db_camera
 
 
@@ -75,7 +74,8 @@ def update_camera(
         if var == 'url':
             setattr(camera, var, str(value))
             continue
-        setattr(camera, var, value) if value else None
+        if value is not None:  # Проверяем, что значение не None
+            setattr(camera, var, value)
     
     db.add(camera)
     db.commit()
@@ -92,32 +92,31 @@ def delete_camera(
     if camera is None:
         raise HTTPException(status_code=404, detail="Камера не найдена")
     # Останавливаем обработку видеопотока для камеры
-    camera_service.stop_video_processing(camera.id)
     db.delete(camera)
     db.commit()
-    return {"detail": "Камера удалена"}
+    return {"detail": "Камера успешно удалена"}
 
-@router.get("/camera/{camera_id}/log/download")
-async def download_camera_log(
-    camera_id: int,
-    current_user: models.User = Depends(auth.get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
-    if camera is None:
-        raise HTTPException(status_code=404, detail="Камера не найдена")
+# @router.get("/camera/{camera_id}/log/download")
+# async def download_camera_log(
+#     camera_id: int,
+#     current_user: models.User = Depends(auth.get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     camera = db.query(models.Camera).filter(models.Camera.id == camera_id).first()
+#     if camera is None:
+#         raise HTTPException(status_code=404, detail="Камера не найдена")
 
-    camera_service.create_pdf_from_logs()
+#     camera_service.create_pdf_from_logs()
 
-    if not os.path.exists("person_detection_report.pdf"):
-        raise HTTPException(status_code=404, detail="Log file not found")
+#     if not os.path.exists("person_detection_report.pdf"):
+#         raise HTTPException(status_code=404, detail="Log file not found")
 
-    response = FileResponse(
-        "person_detection_report.pdf",
-        media_type="application/pdf",
-        filename=f"camera_{camera_id}_logs.pdf"
-    )
+#     response = FileResponse(
+#         "person_detection_report.pdf",
+#         media_type="application/pdf",
+#         filename=f"camera_{camera_id}_logs.pdf"
+#     )
     
-    os.remove("person_detection_report.pdf")
+#     os.remove("person_detection_report.pdf")
 
-    return response
+#     return response
