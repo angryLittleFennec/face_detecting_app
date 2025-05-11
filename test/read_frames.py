@@ -10,6 +10,8 @@ from queue import Queue
 import time
 from datetime import datetime
 import torch
+import torch.cuda
+from torch.cuda import Stream
 
 # Настройки RTSP
 RTSP_INPUT_URL = os.getenv("RTSP_IN", "rtsp://mediamtx-svc:8554/mediamtx/stream3")
@@ -26,6 +28,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Проверка доступности CUDA и настройка
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+if DEVICE == 'cuda':
+    torch.backends.cudnn.benchmark = True  # Оптимизация для фиксированного размера входных данных
+    torch.backends.cudnn.deterministic = False  # Отключаем детерминированность для скорости
+    torch.cuda.empty_cache()  # Очищаем кэш GPU
+    CUDA_STREAM = Stream()  # Создаем CUDA поток для асинхронных операций
+
+logger.info(f"Using device: {DEVICE}")
+if DEVICE == 'cuda':
+    logger.info(f"CUDA Device: {torch.cuda.get_device_name(0)}")
+    logger.info(f"CUDA Memory allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
+    logger.info(f"CUDA Memory cached: {torch.cuda.memory_reserved(0) / 1024**2:.2f} MB")
+
 logger.info(f"RTSP_INPUT_URL: {RTSP_INPUT_URL}")
 logger.info(f"RTSP_OUTPUT_URL: {RTSP_OUTPUT_URL}")
 
@@ -35,9 +51,8 @@ used_faces = []  # Список для хранения уже распозна�
 url = "http://face-recognition-svc:80/find_face"
 LOGGING_SERVICE_URL = "http://logging_service:8000/log"
 
-# Очереди для кадров и результатов
+# Очередь для кадров
 frame_queue = Queue(maxsize=30)
-result_queue = Queue(maxsize=30)
 
 # Загрузка моделей с оптимизацией
 FACE_MODEL = YOLO("ml_models/yolov8n-face.pt")
@@ -50,9 +65,9 @@ FACE_MODEL.max_det = 3  # Уменьшаем максимальное колич
 FACE_MODEL.agnostic = True
 FACE_MODEL.classes = [0]  # Только лица
 
-# Настройка для CPU
-FACE_MODEL.to('cpu')
-logger.info("Using CPU for YOLO inference")
+# Перемещаем модель на GPU если доступно
+FACE_MODEL.to(DEVICE)
+logger.info(f"YOLO model moved to {DEVICE}")
 
 # Предварительная инициализация детектора лиц
 face_detector = dlib.get_frontal_face_detector()
@@ -104,7 +119,7 @@ def find_matching_face(embedding):
         logger.error(f"Error in find_matching_face: {e}")
     return None
 
-def process_frame(frame, frame_id):
+def process_frame(frame, frame_id, out):
     global frame_count, active_tracks
     start_time = time.time()
     try:
@@ -123,20 +138,40 @@ def process_frame(frame, frame_id):
         
         logger.info(f"Original frame size: {frame.shape}, Resized frame size: {resized_frame.shape}")
         
-        # Запускаем YOLO с отслеживанием
+        # Запускаем YOLO с отслеживанием на GPU с оптимизациями
         yolo_start = time.time()
-        with torch.no_grad():  # Отключаем градиенты для ускорения
-            results = FACE_MODEL.track(
-                resized_frame,
-                verbose=False,
-                stream=False,
-                persist=True,
-                conf=0.7,  # Дополнительно указываем порог уверенности
-                iou=0.3,   # Дополнительно указываем IoU
-                max_det=3  # Дополнительно указываем максимальное количество детекций
-            )
+        with torch.cuda.amp.autocast():  # Используем автоматическое смешанное вычисление
+            with torch.no_grad():
+                if DEVICE == 'cuda':
+                    with torch.cuda.stream(CUDA_STREAM):
+                        results = FACE_MODEL.track(
+                            resized_frame,
+                            verbose=False,
+                            stream=False,
+                            persist=True,
+                            conf=0.7,
+                            iou=0.3,
+                            max_det=3,
+                            device=DEVICE
+                        )
+                        torch.cuda.current_stream().synchronize()  # Синхронизируем CUDA поток
+                else:
+                    results = FACE_MODEL.track(
+                        resized_frame,
+                        verbose=False,
+                        stream=False,
+                        persist=True,
+                        conf=0.7,
+                        iou=0.3,
+                        max_det=3,
+                        device=DEVICE
+                    )
         yolo_time = time.time() - yolo_start
-        
+
+        # Оптимизация работы с тензорами
+        if DEVICE == 'cuda':
+            torch.cuda.empty_cache()  # Очищаем неиспользуемую память GPU
+
         # Масштабируем координаты обратно к оригинальному размеру
         scale_x = frame.shape[1] / width
         scale_y = frame.shape[0] / height
@@ -150,11 +185,14 @@ def process_frame(frame, frame_id):
         # Обрабатываем результаты из генератора
         process_results_start = time.time()
         
-        # Получаем все боксы сразу
+        # Получаем все боксы сразу с оптимизацией для GPU
         boxes_start = time.time()
         boxes = []
         if results[0].boxes.id is not None:
-            boxes = results[0].boxes
+            if DEVICE == 'cuda':
+                boxes = results[0].boxes.cpu()  # Перемещаем данные на CPU для обработки
+            else:
+                boxes = results[0].boxes
         boxes_time = time.time() - boxes_start
         
         # Предварительно вычисляем масштабированные координаты
@@ -221,11 +259,11 @@ def process_frame(frame, frame_id):
                 
                 if embedding is not None:
                     match_start = time.time()
-                    with face_lock:
-                        match = find_matching_face(embedding)
-                        if match:
-                            tracked_faces[track_id]["name"] = match
-                            log_face_event(track_id, "recognized", match)
+                    # with face_lock:
+                    #     match = find_matching_face(embedding)
+                    #     if match:
+                    #         tracked_faces[track_id]["name"] = match
+                    #         log_face_event(track_id, "recognized", match)
                     face_matching_total += time.time() - match_start
                 face_recognition_total += time.time() - face_start
             
@@ -270,12 +308,14 @@ def process_frame(frame, frame_id):
             f"Active tracks: {len(active_tracks)}"
         )
         
-        return annotated_frame
+        # Записываем обработанный кадр
+        out.write(annotated_frame)
+        return True
     except Exception as e:
         logger.error(f"Error in process_frame: {e}")
-        return frame
+        return False
 
-def process_frames():
+def process_frames(out):
     frame_count = 0
     total_processing_time = 0
     
@@ -283,28 +323,18 @@ def process_frames():
         if not frame_queue.empty():
             frame = frame_queue.get()
             if frame is None:
-                # Логируем среднее время обработки перед выходом
                 if frame_count > 0:
                     avg_time = total_processing_time / frame_count
                     logger.info(f"Average frame processing time: {avg_time:.3f}s over {frame_count} frames")
                 break
             
             start_time = time.time()
-            processed_frame = process_frame(frame, frame_count)
+            success = process_frame(frame, frame_count, out)
             processing_time = time.time() - start_time
             
-            total_processing_time += processing_time
-            frame_count += 1
-            
-            result_queue.put(processed_frame)
-
-def write_frames():
-    while True:
-        if not result_queue.empty():
-            frame = result_queue.get()
-            if frame is None:
-                break
-            out.write(frame)
+            if success:
+                total_processing_time += processing_time
+                frame_count += 1
 
 def open_capture_with_retry(url, max_retries=5, retry_delay=3):
     for attempt in range(max_retries):
@@ -343,11 +373,9 @@ if not out.isOpened():
     cap.release()
     exit()
 
-# Запуск потоков обработки
-processor_thread = Thread(target=process_frames)
-writer_thread = Thread(target=write_frames)
+# Запуск потока обработки
+processor_thread = Thread(target=process_frames, args=(out,))
 processor_thread.start()
-writer_thread.start()
 
 # Основной цикл чтения кадров
 frame_count = 0
@@ -370,11 +398,9 @@ while cap.isOpened():
         frame_count = 0
         start_time = time.time()
 
-# Остановка потоков
+# Остановка потока
 frame_queue.put(None)
-result_queue.put(None)
 processor_thread.join()
-writer_thread.join()
 
 # Освобождение ресурсов
 out.release()

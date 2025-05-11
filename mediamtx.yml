@@ -2,6 +2,6 @@ hls: yes
 
 paths:
   stream:
-      runOnInit: ffmpeg -re -stream_loop -1 -i /app/video.mp4 -c copy -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream
+      runOnInit: ffmpeg -re -stream_loop -1 -i /app/video3.avi  -vf "setpts=N/30/TB" -c:v libx264 -preset ultrafast -an -f rtsp rtsp://localhost:$RTSP_PORT/mediamtx/stream3   
       runOnInitRestart: yes
   all_others:

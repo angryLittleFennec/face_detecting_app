@@ -1,64 +1,60 @@
 # version: "3"
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: surveillance_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
+#   postgres:
+#     image: postgres:15
+#     container_name: postgres
+#     environment:
+#       POSTGRES_USER: admin
+#       POSTGRES_PASSWORD: secret
+#       POSTGRES_DB: surveillance_db
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+#     restart: unless-stopped
 
-  app:
-    build: .
-    container_name: surveillance-app
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./:/app
-    environment:
-      - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
-    depends_on:
-      - postgres
+#   app:
+#     build: .
+#     container_name: surveillance-app
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./:/app
+#     environment:
+#       - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+#     depends_on:
+#       - postgres
 
-  mediamtx:
+  mediamtx-svc:
     image: bluenviron/mediamtx:latest-ffmpeg
-    container_name: mediamtx
+    container_name: mediamtx-svc
     ports:
       - "8554:8554"
       - "8888:8888"
       - "1935:1935"
     volumes:
-      - ./images/all_videos/Офис17.05.mp4:/app/video.mp4
+      - ./images/all_videos/Офис17.05.avi:/app/video3.avi
       - ./mediamtx.yml:/mediamtx.yml
     restart: unless-stopped
-    hostname: mediamtx
+    hostname: mediamtx-svc
     environment:
       MTX_PROTOCOLS: tcp
 
   frames_streamer:
     build:
-      context: ./test_camera_streamer
-      dockerfile: ./amd64.dockerfile
-    image: rtsp_streamer_amd64
-    container_name: frames_streamer
+      context: ./test
+      dockerfile: Dockerfile
     restart: always
     working_dir: /app
-    volumes:
-      - .:/app
     command:
       - /bin/bash
       - -c
       - |
-        python3 read_frames.py --parameters person
+        python3.10 read_frames.py --parameters person
     depends_on:
-      - mediamtx
-      - face_recognition
+      - mediamtx-svc
+    # #  - face_recognition
     ports:
       - "18554:8554"
     hostname: frames_streamer
@@ -67,40 +63,40 @@ services:
       TZ: "Europe/Moscow"
     shm_size: "16gb"
 
-  face_recognition:
-    build: 
-      context: .
-      dockerfile: dockerFileDlib
-    container_name: face-recognition-service
-    hostname: face_recognition
-    ports:
-      - "8001:8000"
-    volumes:
-      - .:/app
-    environment:
-      - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
-    depends_on:
-      - postgres
+  # face_recognition:
+  #   build: 
+  #     context: .
+  #     dockerfile: dockerFileDlib
+  #   container_name: face-recognition-service
+  #   hostname: face_recognition
+  #   ports:
+  #     - "8001:8000"
+  #   volumes:
+  #     - .:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+  #   depends_on:
+  #     - postgres
 
-  logging_service:
-    build:
-      context: .
-      dockerfile: logging.dockerfile
-    hostname: logging_service
-    container_name: logging
-    command:
-      - /bin/bash
-      - -c
-      - |
-        python3 logging_service.py
-    ports:
-      - "8002:8000"
-    volumes:
-      - .:/app
-    environment:
-      - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
-    depends_on:
-      - postgres
+  # logging_service:
+  #   build:
+  #     context: .
+  #     dockerfile: logging.dockerfile
+  #   hostname: logging_service
+  #   container_name: logging
+  #   command:
+  #     - /bin/bash
+  #     - -c
+  #     - |
+  #       python3 logging_service.py
+  #   ports:
+  #     - "8002:8000"
+  #   volumes:
+  #     - .:/app
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret@postgres:5432/surveillance_db
+  #   depends_on:
+  #     - postgres
 
 volumes:
   postgres_data:
