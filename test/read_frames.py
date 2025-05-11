@@ -12,6 +12,10 @@ from datetime import datetime
 import torch
 import torch.cuda
 from torch.cuda import Stream
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, DateTime, create_engine
+from sqlalchemy.orm import sessionmaker, Session, relationship
+from sqlalchemy.ext.declarative import declarative_base
+from typing import Dict, Tuple, List
 
 # Настройки RTSP
 RTSP_INPUT_URL = os.getenv("RTSP_IN", "rtsp://mediamtx-svc:8554/mediamtx/stream3")
@@ -79,16 +83,152 @@ tracked_faces = {}  # {track_id: {"name": name, "first_seen": timestamp, "last_s
 active_tracks = set()  # Множество активных track_id в текущем кадре
 frame_count = 0
 
+# Настройки базы данных
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:secret@postgres-postgresql:5432/surveillance_db")
+Base = declarative_base()
+
+# Модели SQLAlchemy
+class Person(Base):
+    __tablename__ = "persons"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    faces = relationship("Face", back_populates="person", cascade="all, delete-orphan")
+
+class Face(Base):
+    __tablename__ = "faces"
+    id = Column(Integer, primary_key=True, index=True)
+    person_id = Column(Integer, ForeignKey('persons.id', ondelete="CASCADE"))
+    encoding = Column(Text, nullable=False)
+    person = relationship("Person", back_populates="faces")
+
+# Инициализация базы данных
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+
+# Кэш для хранения эмбеддингов лиц
+face_embeddings_cache: Dict[int, Tuple[np.ndarray, str]] = {}
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def load_face_embeddings():
+    """Загружает все эмбеддинги лиц из базы данных в кэш"""
+    global face_embeddings_cache
+    try:
+        db = SessionLocal()
+        # Получаем все лица с именами людей
+        faces = db.query(Face, Person.name).join(Person).all()
+        
+        # Очищаем кэш
+        face_embeddings_cache.clear()
+        
+        # Загружаем эмбеддинги в кэш
+        for face, person_name in faces:
+            try:
+                encoding = np.fromstring(face.encoding, sep=',')
+                if encoding.shape == (128,):
+                    face_embeddings_cache[face.id] = (encoding, person_name)
+            except Exception as e:
+                logger.error(f"Error loading face {face.id}: {e}")
+                continue
+                
+        logger.info(f"Loaded {len(face_embeddings_cache)} face embeddings into cache")
+    except Exception as e:
+        logger.error(f"Error loading face embeddings: {e}")
+    finally:
+        db.close()
+
+# Загружаем эмбеддинги при старте
+load_face_embeddings()
+
+def find_matching_face(embedding: np.ndarray) -> str:
+    """Ищет совпадение среди сохранённых лиц в кэше"""
+    try:
+        if not isinstance(embedding, np.ndarray):
+            logger.error("Error: embedding is not a numpy array")
+            return None
+            
+        if embedding.shape != (128,):
+            logger.error(f"Error: invalid embedding shape: {embedding.shape}")
+            return None
+            
+        min_dist = float("inf")
+        best_match = None
+        
+        # Ищем совпадение в кэше
+        for face_id, (cached_encoding, person_name) in face_embeddings_cache.items():
+            try:
+                # Вычисляем евклидово расстояние
+                dist = np.linalg.norm(cached_encoding - embedding)
+                
+                # Если расстояние меньше порога и минимальное, обновляем лучший результат
+                if dist < 0.6 and dist < min_dist:
+                    min_dist = dist
+                    best_match = person_name
+                    
+            except Exception as e:
+                logger.error(f"Error processing face {face_id}: {e}")
+                continue
+        
+        if best_match:
+            logger.info(f"Found matching person: {best_match}")
+            return best_match
+        else:
+            logger.info("No matching face found")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error in find_matching_face: {e}")
+        return None
+
 def log_face_event(track_id, event_type, name=None):
     """Логирование событий с лицами"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if event_type == "enter":
-        logger.info(f"🟢 {timestamp} - Человек {name or track_id} вошел в кадр")
-    elif event_type == "exit":
-        duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
-        logger.info(f"🔴 {timestamp} - Человек {name or track_id} вышел из кадра. Время в кадре: {duration:.1f} сек")
-    elif event_type == "recognized":
-        logger.info(f"👤 {timestamp} - Распознан человек: {name} (ID: {track_id})")
+    
+    try:
+        # Получаем ID человека по имени
+        person_id = None
+        if name:
+            db = SessionLocal()
+            person = db.query(Person).filter(Person.name == name).first()
+            if person:
+                person_id = person.id
+            db.close()
+        
+        # Создаем событие в базе данных только для значимых событий
+        if event_type in ["enter", "exit"]:  # Логируем только входы и выходы
+            db = SessionLocal()
+            event_service = EventService(db)
+            event_service.create_event(
+                event_type=EventType(event_type),
+                person_id=person_id,
+                stream_processor_id=1,  # TODO: Получать ID процессора из конфигурации
+                track_id=track_id,
+                duration=tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"] if event_type == "exit" else None
+            )
+            db.close()
+        
+        # Логируем в файл для отладки
+        if event_type == "enter":
+            if name:
+                logger.info(f"🟢 {timestamp} - {name} вошел в кадр")
+            else:
+                logger.info(f"🟢 {timestamp} - Неизвестный человек (ID: {track_id}) вошел в кадр")
+        elif event_type == "recognized":
+            logger.info(f"👤 {timestamp} - Распознан человек: {name} (ID: {track_id})")
+        elif event_type == "exit":
+            if tracked_faces[track_id]["name"]:
+                duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
+                logger.info(f"🔴 {timestamp} - {tracked_faces[track_id]['name']} вышел из кадра. Время в кадре: {duration:.1f} сек")
+            else:
+                duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
+                logger.info(f"🔴 {timestamp} - Неизвестный человек (ID: {track_id}) вышел из кадра. Время в кадре: {duration:.1f} сек")
+    except Exception as e:
+        logger.error(f"Error logging face event: {e}")
 
 def get_face_embedding(image: np.ndarray):
     if image.size == 0:
@@ -106,18 +246,6 @@ def get_face_embedding(image: np.ndarray):
     except Exception as e:
         logger.error(f"Error in get_face_embedding: {e}")
         return None
-
-def find_matching_face(embedding):
-    try:
-        encoding_str = ",".join(map(str, embedding))
-        params = {"embedding_str": encoding_str}
-        response = requests.get(url, params=params, timeout=1)
-        if response.status_code == 200:
-            js = response.json()
-            return js['person'] if js['status'] == 'success' else None
-    except Exception as e:
-        logger.error(f"Error in find_matching_face: {e}")
-    return None
 
 def process_frame(frame, frame_id, out):
     global frame_count, active_tracks
@@ -241,12 +369,38 @@ def process_frame(frame, frame_id, out):
             
             # Проверяем, новый ли это трек
             if track_id not in tracked_faces:
-                tracked_faces[track_id] = {
-                    "name": None,
-                    "first_seen": time.time(),
-                    "last_seen": time.time()
-                }
-                log_face_event(track_id, "enter")
+                # Сначала пытаемся распознать лицо
+                face_start = time.time()
+                embedding = get_face_embedding(face_image)
+                face_embedding_total += time.time() - face_start
+                
+                if embedding is not None:
+                    match_start = time.time()
+                    match = find_matching_face(embedding)
+                    face_matching_total += time.time() - match_start
+                    
+                    # Создаем запись в tracked_faces с результатом распознавания
+                    tracked_faces[track_id] = {
+                        "name": match,
+                        "first_seen": time.time(),
+                        "last_seen": time.time()
+                    }
+                    
+                    # Логируем и рисуем только если удалось распознать
+                    if match:
+                        log_face_event(track_id, "recognized", match)
+                        # Отображаем информацию о лице
+                        cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                        cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+                else:
+                    # Если не удалось получить эмбеддинг, создаем запись без имени
+                    tracked_faces[track_id] = {
+                        "name": None,
+                        "first_seen": time.time(),
+                        "last_seen": time.time()
+                    }
             
             # Обновляем время последнего появления
             tracked_faces[track_id]["last_seen"] = time.time()
@@ -259,22 +413,31 @@ def process_frame(frame, frame_id, out):
                 
                 if embedding is not None:
                     match_start = time.time()
-                    # with face_lock:
-                    #     match = find_matching_face(embedding)
-                    #     if match:
-                    #         tracked_faces[track_id]["name"] = match
-                    #         log_face_event(track_id, "recognized", match)
+                    match = find_matching_face(embedding)
+                    if match:
+                        # При распознавании обновляем имя и логируем
+                        tracked_faces[track_id]["name"] = match
+                        log_face_event(track_id, "recognized", match)
+                        # Отображаем информацию о лице
+                        cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                        cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
                     face_matching_total += time.time() - match_start
                 face_recognition_total += time.time() - face_start
             
-            # Отображаем информацию о лице
-            draw_start = time.time()
-            name = tracked_faces[track_id]["name"] or f"Unknown-{track_id}"
-            cv2.putText(annotated_frame, name, (x1 + 100, y1 - 10),
-                      cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
-                      cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-            drawing_total += time.time() - draw_start
+            # Логируем вход в кадр только если трек не был активным
+            if track_id not in active_tracks:
+                if tracked_faces[track_id]["name"]:
+                    log_face_event(track_id, "enter", tracked_faces[track_id]["name"])
+            
+            # Отображаем информацию о лице, если оно распознано
+            if tracked_faces[track_id]["name"]:
+                name = tracked_faces[track_id]["name"]
+                cv2.putText(annotated_frame, name, (x1 + 100, y1 - 10),
+                          cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
+                          cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         
         processing_time = time.time() - processing_start
         process_results_time = time.time() - process_results_start

@@ -342,7 +342,7 @@ def install_chart(
             "helm", "install", release_name, chart,
             "--namespace", NAMESPACE, "--set", "ingress.enabled=false" 
         ]
-        
+
         result = subprocess.run(
             cmd,
             check=True,
