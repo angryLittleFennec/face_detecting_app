@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 const NavigationHandlers = () => {
     const navigate = useNavigate();
 
+    // Функция для удаления куки
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=-99999999;';
+    }
+
     const goToProfileHandler = () => navigate('/profile');
     const goToCamerasHandler = () => navigate('/cameras');
     const goToSettingsHandler = () => navigate('/cameras/settings/main');
@@ -19,7 +24,7 @@ const NavigationHandlers = () => {
     const goToFilesHandler = () => navigate('/files');
     const goToStaffHandler = () => navigate('/staff');
     const logoutHandler = () => {
-        localStorage.removeItem('token');
+        eraseCookie('authToken');
         navigate('/');
     };
 

@@ -11,16 +11,39 @@ function LoginForm() {
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
+    // Функция для установки куки
+    function setCookie(name, value, days) {
+        let expires = '';
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            expires = '; expires=' + date.toUTCString();
+        }
+        document.cookie =
+            name +
+            '=' +
+            (value || '') +
+            expires +
+            '; path=/; Secure; SameSite=Strict';
+        console.log(
+            name +
+                '=' +
+                (value || '') +
+                expires +
+                '; path=/; Secure; SameSite=Strict'
+        );
+    }
+
     const onSubmitLoginHandler = async (event) => {
         event.preventDefault();
         const user = { username, password, grant_type: 'password' };
 
         // Проверка пользователя
         try {
-            console.log(user);
             const data = await loginUser(user);
-            console.log(data);
-            localStorage.setItem('token', data.access_token); // Сохраняем токен
+            // Сохраняем токен в куки
+            setCookie('authToken', data.access_token, 7); // Сохраняем на 7 дней
+            console.log('Аутентификация прошла успешно!', data.access_token);
             navigate('/cameras');
         } catch (error) {
             console.log(error);

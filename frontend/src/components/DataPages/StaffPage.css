@@ -1,7 +1,6 @@
 .staff-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     height: 85vh;
     width: 90%;
     margin: 30px;
@@ -16,6 +15,96 @@
     margin-top: 10px;
 }
 
-.staff-container p {
-    margin-top: 250px;
+.staff-container li {
+    font-size: 18px;
+    text-align: left;
+}
+
+.staff-container li:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.staff-container button {
+    cursor: pointer;
+    position: sticky;
+    font-size: 20px;
+    font-weight: 600;
+    width: 300px;
+    height: 50px;
+    padding: 7px;
+    bottom: 0;
+    margin: 10px;
+    background-color: #414141;
+    color: #f8f8f8;
+    border: 2px solid #000000;
+    border-radius: 15px;
+}
+
+.staff-container button:hover {
+    background-color: #f8f8f8;
+    color: #131313;
+}
+
+.files-list {
+    margin-left: 50px;
+    margin-top: 10px;
+    overflow-y: auto;
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.files-list-element,
+.faces-gallery {
+    display: flex;
+    align-items: center;
+}
+
+.files-list-element img {
+    width: 16px;
+}
+
+.staff-container .change-person-button {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    width: 200px;
+    height: 40px;
+    padding: 5px;
+    margin: 5px;
+    background-color: #1770cf;
+}
+
+.staff-container .change-person-button:hover {
+    text-decoration: underline;
+    background-color: #007bff;
+    color: #f8f8f8;
+}
+
+.staff-container .delete-person-button {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    width: 200px;
+    height: 40px;
+    padding: 5px;
+    margin: 5px;
+    background-color: #cf172c;
+}
+
+.staff-container .delete-person-button:hover {
+    text-decoration: underline;
+    background-color: #ff001e;
+    color: #f8f8f8;
+}
+
+.staff-button-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.staff-button-container-bottom {
+    display: flex;
+    align-items: flex-start;
+    margin: auto;
 }

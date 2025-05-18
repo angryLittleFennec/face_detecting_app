@@ -31,6 +31,8 @@ const CamerasHandlers = (initialCameras = []) => {
         description: '',
         is_active: false,
     });
+    const [isModalSettingsOpen, setIsModalSettingsOpen] = useState(false);
+    const [isModalLogsOpen, setIsModalLogsOpen] = useState(false);
 
     const resetNewCamera = () => {
         setNewCamera({
@@ -142,6 +144,7 @@ const CamerasHandlers = (initialCameras = []) => {
             (camera) => camera.name === selectedValue
         );
         setSelectedCameraIndex(index);
+        dispatch(setSelectedCameraIndexRedux(index));
         if (selected) {
             setNewCameraUpdate({
                 name: selected.name,
@@ -160,12 +163,20 @@ const CamerasHandlers = (initialCameras = []) => {
 
     const handleSelectCamera = (index) => {
         dispatch(setSelectedCameraIndexRedux(index)); // Устанавливаем индекс в Redux
+        const camera = cameras[index];
+        setSelectedCamera(camera.name);
     };
 
     const handleError = (error) => {
         setError(error);
         console.error(error);
     };
+
+    const openModalSettings = () => setIsModalSettingsOpen(true);
+    const closeModalSettings = () => setIsModalSettingsOpen(false);
+
+    const openModalLogs = () => setIsModalLogsOpen(true);
+    const closeModalLogs = () => setIsModalLogsOpen(false);
 
     return {
         cameras,
@@ -177,6 +188,8 @@ const CamerasHandlers = (initialCameras = []) => {
         isVideoVisible,
         loading,
         error,
+        isModalSettingsOpen,
+        isModalLogsOpen,
         setCameras,
         setNewCamera,
         setNewCameraUpdate,
@@ -192,6 +205,11 @@ const CamerasHandlers = (initialCameras = []) => {
         handleCameraClick,
         handleError,
         toggleVideo,
+        openModalSettings,
+        closeModalSettings,
+        openModalLogs,
+        closeModalLogs,
+        setSelectedCamera,
     };
 };
 

@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import CamerasContainer from './CamerasContainer';
 import CamerasHandlers from './CamerasHandlers';
 import CamerasStatusWindow from './CamerasStatusWindow';
 import CameraLogsWindow from './CameraLogsWindow';
@@ -13,52 +16,47 @@ import staffOptions from './StaffOptions';
 import './CamerasPage.css';
 
 function CamerasPage() {
-    const [isModalSettingsOpen, setIsModalSettingsOpen] = useState(false);
-    const [isModalLogsOpen, setIsModalLogsOpen] = useState(false);
-
-    const openModalSettings = () => setIsModalSettingsOpen(true);
-    const closeModalSettings = () => setIsModalSettingsOpen(false);
-
-    const openModalLogs = () => setIsModalLogsOpen(true);
-    const closeModalLogs = () => setIsModalLogsOpen(false);
-
     const [currentPage, setCurrentPage] = useState(0);
     const [camerasPerPage, setCamerasPerPage] = useState(4);
     const [camerasLocation, setCamerasLocation] = useState('second');
+
+    const selectedCameraIndex = useSelector(
+        (state) => state.selectedCameraIndex
+    );
 
     const {
         goToProfileHandler,
         goToSettingsHandler,
         goToReportsHandler,
-        goToDataHandler,
+        goToStaffHandler,
         logoutHandler,
     } = NavigationHandlers();
 
     const {
         selectedCamera,
-        selectedCameraIndex,
         cameras,
         loading,
         error,
+        isModalSettingsOpen,
+        isModalLogsOpen,
+        openModalLogs,
+        openModalSettings,
+        closeModalLogs,
+        closeModalSettings,
         handleSelectCamera,
         handleFetchCameras,
         handleSelectChange,
-        handleCameraClick,
+        setSelectedCamera,
     } = CamerasHandlers();
 
-    /*
     useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
-
-    if (loading) {
-        handleFetchCameras();
-        return <h2>Загрузка...</h2>;
-    }
-
-    if (error) {
-        return <h2>Ошибка: {error}</h2>;
-    }
+        if (selectedCameraIndex !== null) {
+            const camera = cameras[selectedCameraIndex];
+            if (camera) {
+                setSelectedCamera(camera.name);
+            }
+        }
+    }, [selectedCameraIndex, cameras, setSelectedCamera]);
 
     const pagesCount = Math.ceil(cameras.length / camerasPerPage) - 1;
 
@@ -95,177 +93,28 @@ function CamerasPage() {
         setCamerasPerPage(9);
     };
 
+    /*
+    useEffect(() => {
+        handleFetchCameras();
+    }, [handleFetchCameras]);*/
+
+    if (loading) {
+        handleFetchCameras();
+        return <h2>Загрузка...</h2>;
+    }
+
+    if (error) {
+        return <h2>Ошибка: {error}</h2>;
+    }
+
     return (
         <div className="page-container cameras-page-container">
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
-                <div
-                    className={
-                        camerasLocation === 'first'
-                            ? 'cameras-container-one'
-                            : 'cameras-container-many'
-                    }
-                >
-                    {currentCameras.length > 0 &&
-                    camerasLocation === 'third' ? (
-                        <>
-                            {/* Большая камера */}
-                            {
-                                <div className="cameras-row">
-                                    <div
-                                        className="cameras-third-location-big"
-                                        onClick={() =>
-                                            handleCameraClick(startIndex)
-                                        }
-                                        onDoubleClick={() =>
-                                            handleSelectCamera(startIndex)
-                                        }
-                                        style={{
-                                            border:
-                                                selectedCameraIndex ===
-                                                startIndex
-                                                    ? '2px solid blue'
-                                                    : 'none',
-                                        }}
-                                    >
-                                        <video controls autoPlay loop>
-                                            <source
-                                                src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
-                                                type="video/mp4"
-                                            />
-                                            Ваш браузер не поддерживает видео.
-                                        </video>
-                                    </div>
-                                    <div className="cameras-column">
-                                        {currentCameras
-                                            .slice(1, 3)
-                                            .map((camera, index) => (
-                                                <div
-                                                    key={startIndex + index + 1}
-                                                    className="cameras-third-location-small-right"
-                                                    onClick={() =>
-                                                        handleCameraClick(
-                                                            startIndex +
-                                                                index +
-                                                                1
-                                                        )
-                                                    }
-                                                    onDoubleClick={() =>
-                                                        handleSelectCamera(
-                                                            startIndex +
-                                                                index +
-                                                                1
-                                                        )
-                                                    }
-                                                    style={{
-                                                        border:
-                                                            selectedCameraIndex ===
-                                                            startIndex +
-                                                                index +
-                                                                1
-                                                                ? '2px solid blue'
-                                                                : 'none',
-                                                    }}
-                                                >
-                                                    <video
-                                                        controls
-                                                        autoPlay
-                                                        loop
-                                                    >
-                                                        <source
-                                                            src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
-                                                            type="video/mp4"
-                                                        />
-                                                        Ваш браузер не
-                                                        поддерживает видео.
-                                                    </video>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            }
-
-                            {/* Три маленькие камеры */}
-                            <div className="cameras-row">
-                                {currentCameras
-                                    .slice(3, 6)
-                                    .map((camera, index) => (
-                                        <div
-                                            key={startIndex + index + 3}
-                                            className="cameras-third-location-small"
-                                            onClick={() =>
-                                                handleCameraClick(
-                                                    startIndex + index + 3
-                                                )
-                                            }
-                                            onDoubleClick={() =>
-                                                handleSelectCamera(
-                                                    startIndex + index + 3
-                                                )
-                                            }
-                                            style={{
-                                                border:
-                                                    selectedCameraIndex ===
-                                                    startIndex + index + 3
-                                                        ? '2px solid blue'
-                                                        : 'none',
-                                            }}
-                                        >
-                                            <video controls autoPlay loop>
-                                                <source
-                                                    src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
-                                                    type="video/mp4"
-                                                />
-                                                Ваш браузер не поддерживает
-                                                видео.
-                                            </video>
-                                        </div>
-                                    ))}
-                            </div>
-                        </>
-                    ) : currentCameras.length > 0 ? (
-                        currentCameras.map((camera, index) => (
-                            <div
-                                key={startIndex + index}
-                                className={
-                                    camerasLocation === 'first'
-                                        ? 'cameras-first-location'
-                                        : camerasLocation === 'second'
-                                        ? 'cameras-second-location'
-                                        : camerasLocation === 'fourth'
-                                        ? 'cameras-fourth-location'
-                                        : index === 0
-                                        ? 'cameras-third-location-big'
-                                        : 'cameras-third-location-small'
-                                }
-                                onClick={() =>
-                                    handleCameraClick(startIndex + index)
-                                }
-                                onDoubleClick={() =>
-                                    handleSelectCamera(startIndex + index)
-                                }
-                                style={{
-                                    border:
-                                        selectedCameraIndex ===
-                                        startIndex + index
-                                            ? '2px solid blue'
-                                            : 'none',
-                                }}
-                            >
-                                <video controls autoPlay loop>
-                                    <source
-                                        //src={camera.url}
-                                        src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
-                                        type="video/mp4"
-                                    />
-                                    Ваш браузер не поддерживает видео.
-                                </video>
-                                {camera.name}
-                            </div>
-                        ))
-                    ) : (
-                        <h1>Камеры не найдены</h1>
-                    )}
-                </div>
+                <CamerasContainer
+                    currentCameras={currentCameras}
+                    camerasLocation={camerasLocation}
+                    startIndex={startIndex}
+                />
             </div>
 
             <div className="left-menu">
@@ -299,9 +148,9 @@ function CamerasPage() {
                     />
                     <ButtonWithTooltip
                         className="icon-button"
-                        iconSrc="/icons/data-icon-white.png"
-                        altText="Загрузка данных"
-                        onClick={goToDataHandler}
+                        iconSrc="/icons/staff-icon-white.png"
+                        altText="Сотрудники"
+                        onClick={goToStaffHandler}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
@@ -334,7 +183,7 @@ function CamerasPage() {
                             onClick={handleFetchCameras}
                             className="right-menu-button"
                         >
-                            Просмотреть камеры
+                            Обновить камеры
                         </button>
                         <select
                             value={selectedCamera}
@@ -357,13 +206,13 @@ function CamerasPage() {
                                     }
                                     className="right-menu-button"
                                 >
-                                    Перейти к камере:{' '}
-                                    {cameras[selectedCameraIndex].name}
+                                    Перейти к камере: {selectedCamera}
                                 </button>
                             </Link>
                         )}
                     </div>
                 </div>
+
                 <div className="change-page-menu">
                     <IconButton
                         onClick={handlePrevPage}
@@ -410,8 +259,9 @@ function CamerasPage() {
                         className="bottom-icon-button"
                     />
                 </div>
+
                 <div className="bottom-menu-right-buttons">
-                    {selectedCamera && (
+                    {selectedCameraIndex + 1 && (
                         <ButtonWithTooltip
                             className="bottom-icon-button"
                             iconSrc="/icons/files-icon-white.png"
@@ -419,7 +269,7 @@ function CamerasPage() {
                             onClick={openModalLogs}
                         />
                     )}
-                    {selectedCamera && (
+                    {selectedCameraIndex + 1 && (
                         <Link to={`/cameras/${selectedCameraIndex}`}>
                             <ButtonWithTooltip
                                 className="bottom-icon-button"

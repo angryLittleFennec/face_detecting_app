@@ -1,5 +1,18 @@
 import { SERVER_URL } from '../../config';
 
+// Функция для получения куки
+function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0)
+            return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
 export const loginUser = async (user) => {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
@@ -37,7 +50,7 @@ export const registerUser = async (user) => {
 };
 
 export const fetchCameras = async () => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/`, {
         method: 'GET',
         headers: {
@@ -54,7 +67,7 @@ export const fetchCameras = async () => {
 };
 
 export const addCamera = async (newCamera) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
 
     const response = await fetch(`${SERVER_URL}cameras/`, {
         method: 'POST',
@@ -72,7 +85,7 @@ export const addCamera = async (newCamera) => {
 };
 
 export const deleteCamera = async (cameraId) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
         method: 'DELETE',
         headers: {
@@ -87,7 +100,7 @@ export const deleteCamera = async (cameraId) => {
 };
 
 export const updateCamera = async (cameraId, updatedCameraData) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
         method: 'PUT',
         headers: {
@@ -104,7 +117,7 @@ export const updateCamera = async (cameraId, updatedCameraData) => {
 };
 
 export const fetchCameraDetails = async (cameraId) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
         method: 'GET',
         headers: {
@@ -121,7 +134,7 @@ export const fetchCameraDetails = async (cameraId) => {
 };
 
 export const downloadCameraLogs = async (cameraId) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(
         `${SERVER_URL}cameras/camera/${cameraId}/log/download`,
         {
@@ -141,7 +154,7 @@ export const downloadCameraLogs = async (cameraId) => {
 };
 
 export const fetchStream = async (cameraId) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}stream/${cameraId}`, {
         method: 'GET',
         headers: {
@@ -158,7 +171,7 @@ export const fetchStream = async (cameraId) => {
 };
 
 export const fetchPersons = async () => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/`, {
         method: 'GET',
         headers: {
@@ -175,7 +188,7 @@ export const fetchPersons = async () => {
 };
 
 export const addPerson = async (newPerson) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/`, {
         method: 'POST',
         headers: {
@@ -192,7 +205,7 @@ export const addPerson = async (newPerson) => {
 };
 
 export const fetchPerson = async (personId) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/${personId}`, {
         method: 'GET',
         headers: {
@@ -209,8 +222,8 @@ export const fetchPerson = async (personId) => {
 };
 
 export const deletePerson = async (personId) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${SERVER_URL}cameras/${personId}`, {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}persons/${personId}`, {
         method: 'DELETE',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -224,8 +237,8 @@ export const deletePerson = async (personId) => {
 };
 
 export const updatePerson = async (personId, updatedPersonData) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${SERVER_URL}cameras/${personId}`, {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}persons/${personId}`, {
         method: 'PUT',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -241,7 +254,7 @@ export const updatePerson = async (personId, updatedPersonData) => {
 };
 
 export const fetchFaces = async () => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}faces/`, {
         method: 'GET',
         headers: {
@@ -256,15 +269,15 @@ export const fetchFaces = async () => {
 };
 
 export const addFace = async (personId, newFace) => {
-    const token = localStorage.getItem('token');
+    const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}faces/upload/${personId}`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(newFace),
+        body: newFace,
     });
     if (!response.ok) {
         throw new Error(`Ошибка при добавлении лиц: ${response.status}`);

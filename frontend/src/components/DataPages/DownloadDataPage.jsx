@@ -6,7 +6,6 @@ import './DownloadDataPage.css';
 function DownloadDataPage() {
     const {
         goToCamerasHandler,
-        goToFilesHandler,
         goToStaffHandler,
         goToDataHandler,
         logoutHandler,
@@ -34,12 +33,12 @@ function DownloadDataPage() {
                         altText="Загрузка файлов"
                         onClick={goToDataHandler}
                     />
-                    <ButtonWithTooltip
+                    {/* <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/files-icon-white.png"
                         altText="Список файлов"
                         onClick={goToFilesHandler}
-                    />
+                    /> */}
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/staff-icon-white.png"

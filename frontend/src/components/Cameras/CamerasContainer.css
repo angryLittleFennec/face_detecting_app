@@ -1,0 +1,87 @@
+.cameras-container-one {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: auto;
+    width: 100%;
+}
+
+.cameras-container-many {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.cameras-first-location {
+    background-color: white;
+    padding: 1px;
+    margin: 10px;
+    width: 90%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+}
+
+.cameras-second-location {
+    background-color: white;
+    padding: 1px;
+    margin: 10px;
+    width: 45%;
+    height: auto;
+    cursor: pointer;
+}
+
+.cameras-third-location-big {
+    background-color: white;
+    padding: 1px;
+    margin: 5px;
+    width: 95%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+}
+
+.cameras-third-location-small {
+    background-color: white;
+    padding: 1px;
+    margin: 5px;
+    width: 32%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+}
+.cameras-third-location-small-right {
+    background-color: white;
+    padding: 1px;
+    margin: 5px;
+    width: 93%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+}
+
+.cameras-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.cameras-column {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    width: 50%;
+}
+
+.cameras-fourth-location {
+    background-color: white;
+    padding: 1px;
+    margin: 5px;
+    width: 29%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+}

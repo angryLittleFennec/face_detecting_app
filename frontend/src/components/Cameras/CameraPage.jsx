@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+//import { useEffect } from 'react';
 //import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import CamerasHandlers from './CamerasHandlers';
 import CameraSettingsWindow from './Settings/CameraSettingsWindow';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
@@ -17,19 +17,18 @@ function CameraPage() {
     // const selectedCameraIndex = useSelector(
     //     (state) => state.selectedCameraIndex
     // );
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
 
     const {
         cameras,
         cameraInfo,
         loading,
         error,
+        isModalSettingsOpen,
         handleFetchCameras,
         handleFetchCameraDetails,
         handleDownloadCameraLogs,
+        openModalSettings,
+        closeModalSettings,
     } = CamerasHandlers();
 
     /*useEffect(() => {
@@ -78,7 +77,7 @@ function CameraPage() {
                         className="icon-button"
                         iconSrc="/icons/settings-icon-white.png"
                         altText="Настройка камер"
-                        onClick={openModal}
+                        onClick={openModalSettings}
                     />
                     <ButtonWithTooltip
                         className="icon-button"
@@ -88,8 +87,8 @@ function CameraPage() {
                     />
                 </div>
                 <CameraSettingsWindow
-                    isOpen={isModalOpen}
-                    onClose={closeModal}
+                    isOpen={isModalSettingsOpen}
+                    onClose={closeModalSettings}
                 />
             </div>
             <div className="results white-text">
