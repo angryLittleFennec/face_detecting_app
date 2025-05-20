@@ -153,9 +153,62 @@ export const downloadCameraLogs = async (cameraId) => {
     return response.json();
 };
 
-export const fetchStream = async (cameraId) => {
+// // При получении в результате запроса pdf файла
+// export const downloadCameraLogs = async (cameraId) => {
+//     const token = getCookie('authToken');
+//     const response = await fetch(
+//         ${SERVER_URL}cameras/camera/${cameraId}/log/download,
+//         {
+//             method: 'GET',
+//             headers: {
+//                 Authorization: Bearer ${token},
+//                 Accept: 'application/pdf',
+//             },
+//         }
+//     );
+//     if (!response.ok) {
+//         throw new Error(`Ошибка при получении логов камеры: ${response.status}`);
+//     }
+//     return response.blob();
+// };
+
+export const addStream = async (newStream) => {
     const token = getCookie('authToken');
-    const response = await fetch(`${SERVER_URL}stream/${cameraId}`, {
+    const response = await fetch(`${SERVER_URL}kubernetes/stream-processor`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newStream),
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при добавлении стрима ${newStream.name}: ${response.status}`
+        );
+    }
+    return response.json();
+};
+
+export const getAllStreams = async () => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}kubernetes/stream-processors`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при получении стримов: ${response.status}`);
+    }
+    return response.json();
+};
+
+export const getStream = async (cameraId) => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}kubernetes/stream-processors`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -164,10 +217,29 @@ export const fetchStream = async (cameraId) => {
     });
     if (!response.ok) {
         throw new Error(
-            `Ошибка при получении видео с камеры ${cameraId}: ${response.status}`
+            `Ошибка при получении стрима ${cameraId}: ${response.status}`
         );
     }
     return response.json();
+};
+
+export const deleteStream = async (name) => {
+    const token = getCookie('authToken');
+    const response = await fetch(
+        `${SERVER_URL}kubernetes/stream-processor/${name}`,
+        {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при удалении стрима ${name}: ${response.status}`
+        );
+    }
 };
 
 export const fetchPersons = async () => {

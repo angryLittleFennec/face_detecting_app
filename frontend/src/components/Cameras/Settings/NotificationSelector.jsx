@@ -27,7 +27,6 @@ const NotificationSelector = () => {
                 >
                     <option value="">Выберите способ уведомления</option>
                     <option value="email">Письмом на email</option>
-                    <option value="telegram">Телеграм ботом</option>
                 </select>
             </div>
 

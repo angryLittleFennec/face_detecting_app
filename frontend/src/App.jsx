@@ -12,6 +12,7 @@ import DetectionSettingsPage from './components/Cameras/Settings/DetectionSettin
 import FaceRecognitionSettingsPage from './components/Cameras/Settings/FaceRecognitionSettingsPage';
 import NotificationSettingsPage from './components/Cameras/Settings/NotificationSettingsPage';
 import AdditionalSettingsPage from './components/Cameras/Settings/AdditionalSettingsPage';
+import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPage';
 import './App.css';
 
 function App() {
@@ -65,6 +66,18 @@ function App() {
                             isAuthenticated() ? (
                                 <>
                                     <CamerasSettingsPage />
+                                </>
+                            ) : (
+                                <Navigate to="/" />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/cameras/settings/streams"
+                        element={
+                            isAuthenticated() ? (
+                                <>
+                                    <StreamsSettingsPage />
                                 </>
                             ) : (
                                 <Navigate to="/" />

@@ -19,6 +19,8 @@ const NavigationHandlers = () => {
         navigate('/cameras/settings/notification');
     const goToAdditionalSettingsHandler = () =>
         navigate('/cameras/settings/additional');
+    const goToStreamsSettingsHandler = () =>
+        navigate('/cameras/settings/streams');
     const goToReportsHandler = () => navigate('/report');
     const goToDataHandler = () => navigate('/data');
     const goToFilesHandler = () => navigate('/files');
@@ -36,6 +38,7 @@ const NavigationHandlers = () => {
         goToFaceRecognitionSettingsPageHandler,
         goToNotificationSettingsHandler,
         goToAdditionalSettingsHandler,
+        goToStreamsSettingsHandler,
         goToReportsHandler,
         goToDataHandler,
         goToFilesHandler,

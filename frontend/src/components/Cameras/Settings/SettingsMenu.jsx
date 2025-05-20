@@ -7,6 +7,7 @@ const SettingsMenu = ({ activePage }) => {
         goToFaceRecognitionSettingsPageHandler,
         goToNotificationSettingsHandler,
         goToAdditionalSettingsHandler,
+        goToStreamsSettingsHandler,
     } = NavigationHandlers();
 
     return (
@@ -20,6 +21,16 @@ const SettingsMenu = ({ activePage }) => {
                 onClick={goToSettingsHandler}
             >
                 Камеры
+            </button>
+            <button
+                className={
+                    activePage === 'streams'
+                        ? 'selected-button'
+                        : 'choose-settings-button'
+                }
+                onClick={goToStreamsSettingsHandler}
+            >
+                Видеопотоки
             </button>
             <button
                 className={
