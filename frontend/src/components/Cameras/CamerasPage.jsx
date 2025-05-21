@@ -262,7 +262,7 @@ function CamerasPage() {
                 </div>
 
                 <div className="bottom-menu-right-buttons">
-                    {selectedCameraIndex + 1 && (
+                    {selectedCameraIndex != null && (
                         <ButtonWithTooltip
                             className="bottom-icon-button"
                             iconSrc="/icons/files-icon-white.png"
@@ -270,7 +270,7 @@ function CamerasPage() {
                             onClick={openModalLogs}
                         />
                     )}
-                    {selectedCameraIndex + 1 && (
+                    {selectedCameraIndex != null && (
                         <Link to={`/cameras/${selectedCameraIndex}`}>
                             <ButtonWithTooltip
                                 className="bottom-icon-button"

@@ -6,10 +6,12 @@ import CameraSettingsWindow from './Settings/CameraSettingsWindow';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
+import LogsUploadButton from '../UI/LogsUploadButton';
 import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
 import './CameraPage.css';
+import DataHandlers from '../DataPages/DataHandlers';
 
 function CameraPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
@@ -30,6 +32,8 @@ function CameraPage() {
         openModalSettings,
         closeModalSettings,
     } = CamerasHandlers();
+
+    const { files, handleDownload } = DataHandlers();
 
     /*useEffect(() => {
         handleFetchCameras();
@@ -73,12 +77,12 @@ function CameraPage() {
                     />
                 </div>
                 <div className="bottom-menu-part">
-                    <ButtonWithTooltip
+                    {/* <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/settings-icon-white.png"
                         altText="Настройка камер"
                         onClick={openModalSettings}
-                    />
+                    /> */}
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/exit-icon-white.png"
@@ -118,8 +122,11 @@ function CameraPage() {
                         </p>
                     </div>
                 )}
+                {/* Временная кнопка */}
+                <LogsUploadButton />
                 <button
-                    onClick={() => handleDownloadCameraLogs(cameras[id].id)}
+                    //onClick={() => handleDownloadCameraLogs(cameras[id].id)}
+                    onClick={() => handleDownload(files[0])}
                 >
                     Скачать логи камеры
                 </button>

@@ -8,6 +8,8 @@ import {
     updatePerson,
     deletePerson,
 } from '../Cameras/Api';
+import { useDispatch } from 'react-redux';
+import { addFiles } from '../../actions';
 
 const DataHandlers = () => {
     const fileInputRef = useRef(null);
@@ -23,6 +25,7 @@ const DataHandlers = () => {
     const [selectedPerson, setSelectedPerson] = useState('');
     const [selectedPersonIndex, setSelectedPersonIndex] = useState(null);
     const [selectedPersonId, setSelectedPersonId] = useState(null);
+    const dispatch = useDispatch();
 
     const extractText = () => {
         if (files) {
@@ -45,6 +48,10 @@ const DataHandlers = () => {
             .join('');
 
         return formattedText.trim();
+    };
+
+    const handleUploadLogsFile = () => {
+        dispatch(addFiles('../../../public/files/person_detection_report.pdf'));
     };
 
     const handleDownload = (file) => {
@@ -196,6 +203,7 @@ const DataHandlers = () => {
         handleButtonClick,
         handleStaffSelectChange,
         handlePersonClick,
+        handleUploadLogsFile,
     };
 };
 

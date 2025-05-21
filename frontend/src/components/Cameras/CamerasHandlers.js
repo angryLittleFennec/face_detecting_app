@@ -12,6 +12,7 @@ import {
     getAllStreams,
     deleteStream,
 } from './Api';
+import DataHandlers from '../DataPages/DataHandlers';
 
 const CamerasHandlers = (initialCameras = []) => {
     const dispatch = useDispatch();
@@ -43,6 +44,8 @@ const CamerasHandlers = (initialCameras = []) => {
         name: '',
         camera_id: null,
     });
+
+    const { files } = DataHandlers();
 
     const resetNewStream = () => {
         setNewStream({
@@ -140,7 +143,8 @@ const CamerasHandlers = (initialCameras = []) => {
 
     const handleDownloadCameraLogs = async (cameraId) => {
         try {
-            const data = await downloadCameraLogs(cameraId);
+            //const data = await downloadCameraLogs(cameraId);
+            const data = files;
             console.log(data);
             // При получении pdf файла в data
             // // Создаем URL для data

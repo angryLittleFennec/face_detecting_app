@@ -67,7 +67,7 @@ const StaffEditWindow = ({ isOpen, onClose }) => {
                 >
                     Изменить
                 </button>
-                <h4>Фотографии сотрудника</h4>
+                <h4>Фотографии сотрудника (функционал в работе)</h4>
                 <div className="photo-container">
                     {newFace.length > 0 ? (
                         <p>Добавлено {newFace.length} фотографий</p>

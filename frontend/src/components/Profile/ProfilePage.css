@@ -12,6 +12,32 @@
     font-weight: 500;
 }
 
+.profile-main-content input,
+.profile-main-content textarea {
+    font-size: 18px;
+    font-weight: 500;
+    font-family: Montserrat;
+}
+
+.profile-main-content input {
+    width: 20%;
+}
+
+.profile-main-content textarea {
+    width: 75%;
+    height: 100px;
+}
+
+.profile-field {
+    display: flex;
+    align-items: center;
+}
+
+.profile-field p {
+    margin: 0;
+    margin-right: 10px;
+}
+
 .profile-container-250px {
     display: flex;
     flex-direction: column;

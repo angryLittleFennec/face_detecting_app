@@ -1,6 +1,12 @@
-.modal-content-settings {
+.camera-status-container {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap; /* Позволяет колонкам переноситься на следующую строку */
+    max-height: 400px; /* Ограничьте высоту контейнера для прокрутки */
+    overflow-y: auto; /* Добавляет вертикальную прокрутку */
+}
+
+.camera-status {
+    width: calc(33.33% - 10px); /* Ширина каждой колонки */
+    margin: 5px; /* Отступ между колонками */
+    box-sizing: border-box; /* Учитывает отступы в ширине */
 }
