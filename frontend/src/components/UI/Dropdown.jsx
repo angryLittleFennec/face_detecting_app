@@ -1,3 +1,4 @@
+// Выпадающий список
 import { useState } from 'react';
 import './Dropdown.css';
 
@@ -5,6 +6,7 @@ function Dropdown(props) {
     const { children, text } = props;
     const [selectedValue, setSelectedValue] = useState('none');
 
+    // Смена выбранного значения в выпадающем списке
     const handleDropdownChange = (event) => {
         setSelectedValue(event.target.value);
         console.log(event.target.value);

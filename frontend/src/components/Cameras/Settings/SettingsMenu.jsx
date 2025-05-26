@@ -1,3 +1,4 @@
+// Боковое меню на страницах настроек для навигации по настройкам
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 
 const SettingsMenu = ({ activePage }) => {

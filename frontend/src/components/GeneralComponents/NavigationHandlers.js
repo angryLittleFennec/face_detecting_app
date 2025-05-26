@@ -1,3 +1,4 @@
+// Навигация в рамках приложения
 import { useNavigate } from 'react-router-dom';
 
 const NavigationHandlers = () => {
@@ -8,6 +9,7 @@ const NavigationHandlers = () => {
         document.cookie = name + '=; Max-Age=-99999999;';
     }
 
+    // Хендлеры для навигации
     const goToProfileHandler = () => navigate('/profile');
     const goToCamerasHandler = () => navigate('/cameras');
     const goToSettingsHandler = () => navigate('/cameras/settings/main');

@@ -1,3 +1,4 @@
+// Загрузка данных в систему (в данный момент неактуальная страница)
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import FileUploadButton from '../UI/FileUploadButton';

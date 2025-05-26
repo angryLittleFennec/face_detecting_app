@@ -1,3 +1,4 @@
+// Страница настройки уведомлений
 import NotificationSelector from './NotificationSelector';
 import SettingsMenu from './SettingsMenu';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
@@ -15,7 +16,9 @@ function NotificationSettingsPage() {
                     <div className="settings-container">
                         <h1>Уведомление о событиях</h1>
                         <NotificationSelector />
-                        <button>Подтвердить</button>
+                        <button className="settings-container-button">
+                            Подтвердить
+                        </button>
                     </div>
                 </div>
             </div>

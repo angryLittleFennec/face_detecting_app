@@ -1,3 +1,4 @@
+// Главная страница с камерами
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
@@ -50,6 +51,7 @@ function CamerasPage() {
         handleFetchStreams,
     } = CamerasHandlers();
 
+    // Для корректной синхронизации выбранной камеры с помощью клика и выпадающего списка
     useEffect(() => {
         if (selectedCameraIndex !== null) {
             const camera = cameras[selectedCameraIndex];
@@ -59,6 +61,7 @@ function CamerasPage() {
         }
     }, [selectedCameraIndex, cameras, setSelectedCamera]);
 
+    // Смена страниц при большом количестве камер
     const pagesCount = Math.ceil(cameras.length / camerasPerPage) - 1;
 
     const handleNextPage = () => {
@@ -77,6 +80,7 @@ function CamerasPage() {
     const endIndex = startIndex + camerasPerPage;
     const currentCameras = cameras.slice(startIndex, endIndex);
 
+    // Типы отображения камер
     const firstCameraLocationType = () => {
         setCamerasLocation('first');
         setCamerasPerPage(1);
@@ -94,11 +98,7 @@ function CamerasPage() {
         setCamerasPerPage(9);
     };
 
-    /*
-    useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
-
+    // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
         return <h2>Загрузка...</h2>;

@@ -21,6 +21,7 @@ function App() {
         return !!token;
     };
 
+    // Роутинг в рамках приложения
     return (
         <BrowserRouter>
             <div className="App">

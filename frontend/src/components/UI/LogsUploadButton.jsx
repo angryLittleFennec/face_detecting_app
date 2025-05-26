@@ -1,3 +1,4 @@
+// Кнопка для загрузки файла в систему для теста функционала логов
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addFiles } from '../../actions';
@@ -7,10 +8,12 @@ const LogsUploadButton = () => {
     const fileInputRef = useRef(null);
     const [fileName, setFileName] = useState('');
 
+    // Программно вызываем клик на input
     const handleButtonClick = () => {
-        fileInputRef.current.click(); // Программно вызываем клик на input
+        fileInputRef.current.click();
     };
 
+    // загрузка файла
     const handleFileChange = (event) => {
         const selectedFile = event.target.files[0];
         setFileName(selectedFile ? selectedFile.name : 'Нет файла');

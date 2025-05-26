@@ -1,3 +1,4 @@
+// Кнопка для загрузки фотографий сотрудников
 const FileUploadButton = ({ onClick, onChange, fileRef }) => {
     return (
         <div>

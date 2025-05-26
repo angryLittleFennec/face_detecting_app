@@ -1,3 +1,4 @@
+// Страница с сотрудниками
 import DataHandlers from './DataHandlers';
 import FileUploadWindow from './FileUploadWindow';
 import StaffEditWindow from './StaffEditWindow';
@@ -24,6 +25,7 @@ function StaffPage() {
         handlePersonClick,
     } = DataHandlers();
 
+    // alert с предупреждением об удалении сотрудника
     const handleDeleteButton = (person) => {
         const confirmDelete = window.confirm(
             `Вы точно хотите удалить сотрудника ${person.name}?`
@@ -33,6 +35,7 @@ function StaffPage() {
         }
     };
 
+    // Получение списка сотрудников перед показом страницы
     if (loading) {
         handleFetchPersons();
         return <h2>Загрузка...</h2>;

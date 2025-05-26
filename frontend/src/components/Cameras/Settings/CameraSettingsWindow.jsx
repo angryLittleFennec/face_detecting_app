@@ -1,3 +1,4 @@
+// Модульное окно для настройки камеры (не используется)
 import ModalWindow from '../../UI/ModalWindow';
 import './CameraSettingsWindow.css';
 

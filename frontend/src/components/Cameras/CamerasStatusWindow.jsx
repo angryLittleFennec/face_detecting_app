@@ -1,3 +1,4 @@
+// Модульное окно со статусом камер
 import ModalWindow from '../UI/ModalWindow';
 import './CamerasStatusWindow.css';
 

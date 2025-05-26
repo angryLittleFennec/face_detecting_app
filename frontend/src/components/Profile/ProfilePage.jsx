@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Страница профиля
+import { useState } from 'react';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './ProfilePage.css';
@@ -19,6 +20,7 @@ function ProfilePage() {
 
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
+    // Хендлеры для редактирования персональной информации
     const handleEditMainClick = () => {
         setIsEditingMain(true);
     };

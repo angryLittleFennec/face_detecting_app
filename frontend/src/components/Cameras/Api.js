@@ -1,3 +1,4 @@
+// Файл с запросами к серверу
 import { SERVER_URL } from '../../config';
 
 // Функция для получения куки
@@ -13,6 +14,7 @@ function getCookie(name) {
     return null;
 }
 
+// Аутентификация пользователя
 export const loginUser = async (user) => {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
@@ -34,6 +36,7 @@ export const loginUser = async (user) => {
     return response.json();
 };
 
+// Регистрация пользователя
 export const registerUser = async (user) => {
     const response = await fetch(`${SERVER_URL}auth/register`, {
         method: 'POST',
@@ -49,6 +52,7 @@ export const registerUser = async (user) => {
     return response.json();
 };
 
+// Получение камер
 export const fetchCameras = async () => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/`, {
@@ -66,6 +70,7 @@ export const fetchCameras = async () => {
     return response.json();
 };
 
+// Добавление камер
 export const addCamera = async (newCamera) => {
     const token = getCookie('authToken');
 
@@ -84,6 +89,7 @@ export const addCamera = async (newCamera) => {
     return response.json();
 };
 
+// Удаление камер
 export const deleteCamera = async (cameraId) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
@@ -99,6 +105,7 @@ export const deleteCamera = async (cameraId) => {
     return response.json();
 };
 
+// Обновление информации о камерах
 export const updateCamera = async (cameraId, updatedCameraData) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
@@ -116,6 +123,7 @@ export const updateCamera = async (cameraId, updatedCameraData) => {
     return await response.json();
 };
 
+// Получение ифнормации о выбранной камере
 export const fetchCameraDetails = async (cameraId) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
@@ -133,6 +141,7 @@ export const fetchCameraDetails = async (cameraId) => {
     return response.json();
 };
 
+// Скачивание логов выбранной камеры
 export const downloadCameraLogs = async (cameraId) => {
     const token = getCookie('authToken');
     const response = await fetch(
@@ -153,7 +162,7 @@ export const downloadCameraLogs = async (cameraId) => {
     return response.json();
 };
 
-// // При получении в результате запроса pdf файла
+// // Скачивание логов выбранной камеры при получении в результате запроса pdf файла
 // export const downloadCameraLogs = async (cameraId) => {
 //     const token = getCookie('authToken');
 //     const response = await fetch(
@@ -172,6 +181,7 @@ export const downloadCameraLogs = async (cameraId) => {
 //     return response.blob();
 // };
 
+// Создание видеопотоков
 export const addStream = async (newStream) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}kubernetes/stream-processor`, {
@@ -191,6 +201,7 @@ export const addStream = async (newStream) => {
     return response.json();
 };
 
+// Получение всех видеопотоков
 export const getAllStreams = async () => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}kubernetes/stream-processors`, {
@@ -206,15 +217,19 @@ export const getAllStreams = async () => {
     return response.json();
 };
 
+// Получение определенного видеопотока (в данный момент такой запрос отсутствует)
 export const getStream = async (cameraId) => {
     const token = getCookie('authToken');
-    const response = await fetch(`${SERVER_URL}kubernetes/stream-processors`, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-        },
-    });
+    const response = await fetch(
+        `${SERVER_URL}kubernetes/stream-processors/${cameraId}`,
+        {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+            },
+        }
+    );
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении стрима ${cameraId}: ${response.status}`
@@ -223,6 +238,7 @@ export const getStream = async (cameraId) => {
     return response.json();
 };
 
+// Удалить видеопоток
 export const deleteStream = async (name) => {
     const token = getCookie('authToken');
     const response = await fetch(
@@ -242,6 +258,7 @@ export const deleteStream = async (name) => {
     }
 };
 
+// Получение списка сотрудников
 export const fetchPersons = async () => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/`, {
@@ -259,6 +276,7 @@ export const fetchPersons = async () => {
     return response.json();
 };
 
+// Добавление сотрудника
 export const addPerson = async (newPerson) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/`, {
@@ -276,6 +294,7 @@ export const addPerson = async (newPerson) => {
     return response.json();
 };
 
+// Получение информации об определенном сотруднике
 export const fetchPerson = async (personId) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/${personId}`, {
@@ -293,6 +312,7 @@ export const fetchPerson = async (personId) => {
     return response.json();
 };
 
+// Удаление сотрудника
 export const deletePerson = async (personId) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/${personId}`, {
@@ -308,6 +328,7 @@ export const deletePerson = async (personId) => {
     return response.json();
 };
 
+// Обновление информации о сотруднике
 export const updatePerson = async (personId, updatedPersonData) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}persons/${personId}`, {
@@ -325,6 +346,7 @@ export const updatePerson = async (personId, updatedPersonData) => {
     return await response.json();
 };
 
+// Получение всех лиц
 export const fetchFaces = async () => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}faces/`, {
@@ -340,6 +362,7 @@ export const fetchFaces = async () => {
     return response.json();
 };
 
+// Добавление изображений с лицом выбранному сотруднику
 export const addFace = async (personId, newFace) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}faces/upload/${personId}`, {

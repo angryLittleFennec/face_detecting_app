@@ -1,3 +1,4 @@
+// Вспомогательный файл для управления состояниями с помощью redux
 export const setSelectedCameraIndexRedux = (index) => ({
     type: 'SET_SELECTED_CAMERA_INDEX',
     payload: index,

@@ -1,3 +1,4 @@
+// Страница для просмотра и скачивания загруженных файлов
 import DataHandlers from './DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';

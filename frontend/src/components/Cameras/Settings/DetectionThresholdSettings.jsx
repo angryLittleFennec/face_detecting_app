@@ -1,3 +1,4 @@
+// Форма для настройки детекции
 import { useState } from 'react';
 
 const DetectionThresholdSettings = () => {
@@ -6,8 +7,8 @@ const DetectionThresholdSettings = () => {
         useState(0.7);
     const [iouThreshold, setIouThreshold] = useState(0.8);
 
+    // Сохранение настроек (например, в локальном хранилище или на сервере)
     const handleSaveSettings = () => {
-        // Сохранение настроек (например, в локальном хранилище или на сервере)
         console.log('Настройки сохранены:', {
             faceDetectionThreshold,
             silhouetteDetectionThreshold,
@@ -65,7 +66,12 @@ const DetectionThresholdSettings = () => {
                     />
                 </label>
             </div>
-            <button onClick={handleSaveSettings}>Сохранить настройки</button>
+            <button
+                className="settings-container-button"
+                onClick={handleSaveSettings}
+            >
+                Сохранить настройки
+            </button>
         </div>
     );
 };

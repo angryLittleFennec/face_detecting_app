@@ -1,3 +1,4 @@
+// Функции для взаимодействия с даннными
 import { useSelector } from 'react-redux';
 import { useState, useRef } from 'react';
 import pdfToText from 'react-pdftotext';
@@ -27,6 +28,7 @@ const DataHandlers = () => {
     const [selectedPersonId, setSelectedPersonId] = useState(null);
     const dispatch = useDispatch();
 
+    // Извлечение текста из pdf файла
     const extractText = () => {
         if (files) {
             const file = files[0];
@@ -38,6 +40,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Форматирование текста
     const formatTextWithDates = (text) => {
         const lines = text.split('.');
 
@@ -54,6 +57,7 @@ const DataHandlers = () => {
         dispatch(addFiles('../../../public/files/person_detection_report.pdf'));
     };
 
+    // Скачивание загруженного файла
     const handleDownload = (file) => {
         const fileUrl = URL.createObjectURL(file);
 
@@ -66,6 +70,7 @@ const DataHandlers = () => {
         document.body.removeChild(link);
     };
 
+    // Получить список сотрудников
     const handleFetchPersons = async () => {
         try {
             const data = await fetchPersons();
@@ -80,6 +85,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Добавить сотрудника
     const handleAddPerson = async () => {
         try {
             await addPerson(newPerson);
@@ -90,6 +96,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Обновить данные выбранного сотрудника
     const handleUpdatePerson = async (personId) => {
         try {
             await updatePerson(personId, newPerson);
@@ -102,6 +109,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Удалить выбранного сотрудника
     const handleDeletePerson = async (personId) => {
         try {
             await deletePerson(personId);
@@ -113,6 +121,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Добавить фотографии лиц выбранному сотруднику
     const handleAddFace = async () => {
         try {
             await addFace(selectedPersonId, newFace);
@@ -123,6 +132,7 @@ const DataHandlers = () => {
         }
     };
 
+    // Создание сотрудника (объединяет в себя добавление сотрудника и загрузку фотографий)
     const handleCreatePerson = async () => {
         try {
             handleAddPerson();
@@ -135,25 +145,24 @@ const DataHandlers = () => {
         }
     };
 
-    const handleError = (error) => {
-        setError(error);
-        console.error(error);
-    };
-
+    // Модульные окна
     const openUploadWindow = () => setIsUploadWindowOpen(true);
     const closeUploadWindow = () => setIsUploadWindowOpen(false);
     const openEditWindow = () => setIsEditWindowOpen(true);
     const closeEditWindow = () => setIsEditWindowOpen(false);
 
+    // Загрузка новых лиц
     const handleFileChange = (event) => {
         const files = event.target.files;
         setNewFace(files);
     };
 
+    // Программная имитация клика
     const handleButtonClick = () => {
         fileInputRef.current.click();
     };
 
+    // Изменение имени сотрудника
     const handleStaffSelectChange = (event) => {
         const selectedValue = event.target.value;
         setSelectedPerson(selectedValue);
@@ -164,12 +173,18 @@ const DataHandlers = () => {
         setNewPerson(selectedValue);
     };
 
+    // При нажатии на сотрудника
     const handlePersonClick = (index) => {
         if (selectedPersonIndex === index) {
             setSelectedPersonIndex(null);
         } else {
             setSelectedPersonIndex(index);
         }
+    };
+
+    const handleError = (error) => {
+        setError(error);
+        console.error(error);
     };
 
     return {

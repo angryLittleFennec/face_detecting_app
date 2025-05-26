@@ -1,3 +1,4 @@
+// Форма для настройки распознавания лиц
 import { useState } from 'react';
 
 const RecognitionThresholdSettings = () => {
@@ -5,8 +6,8 @@ const RecognitionThresholdSettings = () => {
         useState(0.8);
     const [similarityThreshold, setSimilarityThreshold] = useState(0.8);
 
+    // Сохранение настроек (например, в локальном хранилище или на сервере)
     const handleSaveSettings = () => {
-        // Сохранение настроек (например, в локальном хранилище или на сервере)
         console.log('Настройки сохранены:', {
             faceRecognitionThreshold,
             similarityThreshold,
@@ -47,7 +48,12 @@ const RecognitionThresholdSettings = () => {
                     />
                 </label>
             </div>
-            <button onClick={handleSaveSettings}>Сохранить настройки</button>
+            <button
+                className="settings-container-button"
+                onClick={handleSaveSettings}
+            >
+                Сохранить настройки
+            </button>
         </div>
     );
 };

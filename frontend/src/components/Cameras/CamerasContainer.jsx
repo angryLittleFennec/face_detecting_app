@@ -1,3 +1,4 @@
+// Контейнер с камерами
 import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
 import './CamerasContainer.css';
@@ -11,6 +12,7 @@ const CamerasContainer = (props) => {
         (state) => state.selectedCameraIndex
     );
 
+    // Получение камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
         return <h2>Загрузка...</h2>;

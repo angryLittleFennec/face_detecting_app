@@ -1,8 +1,10 @@
-//import { useEffect } from 'react';
+// Страница отдельной камеры
 //import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { useRef, useState, useEffect } from 'react';
 import CamerasHandlers from './CamerasHandlers';
 import CameraSettingsWindow from './Settings/CameraSettingsWindow';
+import DataHandlers from '../DataPages/DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
@@ -11,11 +13,15 @@ import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
 import staffOptions from './StaffOptions';
 import './CameraPage.css';
-import DataHandlers from '../DataPages/DataHandlers';
 
 function CameraPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
     const { id } = useParams();
+    const canvasRef = useRef(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [drawingEnabled, setDrawingEnabled] = useState(false);
+    const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+    const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
     // const selectedCameraIndex = useSelector(
     //     (state) => state.selectedCameraIndex
     // );
@@ -35,10 +41,65 @@ function CameraPage() {
 
     const { files, handleDownload } = DataHandlers();
 
-    /*useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
+    const handleMouseDown = (e) => {
+        if (!drawingEnabled) return;
+        setIsDrawing(true);
+        const rect = canvasRef.current.getBoundingClientRect();
+        setStartPoint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
 
+    const handleMouseMove = (e) => {
+        if (!isDrawing) return;
+        const rect = canvasRef.current.getBoundingClientRect();
+        setEndPoint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+
+    const handleMouseUp = () => {
+        if (!drawingEnabled) return;
+        setIsDrawing(false);
+        // Здесь можно сохранить координаты зоны для дальнейшей обработки
+        console.log('Selected area:', { startPoint, endPoint });
+    };
+
+    // Отрисовка выделенной области
+    useEffect(() => {
+        if (isDrawing) {
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current.width,
+                canvasRef.current.height
+            );
+            ctx.strokeStyle = 'red';
+            ctx.strokeRect(
+                startPoint.x,
+                startPoint.y,
+                endPoint.x - startPoint.x,
+                endPoint.y - startPoint.y
+            );
+        }
+    }, [isDrawing, startPoint, endPoint]);
+
+    // Функция для переключения режима рисования
+    const toggleDrawingMode = () => {
+        setDrawingEnabled((prev) => !prev);
+        if (drawingEnabled) {
+            // Если мы выключаем режим рисования, сбрасываем состояние
+            setIsDrawing(false);
+            setStartPoint({ x: 0, y: 0 });
+            setEndPoint({ x: 0, y: 0 });
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current.width,
+                canvasRef.current.height
+            ); // Очищаем канвас при выключении
+        }
+    };
+
+    // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
         return <h2>Загрузка...</h2>;
@@ -54,7 +115,7 @@ function CameraPage() {
                 {cameras.length > 0 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        <video controls autoPlay loop>
+                        <video autoPlay loop>
                             <source
                                 //src={cameras[id].url}
                                 src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
@@ -62,6 +123,15 @@ function CameraPage() {
                             />
                             Ваш браузер не поддерживает видео.
                         </video>
+                        <canvas
+                            ref={canvasRef}
+                            width={1280}
+                            height={720}
+                            style={{ position: 'absolute', top: 0, left: 0 }}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                        />
                     </div>
                 ) : (
                     <h1>Камера не найдена</h1>
@@ -130,13 +200,16 @@ function CameraPage() {
                 >
                     Скачать логи камеры
                 </button>
+                <button onClick={toggleDrawingMode}>
+                    {drawingEnabled
+                        ? 'Отключить рисование'
+                        : 'Включить рисование'}
+                </button>
             </div>
             <div className="filters white-text">
                 <Dropdown children={modelOptions} text="Выбор модели" />
                 <Dropdown children={trackingOptions} text="Виды трекинга" />
                 <Dropdown children={staffOptions} text="Выбор сотрудника" />
-                <Dropdown children={staffOptions} text="Признаки лица" />
-                <Dropdown children={staffOptions} text="Другое" />
             </div>
             <div className="faces-feed white-text">
                 <h2>Лента выявленных лиц</h2>

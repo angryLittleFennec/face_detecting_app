@@ -1,3 +1,4 @@
+// Шаблон для создания модального окна (статус камер, логи на общей странице)
 import './ModalWindow.css';
 
 const ModalWindow = ({ isOpen, onClose, children }) => {

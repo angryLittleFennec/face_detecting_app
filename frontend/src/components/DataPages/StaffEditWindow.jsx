@@ -1,3 +1,4 @@
+// Модульное окно для изменения данных об уже добавленных сотрудниках
 import DataHandlers from './DataHandlers';
 import ModalWindow from '../UI/ModalWindow';
 import FileUploadButton from '../UI/FileUploadButton';
@@ -24,6 +25,7 @@ const StaffEditWindow = ({ isOpen, onClose }) => {
         handleAddFace,
     } = DataHandlers();
 
+    // Получение информации о сотрудниках перед показом страницы
     if (loading) {
         handleFetchPersons();
         return <h2>Загрузка...</h2>;

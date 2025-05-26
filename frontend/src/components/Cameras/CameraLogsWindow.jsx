@@ -1,3 +1,4 @@
+// Модульное окно с логами камеры
 import PdfViewer from '../GeneralComponents/PdfViewer';
 import DataHandlers from '../DataPages/DataHandlers';
 import ModalWindow from '../UI/ModalWindow';

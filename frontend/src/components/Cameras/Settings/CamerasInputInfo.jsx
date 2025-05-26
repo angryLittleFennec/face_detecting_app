@@ -1,3 +1,4 @@
+// Форма для добавления/изменения камеры
 import './CamerasInputInfo.css';
 
 const CamerasInputInfo = ({ newCamera, setNewCamera }) => {

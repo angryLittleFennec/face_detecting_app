@@ -1,3 +1,4 @@
+// Форма для настройки уведомлений
 import { useState } from 'react';
 import './NotificationSelector.css';
 
@@ -5,11 +6,13 @@ const NotificationSelector = () => {
     const [selectedOption, setSelectedOption] = useState('');
     const [inputValue, setInputValue] = useState('');
 
+    // Смена выбора в выпадающем списке
     const handleOptionChange = (event) => {
         setSelectedOption(event.target.value);
         setInputValue('');
     };
 
+    // Ввод данных в поле ввода
     const handleInputChange = (event) => {
         setInputValue(event.target.value);
     };
@@ -33,10 +36,7 @@ const NotificationSelector = () => {
             {selectedOption && (
                 <div className="notification-input">
                     <label htmlFor="notification-input">
-                        {selectedOption === 'email' &&
-                            'Введите почтовый адрес:'}
-                        {selectedOption === 'telegram' &&
-                            'Введите ник телеграм:'}
+                        Введите почтовый адрес:
                     </label>
                     <br />
                     <input
@@ -45,11 +45,7 @@ const NotificationSelector = () => {
                         type="text"
                         value={inputValue}
                         onChange={handleInputChange}
-                        placeholder={
-                            selectedOption === 'email'
-                                ? 'example@email.com'
-                                : '@example_nickname'
-                        }
+                        placeholder={'example@email.com'}
                     />
                 </div>
             )}

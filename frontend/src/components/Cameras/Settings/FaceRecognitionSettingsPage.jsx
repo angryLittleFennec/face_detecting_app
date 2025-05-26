@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+// Страница для настройки распознавания лиц
+import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import SettingsMenu from './SettingsMenu';
 import RecognitionThresholdSettings from './RecognitionThresholdSettings';
@@ -23,11 +24,7 @@ function FaceRecognitionSettingsPage() {
         }*/
     };
 
-    /*
-    useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
-
+    // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
         return <h2>Загрузка...</h2>;
@@ -59,7 +56,10 @@ function FaceRecognitionSettingsPage() {
                                     }
                                     placeholder="Введите пароль"
                                 />
-                                <button onClick={handleAuthenticate}>
+                                <button
+                                    className="settings-container-button"
+                                    onClick={handleAuthenticate}
+                                >
                                     Войти
                                 </button>
                             </div>

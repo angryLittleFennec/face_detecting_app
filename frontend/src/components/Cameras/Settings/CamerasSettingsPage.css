@@ -15,17 +15,21 @@
     align-items: center;
 }
 
-.settings-container button {
+.settings-container-button,
+.settings-container .delete-button {
     font-size: 16px;
     font-weight: 500;
     width: 50%;
     padding: 10px;
-    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 20px;
     cursor: pointer;
     margin-top: 10px;
+}
+
+.settings-container-button {
+    background-color: #007bff;
 }
 
 .settings-container .delete-button {

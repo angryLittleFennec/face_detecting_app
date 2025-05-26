@@ -1,3 +1,4 @@
+// Модульное окно для добавления новых сотрудников
 import DataHandlers from './DataHandlers';
 import ModalWindow from '../UI/ModalWindow';
 import FileUploadButton from '../UI/FileUploadButton';

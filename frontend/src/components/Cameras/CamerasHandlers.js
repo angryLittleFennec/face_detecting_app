@@ -1,3 +1,4 @@
+// Функции для взаимодействия с камерами
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setSelectedCameraIndexRedux } from '../../actions';
@@ -72,6 +73,7 @@ const CamerasHandlers = (initialCameras = []) => {
         });
     };
 
+    // Добавление камеры
     const handleAddCamera = async () => {
         try {
             await addCamera(newCamera);
@@ -82,6 +84,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Обновление камеры
     const handleUpdateCamera = async () => {
         if (selectedCameraIndex === null) {
             console.log('Камера не выбрана');
@@ -101,6 +104,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Удаление камеры
     const handleDeleteCamera = async (cameraId) => {
         try {
             await deleteCamera(cameraId);
@@ -114,6 +118,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Получение камер и стримов
     const handleFetchCameras = async () => {
         try {
             const data = await fetchCameras();
@@ -128,6 +133,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Получение инфы о выбранной камере
     const handleFetchCameraDetails = async (cameraId) => {
         try {
             const data = await fetchCameraDetails(cameraId);
@@ -141,6 +147,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Скачивание логов камеры
     const handleDownloadCameraLogs = async (cameraId) => {
         try {
             //const data = await downloadCameraLogs(cameraId);
@@ -165,6 +172,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Создание стрима
     const handleAddStream = async () => {
         try {
             await addStream(newCamera);
@@ -175,6 +183,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Получение списка стримов
     const handleFetchStreams = async () => {
         try {
             const data = await getAllStreams();
@@ -186,6 +195,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Удаление стрима
     const handleDeleteStream = async (streamId) => {
         try {
             await deleteStream(streamId);
@@ -205,6 +215,7 @@ const CamerasHandlers = (initialCameras = []) => {
         setIsVideoVisible(!isVideoVisible); // Переключаем видимость видео
     };
 
+    // Смена выбранной камеры (с помощью клика или выпадающего списка)
     const handleSelectChange = (event) => {
         const selectedValue = event.target.value;
         setSelectedCamera(selectedValue);
@@ -226,6 +237,7 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
+    // Смена выбранного стрима
     const handleSelectStreamChange = (event) => {
         const selectedValue = event.target.value;
         setSelectedStream(selectedValue);
@@ -235,12 +247,14 @@ const CamerasHandlers = (initialCameras = []) => {
         setSelectedStreamIndex(index);
     };
 
+    // Не используется
     const handleCameraClick = (index) => {
         const camera = cameras[index];
         setSelectedCamera(camera.name);
         setSelectedCameraIndex(index);
     };
 
+    // Для выбора камеры
     const handleSelectCamera = (index) => {
         dispatch(setSelectedCameraIndexRedux(index)); // Устанавливаем индекс в Redux
         const camera = cameras[index];

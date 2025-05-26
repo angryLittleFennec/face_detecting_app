@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+// Страница для настройки стримов
+import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import SettingsMenu from './SettingsMenu';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
@@ -35,11 +36,7 @@ function StreamsSettingPage() {
         }*/
     };
 
-    /*
-    useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
-
+    // Получение списка стримов перед загрузкой страницы
     // if (loading) {
     //     handleFetchStreams();
     //     return <h2>Загрузка...</h2>;
@@ -71,14 +68,31 @@ function StreamsSettingPage() {
                                     }
                                     placeholder="Введите пароль"
                                 />
-                                <button onClick={handleAuthenticate}>
+                                <button
+                                    className="settings-container-button"
+                                    onClick={handleAuthenticate}
+                                >
                                     Войти
                                 </button>
                             </div>
                         ) : (
                             <div className="cameras-settings-container">
                                 <div>
-                                    <h3>Добавление видеопотока</h3>
+                                    <div className="string-with-information">
+                                        <h3>Добавление видеопотока</h3>
+                                        <ButtonWithTooltip
+                                            className="icon-button"
+                                            iconSrc="/icons/information-icon.png"
+                                            altText={
+                                                <>
+                                                    Название видеопотока может
+                                                    содержать <br /> только
+                                                    латинские буквы и цифры, без
+                                                    пробелов
+                                                </>
+                                            }
+                                        />
+                                    </div>
                                     <div className="streams-input-info-container">
                                         <input
                                             className="text-input"
@@ -105,7 +119,10 @@ function StreamsSettingPage() {
                                             }
                                         />
                                     </div>
-                                    <button onClick={handleAddStream}>
+                                    <button
+                                        className="settings-container-button"
+                                        onClick={handleAddStream}
+                                    >
                                         Добавить видеопоток
                                     </button>
                                 </div>

@@ -7,3 +7,23 @@
     padding: 5px;
     margin-top: 10px;
 }
+
+.string-with-information {
+    display: flex;
+    align-items: center;
+}
+
+.cameras-settings-container .icon-button {
+    margin-left: 10px;
+}
+
+.cameras-settings-container img {
+    width: 20px;
+}
+
+.cameras-settings-container .tooltip {
+    height: 30px;
+    color: #2e2e2e;
+    background-color: #f8f8f8;
+    font-weight: 500;
+}

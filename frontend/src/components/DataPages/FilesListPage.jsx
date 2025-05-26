@@ -1,3 +1,4 @@
+// Страница для просмотра загруженных файлов (в данный момент неактуальная страница, загруженные файлы просматриваются в ReportPage)
 import { useSelector } from 'react-redux';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';

@@ -1,3 +1,4 @@
+// Файл не используется
 import { SERVER_URL } from '../../config';
 
 export const videoPlayerHandler = async (cameraId) => {

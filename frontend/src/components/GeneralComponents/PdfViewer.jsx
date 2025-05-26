@@ -1,3 +1,4 @@
+// Вспомогательный файл для отображения текста из pdf файла
 import { useEffect } from 'react';
 import DataHandlers from '../DataPages/DataHandlers';
 

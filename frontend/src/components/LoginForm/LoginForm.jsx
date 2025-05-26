@@ -1,3 +1,4 @@
+// Страница входа/регистрации
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../Cameras/Api';
@@ -34,6 +35,7 @@ function LoginForm() {
         );
     }
 
+    // При попытке входа
     const onSubmitLoginHandler = async (event) => {
         event.preventDefault();
         const user = { username, password, grant_type: 'password' };
@@ -53,12 +55,13 @@ function LoginForm() {
         }
     };
 
+    // При попытке регистрации
     const onSubmitRegistrationHandler = async (event) => {
         event.preventDefault();
         const user = { email, username, password };
 
+        // Регистрация пользователя
         try {
-            // Регистрация пользователя
             const data = await registerUser(user);
             console.log(data);
             setNeedToLogin(false);

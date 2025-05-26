@@ -1,3 +1,4 @@
+// Страница с дополнительными настройками
 import SettingsMenu from './SettingsMenu';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';

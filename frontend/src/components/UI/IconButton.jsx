@@ -1,3 +1,4 @@
+// Кнопка в виде иконки
 const IconButton = ({ onClick, iconSrc, altText, className }) => {
     return (
         <button onClick={onClick} className={className}>

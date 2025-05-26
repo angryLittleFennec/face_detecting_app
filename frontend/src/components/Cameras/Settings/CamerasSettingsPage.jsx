@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+// Страница настройками камер
+import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import CamerasInputInfo from './CamerasInputInfo';
 import SettingsMenu from './SettingsMenu';
@@ -39,11 +40,7 @@ function CamerasSettingPage() {
         }*/
     };
 
-    /*
-    useEffect(() => {
-        handleFetchCameras();
-    }, [handleFetchCameras]);*/
-
+    // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
         return <h2>Загрузка...</h2>;
@@ -75,7 +72,10 @@ function CamerasSettingPage() {
                                     }
                                     placeholder="Введите пароль"
                                 />
-                                <button onClick={handleAuthenticate}>
+                                <button
+                                    className="settings-container-button"
+                                    onClick={handleAuthenticate}
+                                >
                                     Войти
                                 </button>
                             </div>
@@ -87,7 +87,10 @@ function CamerasSettingPage() {
                                         newCamera={newCamera}
                                         setNewCamera={setNewCamera}
                                     />
-                                    <button onClick={handleAddCamera}>
+                                    <button
+                                        className="settings-container-button"
+                                        onClick={handleAddCamera}
+                                    >
                                         Добавить камеру
                                     </button>
                                 </div>
@@ -121,6 +124,7 @@ function CamerasSettingPage() {
                                         {selectedCamera && (
                                             <div>
                                                 <button
+                                                    className="settings-container-button"
                                                     onClick={handleUpdateCamera}
                                                 >
                                                     Обновить Камеру

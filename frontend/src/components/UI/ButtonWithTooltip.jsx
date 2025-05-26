@@ -1,4 +1,4 @@
-import React from 'react';
+// Кнопка с подсказкой (совместима с кнопкой в виде иконки)
 import { useRef, useState } from 'react';
 import './ButtonWithTooltip.css';
 
