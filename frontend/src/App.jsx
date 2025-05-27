@@ -3,14 +3,11 @@ import LoginForm from './components/LoginForm/LoginForm';
 import ProfilePage from './components/Profile/ProfilePage';
 import CamerasPage from './components/Cameras/CamerasPage';
 import CameraPage from './components/Cameras/CameraPage';
-import DownloadDataPage from './components/DataPages/DownloadDataPage';
-import FilesListPage from './components/DataPages/FilesListPage';
 import StaffPage from './components/DataPages/StaffPage';
 import ReportPage from './components/DataPages/ReportPage';
 import CamerasSettingsPage from './components/Cameras/Settings/CamerasSettingsPage';
 import DetectionSettingsPage from './components/Cameras/Settings/DetectionSettingsPage';
 import FaceRecognitionSettingsPage from './components/Cameras/Settings/FaceRecognitionSettingsPage';
-import NotificationSettingsPage from './components/Cameras/Settings/NotificationSettingsPage';
 import AdditionalSettingsPage from './components/Cameras/Settings/AdditionalSettingsPage';
 import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPage';
 import './App.css';
@@ -110,47 +107,11 @@ function App() {
                         }
                     />
                     <Route
-                        path="/cameras/settings/notification"
-                        element={
-                            isAuthenticated() ? (
-                                <>
-                                    <NotificationSettingsPage />
-                                </>
-                            ) : (
-                                <Navigate to="/" />
-                            )
-                        }
-                    />
-                    <Route
                         path="/cameras/settings/additional"
                         element={
                             isAuthenticated() ? (
                                 <>
                                     <AdditionalSettingsPage />
-                                </>
-                            ) : (
-                                <Navigate to="/" />
-                            )
-                        }
-                    />
-                    <Route
-                        path="/data"
-                        element={
-                            isAuthenticated() ? (
-                                <>
-                                    <DownloadDataPage />
-                                </>
-                            ) : (
-                                <Navigate to="/" />
-                            )
-                        }
-                    />
-                    <Route
-                        path="/files"
-                        element={
-                            isAuthenticated() ? (
-                                <>
-                                    <FilesListPage />
                                 </>
                             ) : (
                                 <Navigate to="/" />

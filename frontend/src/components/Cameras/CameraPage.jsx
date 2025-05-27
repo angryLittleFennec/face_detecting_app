@@ -1,17 +1,13 @@
 // Страница отдельной камеры
-//import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
 import CamerasHandlers from './CamerasHandlers';
-import CameraSettingsWindow from './Settings/CameraSettingsWindow';
 import DataHandlers from '../DataPages/DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import LogsUploadButton from '../UI/LogsUploadButton';
-import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
-import staffOptions from './StaffOptions';
 import './CameraPage.css';
 
 function CameraPage() {
@@ -22,24 +18,27 @@ function CameraPage() {
     const [drawingEnabled, setDrawingEnabled] = useState(false);
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
     const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
-    // const selectedCameraIndex = useSelector(
-    //     (state) => state.selectedCameraIndex
-    // );
 
     const {
         cameras,
         cameraInfo,
         loading,
         error,
-        isModalSettingsOpen,
         handleFetchCameras,
         handleFetchCameraDetails,
         handleDownloadCameraLogs,
-        openModalSettings,
-        closeModalSettings,
     } = CamerasHandlers();
 
-    const { files, handleDownload } = DataHandlers();
+    const {
+        files,
+        persons,
+        selectedPerson,
+        selectedModel,
+        handleDownload,
+        handleFetchPersons,
+        handleStaffDropdownSelectChange,
+        handleModelSelectChange,
+    } = DataHandlers();
 
     const handleMouseDown = (e) => {
         if (!drawingEnabled) return;
@@ -102,6 +101,7 @@ function CameraPage() {
     // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
+        handleFetchPersons();
         return <h2>Загрузка...</h2>;
     }
 
@@ -147,12 +147,6 @@ function CameraPage() {
                     />
                 </div>
                 <div className="bottom-menu-part">
-                    {/* <ButtonWithTooltip
-                        className="icon-button"
-                        iconSrc="/icons/settings-icon-white.png"
-                        altText="Настройка камер"
-                        onClick={openModalSettings}
-                    /> */}
                     <ButtonWithTooltip
                         className="icon-button"
                         iconSrc="/icons/exit-icon-white.png"
@@ -160,10 +154,6 @@ function CameraPage() {
                         onClick={logoutHandler}
                     />
                 </div>
-                <CameraSettingsWindow
-                    isOpen={isModalSettingsOpen}
-                    onClose={closeModalSettings}
-                />
             </div>
             <div className="results white-text">
                 <h2>Результаты идентификации</h2>
@@ -207,9 +197,18 @@ function CameraPage() {
                 </button>
             </div>
             <div className="filters white-text">
-                <Dropdown children={modelOptions} text="Выбор модели" />
-                <Dropdown children={trackingOptions} text="Виды трекинга" />
-                <Dropdown children={staffOptions} text="Выбор сотрудника" />
+                <Dropdown
+                    children={trackingOptions}
+                    selectedValue={selectedModel}
+                    onChange={handleModelSelectChange}
+                    text="Виды трекинга"
+                />
+                <Dropdown
+                    children={persons}
+                    selectedValue={selectedPerson}
+                    onChange={handleStaffDropdownSelectChange}
+                    text="Выбор сотрудника"
+                />
             </div>
             <div className="faces-feed white-text">
                 <h2>Лента выявленных лиц</h2>

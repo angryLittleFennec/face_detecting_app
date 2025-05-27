@@ -1,30 +1,17 @@
 // Выпадающий список
-import { useState } from 'react';
 import './Dropdown.css';
 
 function Dropdown(props) {
-    const { children, text } = props;
-    const [selectedValue, setSelectedValue] = useState('none');
-
-    // Смена выбранного значения в выпадающем списке
-    const handleDropdownChange = (event) => {
-        setSelectedValue(event.target.value);
-        console.log(event.target.value);
-    };
+    const { children, selectedValue, onChange, text } = props;
 
     return (
-        <select
-            className="dropdown"
-            id="dropdownButton"
-            value={selectedValue}
-            onChange={handleDropdownChange}
-        >
-            <option value="none" disabled>
+        <select className="dropdown" value={selectedValue} onChange={onChange}>
+            <option value="" disabled>
                 {text}
             </option>
             {children.map((child) => (
-                <option key={child.value} value={child.value}>
-                    {child.label}
+                <option key={child.index} value={child.name}>
+                    {child.name}
                 </option>
             ))}
         </select>

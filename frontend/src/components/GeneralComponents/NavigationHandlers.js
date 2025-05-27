@@ -17,15 +17,11 @@ const NavigationHandlers = () => {
         navigate('/cameras/settings/detection');
     const goToFaceRecognitionSettingsPageHandler = () =>
         navigate('/cameras/settings/recognition');
-    const goToNotificationSettingsHandler = () =>
-        navigate('/cameras/settings/notification');
     const goToAdditionalSettingsHandler = () =>
         navigate('/cameras/settings/additional');
     const goToStreamsSettingsHandler = () =>
         navigate('/cameras/settings/streams');
     const goToReportsHandler = () => navigate('/report');
-    const goToDataHandler = () => navigate('/data');
-    const goToFilesHandler = () => navigate('/files');
     const goToStaffHandler = () => navigate('/staff');
     const logoutHandler = () => {
         eraseCookie('authToken');
@@ -38,12 +34,9 @@ const NavigationHandlers = () => {
         goToSettingsHandler,
         goToDetectionSettingsHandler,
         goToFaceRecognitionSettingsPageHandler,
-        goToNotificationSettingsHandler,
         goToAdditionalSettingsHandler,
         goToStreamsSettingsHandler,
         goToReportsHandler,
-        goToDataHandler,
-        goToFilesHandler,
         goToStaffHandler,
         logoutHandler,
     };

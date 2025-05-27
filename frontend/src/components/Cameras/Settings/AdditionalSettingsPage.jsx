@@ -1,5 +1,6 @@
 // Страница с дополнительными настройками
 import SettingsMenu from './SettingsMenu';
+import NotificationSelector from './NotificationSelector';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 import './CamerasSettingsPage.css';
@@ -14,6 +15,11 @@ function AdditionalSettingsPage() {
                     <SettingsMenu activePage="additional" />
                     <div className="settings-container">
                         <h1>Дополнительные настройки</h1>
+                        <h3>Уведомление о событиях</h3>
+                        <NotificationSelector />
+                        <button className="settings-container-button">
+                            Подтвердить
+                        </button>
                     </div>
                 </div>
             </div>

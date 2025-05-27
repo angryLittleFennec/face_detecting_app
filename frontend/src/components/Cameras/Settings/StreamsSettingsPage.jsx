@@ -1,16 +1,13 @@
 // Страница для настройки стримов
-import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import SettingsMenu from './SettingsMenu';
+import SettingsHandlers from './SettingsHandlers';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 import './StreamsSettingsPage.css';
 
 function StreamsSettingPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
-
-    const [password, setPassword] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const {
         selectedStream,
@@ -26,15 +23,8 @@ function StreamsSettingPage() {
         handleSelectStreamChange,
     } = CamerasHandlers();
 
-    const handleAuthenticate = () => {
-        setIsAuthenticated(true); // Пока не работает аутентификация
-        // Логика аутентификации
-        /*if (password === 'your_password') {
-            setIsAuthenticated(true);
-        } else {
-            alert('Неверный пароль');
-        }*/
-    };
+    const { password, isAdmin, setPassword, handleAdminAccess } =
+        SettingsHandlers();
 
     // Получение списка стримов перед загрузкой страницы
     // if (loading) {
@@ -53,7 +43,7 @@ function StreamsSettingPage() {
                     <SettingsMenu activePage="streams" />
                     <div className="settings-container">
                         <h1>Видеопотоки</h1>
-                        {!isAuthenticated ? (
+                        {!isAdmin ? (
                             <div className="cameras-settings-container">
                                 <h3>
                                     Доступ к настройкам видеопотоков
@@ -70,7 +60,7 @@ function StreamsSettingPage() {
                                 />
                                 <button
                                     className="settings-container-button"
-                                    onClick={handleAuthenticate}
+                                    onClick={handleAdminAccess}
                                 >
                                     Войти
                                 </button>

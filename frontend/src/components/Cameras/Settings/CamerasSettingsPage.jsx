@@ -1,17 +1,14 @@
 // Страница настройками камер
-import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import CamerasInputInfo from './CamerasInputInfo';
 import SettingsMenu from './SettingsMenu';
+import SettingsHandlers from './SettingsHandlers';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 import './CamerasSettingsPage.css';
 
 function CamerasSettingPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
-
-    const [password, setPassword] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const {
         selectedCamera,
@@ -30,15 +27,8 @@ function CamerasSettingPage() {
         handleSelectChange,
     } = CamerasHandlers();
 
-    const handleAuthenticate = () => {
-        setIsAuthenticated(true); // Пока не работает аутентификация
-        // Логика аутентификации
-        /*if (password === 'your_password') {
-            setIsAuthenticated(true);
-        } else {
-            alert('Неверный пароль');
-        }*/
-    };
+    const { password, isAdmin, setPassword, handleAdminAccess } =
+        SettingsHandlers();
 
     // Получение списка камер перед загрузкой страницы
     if (loading) {
@@ -57,7 +47,7 @@ function CamerasSettingPage() {
                     <SettingsMenu activePage="settings" />
                     <div className="settings-container">
                         <h1>Камеры</h1>
-                        {!isAuthenticated ? (
+                        {!isAdmin ? (
                             <div className="cameras-settings-container">
                                 <h3>
                                     Доступ к настройкам камер осуществляется по
@@ -74,7 +64,7 @@ function CamerasSettingPage() {
                                 />
                                 <button
                                     className="settings-container-button"
-                                    onClick={handleAuthenticate}
+                                    onClick={handleAdminAccess}
                                 >
                                     Войти
                                 </button>

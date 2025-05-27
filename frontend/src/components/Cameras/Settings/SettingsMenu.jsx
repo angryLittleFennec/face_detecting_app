@@ -6,7 +6,6 @@ const SettingsMenu = ({ activePage }) => {
         goToSettingsHandler,
         goToDetectionSettingsHandler,
         goToFaceRecognitionSettingsPageHandler,
-        goToNotificationSettingsHandler,
         goToAdditionalSettingsHandler,
         goToStreamsSettingsHandler,
     } = NavigationHandlers();
@@ -52,16 +51,6 @@ const SettingsMenu = ({ activePage }) => {
                 onClick={goToFaceRecognitionSettingsPageHandler}
             >
                 Распознавание лиц
-            </button>
-            <button
-                className={
-                    activePage === 'notifications'
-                        ? 'selected-button'
-                        : 'choose-settings-button'
-                }
-                onClick={goToNotificationSettingsHandler}
-            >
-                Уведомления
             </button>
             <button
                 className={

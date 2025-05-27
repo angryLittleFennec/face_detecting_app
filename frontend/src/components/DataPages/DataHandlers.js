@@ -26,6 +26,7 @@ const DataHandlers = () => {
     const [selectedPerson, setSelectedPerson] = useState('');
     const [selectedPersonIndex, setSelectedPersonIndex] = useState(null);
     const [selectedPersonId, setSelectedPersonId] = useState(null);
+    const [selectedModel, setSelectedModel] = useState('');
     const dispatch = useDispatch();
 
     // Извлечение текста из pdf файла
@@ -173,6 +174,22 @@ const DataHandlers = () => {
         setNewPerson(selectedValue);
     };
 
+    // Выбор сотрудника в выпадающем списке
+    const handleStaffDropdownSelectChange = (event) => {
+        const selectedValue = event.target.value;
+        setSelectedPerson(selectedValue);
+        const index = persons.findIndex(
+            (person) => person.name === selectedValue
+        );
+        setSelectedPersonId(persons[index].id);
+    };
+
+    // Выбор вида трекинга в выпадающем списке
+    const handleModelSelectChange = (event) => {
+        const selectedValue = event.target.value;
+        setSelectedModel(selectedValue);
+    };
+
     // При нажатии на сотрудника
     const handlePersonClick = (index) => {
         if (selectedPersonIndex === index) {
@@ -201,7 +218,9 @@ const DataHandlers = () => {
         selectedPerson,
         selectedPersonIndex,
         selectedPersonId,
+        selectedModel,
         setNewPerson,
+        setSelectedPerson,
         extractText,
         formatTextWithDates,
         handleDownload,
@@ -219,6 +238,8 @@ const DataHandlers = () => {
         handleStaffSelectChange,
         handlePersonClick,
         handleUploadLogsFile,
+        handleStaffDropdownSelectChange,
+        handleModelSelectChange,
     };
 };
 

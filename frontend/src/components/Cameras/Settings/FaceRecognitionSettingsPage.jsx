@@ -1,28 +1,18 @@
 // Страница для настройки распознавания лиц
-import { useState } from 'react';
 import CamerasHandlers from '../CamerasHandlers';
 import SettingsMenu from './SettingsMenu';
 import RecognitionThresholdSettings from './RecognitionThresholdSettings';
+import SettingsHandlers from './SettingsHandlers';
 import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../../UI/ButtonWithTooltip';
 
 function FaceRecognitionSettingsPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
-    const [password, setPassword] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
     const { loading, error, handleFetchCameras } = CamerasHandlers();
 
-    const handleAuthenticate = () => {
-        setIsAuthenticated(true); // Пока не работает аутентификация
-        // Логика аутентификации
-        /*if (password === 'your_password') {
-            setIsAuthenticated(true);
-        } else {
-            alert('Неверный пароль');
-        }*/
-    };
+    const { password, isAdmin, setPassword, handleAdminAccess } =
+        SettingsHandlers();
 
     // Получение списка камер перед загрузкой страницы
     if (loading) {
@@ -41,7 +31,7 @@ function FaceRecognitionSettingsPage() {
                     <SettingsMenu activePage="recognition" />
                     <div className="settings-container">
                         <h1>Распознавание лиц</h1>
-                        {!isAuthenticated ? (
+                        {!isAdmin ? (
                             <div className="cameras-settings-container">
                                 <h3>
                                     Доступ к настройкам камер осуществляется по
@@ -58,7 +48,7 @@ function FaceRecognitionSettingsPage() {
                                 />
                                 <button
                                     className="settings-container-button"
-                                    onClick={handleAuthenticate}
+                                    onClick={handleAdminAccess}
                                 >
                                     Войти
                                 </button>

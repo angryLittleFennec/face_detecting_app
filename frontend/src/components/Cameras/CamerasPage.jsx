@@ -8,12 +8,11 @@ import CamerasHandlers from './CamerasHandlers';
 import CamerasStatusWindow from './CamerasStatusWindow';
 import CameraLogsWindow from './CameraLogsWindow';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
+import DataHandlers from '../DataPages/DataHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import IconButton from '../UI/IconButton';
-import modelOptions from './ModelOptions';
 import trackingOptions from './TrackingOptions';
-import staffOptions from './StaffOptions';
 import './CamerasPage.css';
 
 function CamerasPage() {
@@ -50,6 +49,15 @@ function CamerasPage() {
         setSelectedCamera,
         handleFetchStreams,
     } = CamerasHandlers();
+
+    const {
+        persons,
+        selectedPerson,
+        selectedModel,
+        handleFetchPersons,
+        handleModelSelectChange,
+        handleStaffDropdownSelectChange,
+    } = DataHandlers();
 
     // Для корректной синхронизации выбранной камеры с помощью клика и выпадающего списка
     useEffect(() => {
@@ -101,6 +109,7 @@ function CamerasPage() {
     // Получение списка камер перед загрузкой страницы
     if (loading) {
         handleFetchCameras();
+        handleFetchPersons();
         return <h2>Загрузка...</h2>;
     }
 
@@ -176,9 +185,18 @@ function CamerasPage() {
             <div className="right-menu white-text">
                 <div className="top-menu-part">
                     <p>Настройки просмотра:</p>
-                    <Dropdown children={modelOptions} text="Выбор модели" />
-                    <Dropdown children={trackingOptions} text="Виды трекинга" />
-                    <Dropdown children={staffOptions} text="Выбор сотрудника" />
+                    <Dropdown
+                        children={trackingOptions}
+                        selectedValue={selectedModel}
+                        onChange={handleModelSelectChange}
+                        text="Виды трекинга"
+                    />
+                    <Dropdown
+                        children={persons}
+                        selectedValue={selectedPerson}
+                        onChange={handleStaffDropdownSelectChange}
+                        text="Выбор сотрудника"
+                    />
                     <div>
                         <button
                             onClick={handleFetchCameras}
@@ -186,19 +204,12 @@ function CamerasPage() {
                         >
                             Обновить камеры
                         </button>
-                        <select
-                            value={selectedCamera}
+                        <Dropdown
+                            children={cameras}
+                            selectedValue={selectedCamera}
                             onChange={handleSelectChange}
-                        >
-                            <option value="" disabled>
-                                Выберите камеру
-                            </option>
-                            {cameras.map((camera, index) => (
-                                <option key={index} value={camera.name}>
-                                    {camera.name}
-                                </option>
-                            ))}
-                        </select>
+                            text="Выберите камеру"
+                        />
                         {selectedCameraIndex !== null && (
                             <Link to={`/cameras/${selectedCameraIndex}`}>
                                 <button

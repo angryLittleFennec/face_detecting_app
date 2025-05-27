@@ -1,83 +1,22 @@
 // Страница входа/регистрации
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginUser, registerUser } from '../Cameras/Api';
+import LoginHandlers from './LoginHandlers';
 import './LoginForm.css';
 
 function LoginForm() {
-    const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [needToLogin, setNeedToLogin] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const navigate = useNavigate();
-
-    // Функция для установки куки
-    function setCookie(name, value, days) {
-        let expires = '';
-        if (days) {
-            const date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = '; expires=' + date.toUTCString();
-        }
-        document.cookie =
-            name +
-            '=' +
-            (value || '') +
-            expires +
-            '; path=/; Secure; SameSite=Strict';
-        console.log(
-            name +
-                '=' +
-                (value || '') +
-                expires +
-                '; path=/; Secure; SameSite=Strict'
-        );
-    }
-
-    // При попытке входа
-    const onSubmitLoginHandler = async (event) => {
-        event.preventDefault();
-        const user = { username, password, grant_type: 'password' };
-
-        // Проверка пользователя
-        try {
-            const data = await loginUser(user);
-            // Сохраняем токен в куки
-            setCookie('authToken', data.access_token, 7); // Сохраняем на 7 дней
-            console.log('Аутентификация прошла успешно!', data.access_token);
-            navigate('/cameras');
-        } catch (error) {
-            console.log(error);
-            setErrorMessage(
-                'Ошибка авторизации. Проверьте логин и пароль или попробуйте позже.'
-            );
-        }
-    };
-
-    // При попытке регистрации
-    const onSubmitRegistrationHandler = async (event) => {
-        event.preventDefault();
-        const user = { email, username, password };
-
-        // Регистрация пользователя
-        try {
-            const data = await registerUser(user);
-            console.log(data);
-            setNeedToLogin(false);
-        } catch (error) {
-            console.log(error);
-            setErrorMessage('Ошибка регистрации. Попробуйте позже.');
-        }
-    };
-
-    const loginHandler = () => {
-        setNeedToLogin(false);
-    };
-
-    const registrationHandler = () => {
-        setNeedToLogin(true);
-    };
+    const {
+        email,
+        username,
+        password,
+        needToLogin,
+        errorMessage,
+        setEmail,
+        setUsername,
+        setPassword,
+        onSubmitLoginHandler,
+        onSubmitRegistrationHandler,
+        loginHandler,
+        registrationHandler,
+    } = LoginHandlers();
 
     return (
         <div className="login-container">
