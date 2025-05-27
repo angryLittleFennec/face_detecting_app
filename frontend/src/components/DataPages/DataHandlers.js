@@ -60,15 +60,17 @@ const DataHandlers = () => {
 
     // Скачивание загруженного файла
     const handleDownload = (file) => {
-        const fileUrl = URL.createObjectURL(file);
+        if (file) {
+            const fileUrl = URL.createObjectURL(file);
 
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.download = file.name;
+            const link = document.createElement('a');
+            link.href = fileUrl;
+            link.download = file.name;
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     // Получить список сотрудников
