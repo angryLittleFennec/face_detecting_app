@@ -1,6 +1,7 @@
 from pydantic import BaseModel, HttpUrl, field_validator, EmailStr, ConfigDict, constr
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
+from enum import Enum
 
 class CameraBase(BaseModel):
     name: str
@@ -96,3 +97,53 @@ class StreamProcessor(BaseModel):
 
 class StreamProcessorList(BaseModel):
     processors: List[StreamProcessor]
+
+class EventType(str, Enum):
+    ENTER = "enter"
+    EXIT = "exit"
+
+class EventBase(BaseModel):
+    event_type: EventType
+    person_id: Optional[int] = None
+    stream_processor_id: int
+    track_id: Optional[int] = None
+    duration: Optional[int] = None
+
+class EventCreate(EventBase):
+    pass
+
+class Event(EventBase):
+    id: int
+    timestamp: datetime
+    is_aggregated: bool
+
+    class Config:
+        from_attributes = True
+
+class EventAggregationBase(BaseModel):
+    person_id: Optional[int] = None
+    stream_processor_id: int
+    date: date
+    hour: int
+    total_entries: int = 0
+    total_exits: int = 0
+    avg_duration: Optional[int] = None
+    max_duration: Optional[int] = None
+    min_duration: Optional[int] = None
+
+class EventAggregationCreate(EventAggregationBase):
+    pass
+
+class EventAggregation(EventAggregationBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+class EventStats(BaseModel):
+    total_events: int
+    total_entries: int
+    total_exits: int
+    avg_duration: Optional[float] = None
+    max_duration: Optional[int] = None
+    min_duration: Optional[int] = None

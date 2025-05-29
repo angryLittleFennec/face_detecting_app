@@ -6,7 +6,7 @@ from kubernetes import client, config
 from typing import List
 
 from . import models, database
-from .routers import cameras, persons, faces, kuber, auth, db
+from .routers import cameras, persons, faces, kuber, auth, db, logging
 
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,7 @@ app.include_router(persons.router, prefix="/api")
 app.include_router(faces.router, prefix="/api")
 app.include_router(kuber.router, prefix="/api")
 app.include_router(db.router, prefix="/api")
+app.include_router(logging.router, prefix="/api")
 
 def load_ml_models(app: FastAPI):
     try:

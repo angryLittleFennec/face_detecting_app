@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Text, DateTime, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Text, DateTime, Enum, Float, JSON, Index, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
+import enum
 
 Base = declarative_base()
 
@@ -51,3 +52,52 @@ class StreamProcessor(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     camera = relationship("Camera", back_populates="stream_processors")
+
+class EventType(enum.Enum):
+    ENTER = "enter"
+    EXIT = "exit"
+
+class Event(Base):
+    __tablename__ = "events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    event_type = Column(Enum(EventType), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+    person_id = Column(Integer, ForeignKey('persons.id', ondelete="SET NULL"), nullable=True)
+    stream_processor_id = Column(Integer, ForeignKey('stream_processors.id', ondelete="CASCADE"), nullable=False)
+    track_id = Column(Integer, nullable=True)
+    duration = Column(Integer, nullable=True)
+    is_aggregated = Column(Boolean, default=False)
+    
+    # Связи
+    person = relationship("Person", backref="events")
+    stream_processor = relationship("StreamProcessor", backref="events")
+    
+    __table_args__ = (
+        Index('idx_unaggregated_events', 'is_aggregated', 'timestamp'),
+    )
+
+class EventAggregation(Base):
+    __tablename__ = "event_aggregations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    person_id = Column(Integer, ForeignKey('persons.id', ondelete="SET NULL"), nullable=True)
+    stream_processor_id = Column(Integer, ForeignKey('stream_processors.id', ondelete="CASCADE"), nullable=False)
+    date = Column(Date, nullable=False)
+    hour = Column(Integer, nullable=False)
+    
+    total_entries = Column(Integer, default=0)
+    total_exits = Column(Integer, default=0)
+    avg_duration = Column(Integer, nullable=True)
+    max_duration = Column(Integer, nullable=True)
+    min_duration = Column(Integer, nullable=True)
+    
+    person = relationship("Person", backref="aggregations")
+    stream_processor = relationship("StreamProcessor", backref="aggregations")
+    
+    __table_args__ = (
+        Index('idx_aggregation_lookup', 'person_id', 'stream_processor_id', 'date', 'hour'),
+    )
+
+    def __repr__(self):
+        return f"<Event(id={self.id}, type={self.event_type}, timestamp={self.timestamp})>"

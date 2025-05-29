@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: angrylittlefennec/face_detection_logging
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8001
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env:
+  - name: DATABASE_URL
+    value: postgresql://admin:secret@postgres-postgresql:5432/surveillance_db
+  - name: PYTHONPATH
+    value: "/app"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {} 
