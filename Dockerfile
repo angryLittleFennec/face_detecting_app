@@ -26,18 +26,26 @@ ENV PYTHONPATH=/app
 
 COPY ml_models ml_models
 
-
-
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
-COPY app app
+
+RUN pip install --no-cache-dir pydantic[email] --break-system-packages
+
+RUN pip install --no-cache-dir reportlab==4.0.8 --break-system-packages
+
+# Устанавливаем шрифты и копируем DejaVuSans
+RUN apt-get update && apt-get install -y fonts-dejavu && \
+    mkdir -p /usr/share/fonts/truetype/dejavu/
+
+COPY app/fonts/DejaVuSans.ttf /usr/share/fonts/truetype/dejavu/
 
 # Копируем оба чарта
 COPY helm/fastapi-app fastapi
 COPY helm/stream-processor helm/stream-processor
 
-RUN pip install --no-cache-dir pydantic[email] --break-system-packages
+COPY app app
+
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

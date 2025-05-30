@@ -144,6 +144,7 @@ class EventStats(BaseModel):
     total_events: int
     total_entries: int
     total_exits: int
+    unique_people: int
     avg_duration: Optional[float] = None
     max_duration: Optional[int] = None
     min_duration: Optional[int] = None

@@ -6,7 +6,7 @@ from kubernetes import client, config
 from typing import List
 
 from . import models, database
-from .routers import cameras, persons, faces, kuber, auth, db, logging
+from .routers import cameras, persons, faces, kuber, auth, db, logging as logging_router
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +58,7 @@ app.include_router(persons.router, prefix="/api")
 app.include_router(faces.router, prefix="/api")
 app.include_router(kuber.router, prefix="/api")
 app.include_router(db.router, prefix="/api")
-app.include_router(logging.router, prefix="/api")
+app.include_router(logging_router.router, prefix="/api")
 
 def load_ml_models(app: FastAPI):
     try:
