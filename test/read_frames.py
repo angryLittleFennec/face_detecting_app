@@ -63,10 +63,9 @@ frame_queue = Queue(maxsize=30)
 FACE_MODEL = YOLO("ml_models/yolov8n-face.pt")
 
 # Оптимизация YOLO
-FACE_MODEL.conf = 0.7  # Увеличиваем порог уверенности
-FACE_MODEL.iou = 0.3   # Низкий IoU для ускорения
-FACE_MODEL.verbose = False
-FACE_MODEL.max_det = 3  # Уменьшаем максимальное количество детекций
+FACE_MODEL.conf = 0.5  # Снижаем порог уверенности для лучшего обнаружения
+FACE_MODEL.iou = 0.45   # Увеличиваем IoU для более точного трекинга
+FACE_MODEL.max_det = 5  # Увеличиваем максимальное количество детекций
 FACE_MODEL.agnostic = True
 FACE_MODEL.classes = [0]  # Только лица
 
@@ -177,8 +176,8 @@ def find_matching_face(embedding: np.ndarray) -> Tuple[str, int]:
                 logger.error(f"Error processing face {face_id}: {e}")
                 continue
         
-        if best_match:
-            logger.info(f"Found matching person: {best_match}")
+        if best_match and best_match_id is not None:
+            logger.info(f"Found matching person: {best_match} with ID: {best_match_id}")
             return best_match, best_match_id
         else:
             logger.info("No matching face found")
@@ -195,24 +194,32 @@ def log_face_event(track_id, event_type, name=None, person_id=None):
     try:
         # Создаем событие через микросервис логирования
         if event_type in ["enter", "exit"]:  # Логируем только входы и выходы
-            event_data = {
-                "event_type": event_type,
-                "person_id": person_id,
-                "stream_processor_id": 1,  # TODO: Получать ID процессора из конфигурации
-                "track_id": track_id,
-                "duration": int((tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]).total_seconds()) if event_type == "exit" else None
-            }
+            duration = None
+            if event_type == "exit" and track_id in tracked_faces:
+                duration = int((tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]))
             
-            try:
-                response = requests.post(
-                    f"{LOGGING_SERVICE_URL}/events/",
-                    json=event_data,
-                    timeout=5
-                )
-                if response.status_code != 200:
-                    logger.error(f"Failed to log event: {response.text}")
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Error sending event to logging service: {e}")
+            # Проверяем наличие person_id перед отправкой события
+            if person_id is not None:
+                event_data = {
+                    "event_type": event_type,
+                    "person_id": person_id,
+                    "stream_processor_id": 1,  # TODO: Получать ID процессора из конфигурации
+                    "track_id": track_id,
+                    "duration": duration
+                }
+                
+                try:
+                    response = requests.post(
+                        f"{LOGGING_SERVICE_URL}/events/",
+                        json=event_data,
+                        timeout=5
+                    )
+                    if response.status_code != 200:
+                        logger.error(f"Failed to log event: {response.text}")
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"Error sending event to logging service: {e}")
+            else:
+                logger.warning(f"Skipping event logging for track_id {track_id} - no person_id available")
         
         # Логируем в файл для отладки
         if event_type == "enter":
@@ -223,12 +230,13 @@ def log_face_event(track_id, event_type, name=None, person_id=None):
         elif event_type == "recognized":
             logger.info(f"👤 {timestamp} - Распознан человек: {name} (ID: {track_id})")
         elif event_type == "exit":
-            if tracked_faces[track_id]["name"]:
-                duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
-                logger.info(f"🔴 {timestamp} - {tracked_faces[track_id]['name']} вышел из кадра. Время в кадре: {duration:.1f} сек")
-            else:
-                duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
-                logger.info(f"🔴 {timestamp} - Неизвестный человек (ID: {track_id}) вышел из кадра. Время в кадре: {duration:.1f} сек")
+            if track_id in tracked_faces:
+                if tracked_faces[track_id]["name"]:
+                    duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
+                    logger.info(f"🔴 {timestamp} - {tracked_faces[track_id]['name']} вышел из кадра. Время в кадре: {duration:.1f} сек")
+                else:
+                    duration = tracked_faces[track_id]["last_seen"] - tracked_faces[track_id]["first_seen"]
+                    logger.info(f"🔴 {timestamp} - Неизвестный человек (ID: {track_id}) вышел из кадра. Время в кадре: {duration:.1f} сек")
     except Exception as e:
         logger.error(f"Error logging face event: {e}")
 
@@ -260,7 +268,7 @@ def process_frame(frame, frame_id, out):
         
         # Оптимизация размера изображения
         resize_start = time.time()
-        scale_percent = 20  # Уменьшаем размер изображения
+        scale_percent = 30  # Увеличиваем размер изображения для лучшего качества
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)
         resized_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)
@@ -279,9 +287,9 @@ def process_frame(frame, frame_id, out):
                             verbose=False,
                             stream=False,
                             persist=True,
-                            conf=0.7,
-                            iou=0.3,
-                            max_det=3,
+                            conf=0.5,  # Снижаем порог уверенности
+                            iou=0.45,  # Увеличиваем IoU
+                            max_det=5,  # Увеличиваем количество детекций
                             device=DEVICE
                         )
                         torch.cuda.current_stream().synchronize()  # Синхронизируем CUDA поток
@@ -291,9 +299,9 @@ def process_frame(frame, frame_id, out):
                         verbose=False,
                         stream=False,
                         persist=True,
-                        conf=0.7,
-                        iou=0.3,
-                        max_det=3,
+                        conf=0.5,  # Снижаем порог уверенности
+                        iou=0.45,  # Увеличиваем IoU
+                        max_det=5,  # Увеличиваем количество детекций
                         device=DEVICE
                     )
         yolo_time = time.time() - yolo_start
@@ -362,6 +370,9 @@ def process_frame(frame, frame_id, out):
         face_matching_total = 0
         drawing_total = 0
         
+        # Словарь для отслеживания person_id по track_id
+        current_person_tracks = {}
+        
         for box_data in scaled_boxes:
             faces_processed += 1
             track_id = box_data['track_id']
@@ -371,6 +382,15 @@ def process_frame(frame, frame_id, out):
             
             # Проверяем, новый ли это трек
             if track_id not in tracked_faces:
+                # Создаем запись в tracked_faces
+                tracked_faces[track_id] = {
+                    "name": None,
+                    "person_id": None,
+                    "first_seen": time.time(),
+                    "last_seen": time.time(),
+                    "event_sent": False  # Флаг для отслеживания отправки события
+                }
+                
                 # Сначала пытаемся распознать лицо
                 face_start = time.time()
                 embedding = get_face_embedding(face_image)
@@ -381,30 +401,18 @@ def process_frame(frame, frame_id, out):
                     match, match_id = find_matching_face(embedding)
                     face_matching_total += time.time() - match_start
                     
-                    # Создаем запись в tracked_faces с результатом распознавания
-                    tracked_faces[track_id] = {
-                        "name": match,
-                        "person_id": match_id,
-                        "first_seen": time.time(),
-                        "last_seen": time.time()
-                    }
-                    
-                    # Логируем и рисуем только если удалось распознать
                     if match:
-                        log_face_event(track_id, "recognized", match, match_id)
-                        # Отображаем информацию о лице
-                        cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-                        cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-                else:
-                    # Если не удалось получить эмбеддинг, создаем запись без имени
-                    tracked_faces[track_id] = {
-                        "name": None,
-                        "person_id": None,
-                        "first_seen": time.time(),
-                        "last_seen": time.time()
-                    }
+                        # Обновляем информацию о лице
+                        tracked_faces[track_id]["name"] = match
+                        tracked_faces[track_id]["person_id"] = match_id
+                        current_person_tracks[match_id] = track_id
+                        
+                        # Отправляем событие начала только если для этого person_id еще нет активного трека
+                        if match_id not in current_person_tracks or current_person_tracks[match_id] == track_id:
+                            log_face_event(track_id, "enter", match, match_id)
+                            tracked_faces[track_id]["event_sent"] = True
+                        else:
+                            logger.warning(f"Person {match} (ID: {match_id}) already has active track {current_person_tracks[match_id]}, skipping enter event for track {track_id}")
             
             # Обновляем время последнего появления
             tracked_faces[track_id]["last_seen"] = time.time()
@@ -419,22 +427,20 @@ def process_frame(frame, frame_id, out):
                     match_start = time.time()
                     match, match_id = find_matching_face(embedding)
                     if match:
-                        # При распознавании обновляем имя и логируем
+                        # При распознавании обновляем имя и отправляем событие
                         tracked_faces[track_id]["name"] = match
                         tracked_faces[track_id]["person_id"] = match_id
-                        log_face_event(track_id, "recognized", match, match_id)
-                        # Отображаем информацию о лице
-                        cv2.putText(annotated_frame, match, (x1 + 100, y1 - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-                        cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+                        current_person_tracks[match_id] = track_id
+                        
+                        # Отправляем событие только если для этого person_id еще нет активного трека
+                        if match_id not in current_person_tracks or current_person_tracks[match_id] == track_id:
+                            if not tracked_faces[track_id]["event_sent"]:
+                                log_face_event(track_id, "enter", match, match_id)
+                                tracked_faces[track_id]["event_sent"] = True
+                        else:
+                            logger.warning(f"Person {match} (ID: {match_id}) already has active track {current_person_tracks[match_id]}, skipping enter event for track {track_id}")
                     face_matching_total += time.time() - match_start
                 face_recognition_total += time.time() - face_start
-            
-            # Логируем вход в кадр только если трек не был активным
-            if track_id not in active_tracks:
-                if tracked_faces[track_id]["name"]:
-                    log_face_event(track_id, "enter", tracked_faces[track_id]["name"], tracked_faces[track_id]["person_id"])
             
             # Отображаем информацию о лице, если оно распознано
             if tracked_faces[track_id]["name"]:
@@ -451,7 +457,17 @@ def process_frame(frame, frame_id, out):
         check_tracks_start = time.time()
         for track_id in active_tracks - current_tracks:
             if track_id in tracked_faces:
-                log_face_event(track_id, "exit", tracked_faces[track_id]["name"], tracked_faces[track_id]["person_id"])
+                # Отправляем событие конца только если:
+                # 1. Было отправлено событие начала
+                # 2. Это последний активный трек для данного person_id
+                person_id = tracked_faces[track_id]["person_id"]
+                if person_id is not None:
+                    if tracked_faces[track_id]["event_sent"] and (person_id not in current_person_tracks or current_person_tracks[person_id] == track_id):
+                        log_face_event(track_id, "exit", tracked_faces[track_id]["name"], person_id)
+                    else:
+                        logger.warning(f"Skipping exit event for track {track_id} (person_id: {person_id}) as it's not the last active track")
+                # Удаляем трек из словаря
+                del tracked_faces[track_id]
         check_tracks_time = time.time() - check_tracks_start
         
         # Обновляем множество активных треков
@@ -514,62 +530,97 @@ def open_capture_with_retry(url, max_retries=5, retry_delay=3):
         time.sleep(retry_delay)
     return None
 
-# Инициализация захвата видео
-cap = open_capture_with_retry(RTSP_INPUT_URL)
-if cap is None:
-    print("❌ Error: Could not connect to RTSP stream after multiple attempts!")
-    exit()
+def process_stream():
+    """Основная функция обработки стрима с механизмом переподключения"""
+    while True:
+        try:
+            # Инициализация захвата видео
+            cap = open_capture_with_retry(RTSP_INPUT_URL)
+            if cap is None:
+                logger.error("❌ Error: Could not connect to RTSP stream after multiple attempts!")
+                time.sleep(5)  # Ждем перед следующей попыткой
+                continue
 
-# Настройка параметров видео
-frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = cap.get(cv2.CAP_PROP_FPS) or 30
+            # Настройка параметров видео
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = cap.get(cv2.CAP_PROP_FPS) or 30
 
-print(f"🎥 Input stream opened: {frame_width}x{frame_height} at {fps} FPS")
-print(f"🔄 Forwarding to {RTSP_OUTPUT_URL}")
+            logger.info(f"🎥 Input stream opened: {frame_width}x{frame_height} at {fps} FPS")
+            logger.info(f"🔄 Forwarding to {RTSP_OUTPUT_URL}")
 
-# Настройка GStreamer для вывода RTSP с оптимизацией
-out = cv2.VideoWriter(
-    f'appsrc ! videoconvert ! video/x-raw,format=I420 ! '
-    f'x264enc speed-preset=ultrafast bitrate=1024 key-int-max={int(fps*2)} ! '
-    f'video/x-h264,profile=baseline ! rtspclientsink protocols=tcp location={RTSP_OUTPUT_URL}',
-    cv2.CAP_GSTREAMER, 0, fps, (frame_width, frame_height), True
-)
+            # Настройка GStreamer для вывода RTSP с оптимизацией
+            out = cv2.VideoWriter(
+                f'appsrc ! videoconvert ! video/x-raw,format=I420 ! '
+                f'x264enc speed-preset=ultrafast bitrate=1024 key-int-max={int(fps*2)} ! '
+                f'video/x-h264,profile=baseline ! rtspclientsink protocols=tcp location={RTSP_OUTPUT_URL}',
+                cv2.CAP_GSTREAMER, 0, fps, (frame_width, frame_height), True
+            )
 
-if not out.isOpened():
-    print("❌ Error: Cannot open RTSP output stream!")
-    cap.release()
-    exit()
+            if not out.isOpened():
+                logger.error("❌ Error: Cannot open RTSP output stream!")
+                cap.release()
+                time.sleep(5)
+                continue
 
-# Запуск потока обработки
-processor_thread = Thread(target=process_frames, args=(out,))
-processor_thread.start()
+            # Запуск потока обработки
+            processor_thread = Thread(target=process_frames, args=(out,))
+            processor_thread.start()
 
-# Основной цикл чтения кадров
-frame_count = 0
-start_time = time.time()
+            # Основной цикл чтения кадров
+            frame_count = 0
+            start_time = time.time()
+            last_frame_time = time.time()
+            timeout = 10  # Таймаут в секундах
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        print("❌ Error: Failed to read frame from RTSP stream!")
-        break
+            while cap.isOpened():
+                ret, frame = cap.read()
+                current_time = time.time()
+                
+                if not ret:
+                    # Проверяем, не превышен ли таймаут
+                    if current_time - last_frame_time > timeout:
+                        logger.error("❌ Error: Stream timeout - no frames received")
+                        break
+                    logger.warning("⚠️ Failed to read frame from RTSP stream, retrying...")
+                    time.sleep(0.1)
+                    continue
 
-    frame_queue.put(frame)
-    frame_count += 1
+                last_frame_time = current_time
+                frame_queue.put(frame)
+                frame_count += 1
 
-    # Вывод FPS каждые 30 секунд
-    if frame_count % 900 == 0:  # 30 секунд при 30 FPS
-        elapsed_time = time.time() - start_time
-        current_fps = frame_count / elapsed_time
-        print(f"Current FPS: {current_fps:.2f}")
-        frame_count = 0
-        start_time = time.time()
+                # Вывод FPS каждые 30 секунд
+                if frame_count % 900 == 0:  # 30 секунд при 30 FPS
+                    elapsed_time = current_time - start_time
+                    current_fps = frame_count / elapsed_time
+                    logger.info(f"Current FPS: {current_fps:.2f}")
+                    frame_count = 0
+                    start_time = current_time
 
-# Остановка потока
-frame_queue.put(None)
-processor_thread.join()
+            # Остановка потока при выходе из цикла
+            frame_queue.put(None)
+            processor_thread.join()
 
-# Освобождение ресурсов
-out.release()
-cap.release()
+            # Освобождение ресурсов
+            out.release()
+            cap.release()
+            
+            logger.info("🔄 Stream connection lost, attempting to reconnect...")
+            time.sleep(5)  # Пауза перед переподключением
+            
+        except Exception as e:
+            logger.error(f"❌ Unexpected error in stream processing: {e}")
+            time.sleep(5)  # Пауза перед следующей попыткой
+
+if __name__ == "__main__":
+    try:
+        process_stream()
+    except KeyboardInterrupt:
+        logger.info("👋 Shutting down gracefully...")
+        # Очистка ресурсов при выходе
+        if 'cap' in locals():
+            cap.release()
+        if 'out' in locals():
+            out.release()
+        cv2.destroyAllWindows()

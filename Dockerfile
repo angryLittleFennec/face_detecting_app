@@ -39,6 +39,12 @@ RUN pip install --no-cache-dir reportlab==4.0.8 --break-system-packages
 RUN apt-get update && apt-get install -y fonts-dejavu && \
     mkdir -p /usr/share/fonts/truetype/dejavu/
 
+RUN pip install --no-cache-dir fastapi-utils --break-system-packages
+
+RUN pip install --no-cache-dir typing-inspect --break-system-packages
+
+RUN pip install --no-cache-dir fastapi-mail --break-system-packages
+
 COPY app/fonts/DejaVuSans.ttf /usr/share/fonts/truetype/dejavu/
 
 # Копируем оба чарта

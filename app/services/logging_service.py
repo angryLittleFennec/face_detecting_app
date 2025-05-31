@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
+from .. import models
 from datetime import datetime, timedelta
+import logging
 from typing import List, Optional
-from .. import models, schemas
+from .. import schemas
+
+logger = logging.getLogger(__name__)
 
 class LoggingService:
     def __init__(self, db: Session):
@@ -16,18 +20,113 @@ class LoggingService:
         start_time: Optional[datetime] = None,
         end_time: Optional[datetime] = None
     ) -> List[models.Event]:
-        query = self.db.query(models.Event)
-        
-        if person_id:
-            query = query.filter(models.Event.person_id == person_id)
-        if stream_processor_id:
-            query = query.filter(models.Event.stream_processor_id == stream_processor_id)
-        if start_time:
-            query = query.filter(models.Event.timestamp >= start_time)
-        if end_time:
-            query = query.filter(models.Event.timestamp <= end_time)
+        try:
+            query = self.db.query(models.Event, models.Person.name).outerjoin(
+                models.Person,
+                models.Event.person_id == models.Person.id
+            )
+
+            if person_id:
+                query = query.filter(models.Event.person_id == person_id)
+            if stream_processor_id:
+                query = query.filter(models.Event.stream_processor_id == stream_processor_id)
+            if start_time:
+                query = query.filter(models.Event.timestamp >= start_time)
+            if end_time:
+                query = query.filter(models.Event.timestamp <= end_time)
+
+            results = query.offset(skip).limit(limit).all()
             
-        return query.offset(skip).limit(limit).all()
+            # Преобразуем результаты в список событий с именами
+            events_with_names = []
+            for event, person_name in results:
+                event_dict = {
+                    "id": event.id,
+                    "event_type": event.event_type,
+                    "person_id": event.person_id,
+                    "person_name": person_name,
+                    "stream_processor_id": event.stream_processor_id,
+                    "track_id": event.track_id,
+                    "duration": event.duration,
+                    "timestamp": event.timestamp,
+                    "is_aggregated": event.is_aggregated
+                }
+                events_with_names.append(event_dict)
+                
+            return events_with_names
+        except Exception as e:
+            logger.error(f"Ошибка при получении событий: {str(e)}", exc_info=True)
+            return []
+
+    def get_grouped_events(
+        self,
+        person_id: Optional[int] = None,
+        stream_processor_id: Optional[int] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None
+    ) -> List[dict]:
+        """Получение сгруппированных событий по парам вход-выход"""
+        try:
+            events = self.get_events(
+                person_id=person_id,
+                stream_processor_id=stream_processor_id,
+                start_time=start_time,
+                end_time=end_time
+            )
+            
+            # Сортируем события по времени
+            events.sort(key=lambda x: x['timestamp'])
+            
+            # Словарь для хранения последних событий входа для каждой пары (person_id, processor_id)
+            last_enter = {}
+            result = []
+            
+            for event in events:
+                key = (event['person_id'], event['stream_processor_id'])
+                
+                if event['event_type'] == models.EventType.ENTER:
+                    last_enter[key] = event
+                elif event['event_type'] == models.EventType.EXIT:
+                    if key in last_enter:
+                        enter_event = last_enter[key]
+                        result.append({
+                            'person_id': event['person_id'],
+                            'person_name': event['person_name'],
+                            'stream_processor_id': event['stream_processor_id'],
+                            'enter_time': enter_event['timestamp'],
+                            'exit_time': event['timestamp'],
+                            'duration': event['duration']
+                        })
+                        # Удаляем использованное событие входа
+                        del last_enter[key]
+            
+            # Сортируем по времени входа
+            result.sort(key=lambda x: x['enter_time'])
+            return result
+        except Exception as e:
+            logger.error(f"Ошибка при группировке событий: {str(e)}", exc_info=True)
+            return []
+
+    def get_events_for_pdf(
+        self,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None
+    ) -> List[dict]:
+        """Получение событий для PDF-отчета"""
+        try:
+            # Если время не указано, берем последний месяц
+            if not end_time:
+                end_time = datetime.now()
+            if not start_time:
+                start_time = end_time - timedelta(days=30)
+            
+            return self.get_grouped_events(
+                start_time=start_time,
+                end_time=end_time
+            )
+        except Exception as e:
+            logger.error(f"Ошибка при получении событий для PDF: {str(e)}", exc_info=True)
+            return []
 
     def aggregate_events(self):
         """Агрегирует необработанные события"""
@@ -109,10 +208,14 @@ class LoggingService:
         total_exits = sum(1 for e in events if e.event_type == models.EventType.EXIT)
         durations = [e.duration for e in events if e.duration is not None]
         
+        # Подсчет уникальных людей
+        unique_people = len(set(e.person_id for e in events if e.person_id is not None))
+        
         return schemas.EventStats(
             total_events=len(events),
             total_entries=total_entries,
             total_exits=total_exits,
+            unique_people=unique_people,
             avg_duration=sum(durations) / len(durations) if durations else None,
             max_duration=max(durations) if durations else None,
             min_duration=min(durations) if durations else None

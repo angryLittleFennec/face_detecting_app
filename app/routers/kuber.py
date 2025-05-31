@@ -361,15 +361,14 @@ async def get_stream_processors(
     current_user: models.User = Depends(auth.get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Получает список всех процессоров потоков.
-    """
-    logger.info("Getting list of all stream processors")
+    """Получение списка всех процессоров"""
     try:
         processors = db.query(models.StreamProcessor).all()
-        logger.info(f"Found {len(processors)} stream processors")
-        return {"processors": processors}
-
+        # Преобразуем None в 0 для camera_id
+        for processor in processors:
+            if processor.camera_id is None:
+                processor.camera_id = 0
+        return StreamProcessorList(processors=processors)
     except Exception as e:
         logger.error(f"Error getting stream processors: {str(e)}")
         raise HTTPException(

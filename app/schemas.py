@@ -87,7 +87,7 @@ class StreamProcessorResponse(BaseModel):
 class StreamProcessor(BaseModel):
     id: int
     name: str
-    camera_id: int
+    camera_id: Optional[int] = None
     input_stream: str
     output_stream: str
     release_name: str
