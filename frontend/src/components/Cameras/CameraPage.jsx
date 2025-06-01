@@ -1,5 +1,5 @@
 // Страница отдельной камеры
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useRef, useState, useEffect } from 'react';
 import CamerasHandlers from './CamerasHandlers';
 import DataHandlers from '../DataPages/DataHandlers';

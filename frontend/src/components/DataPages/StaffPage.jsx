@@ -48,7 +48,7 @@ function StaffPage() {
     return (
         <div className="page-container">
             <div className="main-content justify-content-center">
-                <div div className="staff-container">
+                <div className="staff-container">
                     <h1>Список сотрудников</h1>
                     <ul className="files-list">
                         {persons.length > 0 ? (

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import CamerasContainer from './CamerasContainer';
 import CamerasHandlers from './CamerasHandlers';
 import CamerasStatusWindow from './CamerasStatusWindow';
