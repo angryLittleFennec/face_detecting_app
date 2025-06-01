@@ -17,6 +17,7 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Dict, Tuple, List
 import json
+import subprocess
 
 # Настройки RTSP
 RTSP_INPUT_URL = os.getenv("RTSP_IN", "rtsp://mediamtx-svc:8554/mediamtx/stream3")
@@ -208,6 +209,8 @@ def log_face_event(track_id, event_type, name=None, person_id=None):
                     "duration": duration
                 }
                 
+                # Временно отключаем отправку логов
+                """
                 try:
                     response = requests.post(
                         f"{LOGGING_SERVICE_URL}/events/",
@@ -218,6 +221,7 @@ def log_face_event(track_id, event_type, name=None, person_id=None):
                         logger.error(f"Failed to log event: {response.text}")
                 except requests.exceptions.RequestException as e:
                     logger.error(f"Error sending event to logging service: {e}")
+                """
             else:
                 logger.warning(f"Skipping event logging for track_id {track_id} - no person_id available")
         
@@ -257,27 +261,37 @@ def get_face_embedding(image: np.ndarray):
         logger.error(f"Error in get_face_embedding: {e}")
         return None
 
-def process_frame(frame, frame_id, out):
+def process_frame(frame, frame_id, ffmpeg_process):
     global frame_count, active_tracks
-    start_time = time.time()
     try:
-        # Копирование кадра
-        copy_start = time.time()
-        annotated_frame = frame.copy()
-        copy_time = time.time() - copy_start
+        # Validate frame
+        if frame is None or frame.size == 0:
+            logger.warning("Received invalid frame, skipping...")
+            return True
+            
+        # Check frame dimensions
+        if frame.shape[0] == 0 or frame.shape[1] == 0:
+            logger.warning("Frame has invalid dimensions, skipping...")
+            return True
+            
+        # Check frame data type and channels
+        if frame.dtype != np.uint8 or len(frame.shape) != 3 or frame.shape[2] != 3:
+            logger.warning(f"Invalid frame format: dtype={frame.dtype}, shape={frame.shape}, skipping...")
+            return True
+
+        # Копирование кадра только если нужно
+        if len(tracked_faces) > 0:  # Копируем только если есть отслеживаемые лица
+            annotated_frame = frame.copy()
+        else:
+            annotated_frame = frame
         
         # Оптимизация размера изображения
-        resize_start = time.time()
-        scale_percent = 30  # Увеличиваем размер изображения для лучшего качества
+        scale_percent = 25  # Уменьшаем размер для увеличения скорости
         width = int(frame.shape[1] * scale_percent / 100)
         height = int(frame.shape[0] * scale_percent / 100)
-        resized_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)
-        resize_time = time.time() - resize_start
-        
-        logger.info(f"Original frame size: {frame.shape}, Resized frame size: {resized_frame.shape}")
+        resized_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)  # Используем более быстрый метод интерполяции
         
         # Запускаем YOLO с отслеживанием на GPU с оптимизациями
-        yolo_start = time.time()
         with torch.cuda.amp.autocast():  # Используем автоматическое смешанное вычисление
             with torch.no_grad():
                 if DEVICE == 'cuda':
@@ -287,59 +301,48 @@ def process_frame(frame, frame_id, out):
                             verbose=False,
                             stream=False,
                             persist=True,
-                            conf=0.5,  # Снижаем порог уверенности
-                            iou=0.45,  # Увеличиваем IoU
-                            max_det=5,  # Увеличиваем количество детекций
+                            conf=0.6,  # Увеличиваем порог уверенности
+                            iou=0.5,   # Увеличиваем IoU
+                            max_det=3,  # Уменьшаем максимальное количество детекций
                             device=DEVICE
                         )
-                        torch.cuda.current_stream().synchronize()  # Синхронизируем CUDA поток
+                        torch.cuda.current_stream().synchronize()
                 else:
                     results = FACE_MODEL.track(
                         resized_frame,
                         verbose=False,
                         stream=False,
                         persist=True,
-                        conf=0.5,  # Снижаем порог уверенности
-                        iou=0.45,  # Увеличиваем IoU
-                        max_det=5,  # Увеличиваем количество детекций
+                        conf=0.6,
+                        iou=0.5,
+                        max_det=3,
                         device=DEVICE
                     )
-        yolo_time = time.time() - yolo_start
 
         # Оптимизация работы с тензорами
         if DEVICE == 'cuda':
-            torch.cuda.empty_cache()  # Очищаем неиспользуемую память GPU
+            torch.cuda.empty_cache()
 
         # Масштабируем координаты обратно к оригинальному размеру
         scale_x = frame.shape[1] / width
         scale_y = frame.shape[0] / height
         
-        face_recognition_time = 0
-        faces_processed = 0
-        
         # Очищаем множество активных треков для нового кадра
         current_tracks = set()
         
-        # Обрабатываем результаты из генератора
-        process_results_start = time.time()
-        
         # Получаем все боксы сразу с оптимизацией для GPU
-        boxes_start = time.time()
         boxes = []
         if results[0].boxes.id is not None:
             if DEVICE == 'cuda':
-                boxes = results[0].boxes.cpu()  # Перемещаем данные на CPU для обработки
+                boxes = results[0].boxes.cpu()
             else:
                 boxes = results[0].boxes
-        boxes_time = time.time() - boxes_start
         
         # Предварительно вычисляем масштабированные координаты
-        scaling_start = time.time()
         scaled_boxes = []
         if len(boxes) > 0:
             for box in boxes:
                 if int(box.cls) == 0:  # Класс 0 соответствует лицу
-                    # Получаем координаты
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                     track_id = int(box.id.item())
                     
@@ -349,8 +352,8 @@ def process_frame(frame, frame_id, out):
                     x2 = int(x2 * scale_x)
                     y2 = int(y2 * scale_y)
                     
-                    # Добавляем отступы
-                    padding = 20
+                    # Уменьшаем отступы
+                    padding = 10  # Уменьшаем отступы
                     x1 = max(0, x1 - padding)
                     y1 = max(0, y1 - padding)
                     x2 = min(frame.shape[1], x2 + padding)
@@ -361,20 +364,11 @@ def process_frame(frame, frame_id, out):
                         'coords': (x1, y1, x2, y2),
                         'face_image': frame[y1:y2, x1:x2]
                     })
-        scaling_time = time.time() - scaling_start
-        
-        # Обрабатываем все боксы
-        processing_start = time.time()
-        face_recognition_total = 0
-        face_embedding_total = 0
-        face_matching_total = 0
-        drawing_total = 0
         
         # Словарь для отслеживания person_id по track_id
         current_person_tracks = {}
         
         for box_data in scaled_boxes:
-            faces_processed += 1
             track_id = box_data['track_id']
             x1, y1, x2, y2 = box_data['coords']
             face_image = box_data['face_image']
@@ -382,65 +376,47 @@ def process_frame(frame, frame_id, out):
             
             # Проверяем, новый ли это трек
             if track_id not in tracked_faces:
-                # Создаем запись в tracked_faces
                 tracked_faces[track_id] = {
                     "name": None,
                     "person_id": None,
                     "first_seen": time.time(),
                     "last_seen": time.time(),
-                    "event_sent": False  # Флаг для отслеживания отправки события
+                    "event_sent": False
                 }
                 
                 # Сначала пытаемся распознать лицо
-                face_start = time.time()
                 embedding = get_face_embedding(face_image)
-                face_embedding_total += time.time() - face_start
                 
                 if embedding is not None:
-                    match_start = time.time()
                     match, match_id = find_matching_face(embedding)
-                    face_matching_total += time.time() - match_start
                     
                     if match:
-                        # Обновляем информацию о лице
                         tracked_faces[track_id]["name"] = match
                         tracked_faces[track_id]["person_id"] = match_id
                         current_person_tracks[match_id] = track_id
                         
-                        # Отправляем событие начала только если для этого person_id еще нет активного трека
                         if match_id not in current_person_tracks or current_person_tracks[match_id] == track_id:
                             log_face_event(track_id, "enter", match, match_id)
                             tracked_faces[track_id]["event_sent"] = True
-                        else:
-                            logger.warning(f"Person {match} (ID: {match_id}) already has active track {current_person_tracks[match_id]}, skipping enter event for track {track_id}")
             
             # Обновляем время последнего появления
             tracked_faces[track_id]["last_seen"] = time.time()
             
             # Если лицо еще не распознано, пробуем распознать
             if tracked_faces[track_id]["name"] is None:
-                face_start = time.time()
                 embedding = get_face_embedding(face_image)
-                face_embedding_total += time.time() - face_start
                 
                 if embedding is not None:
-                    match_start = time.time()
                     match, match_id = find_matching_face(embedding)
                     if match:
-                        # При распознавании обновляем имя и отправляем событие
                         tracked_faces[track_id]["name"] = match
                         tracked_faces[track_id]["person_id"] = match_id
                         current_person_tracks[match_id] = track_id
                         
-                        # Отправляем событие только если для этого person_id еще нет активного трека
                         if match_id not in current_person_tracks or current_person_tracks[match_id] == track_id:
                             if not tracked_faces[track_id]["event_sent"]:
                                 log_face_event(track_id, "enter", match, match_id)
                                 tracked_faces[track_id]["event_sent"] = True
-                        else:
-                            logger.warning(f"Person {match} (ID: {match_id}) already has active track {current_person_tracks[match_id]}, skipping enter event for track {track_id}")
-                    face_matching_total += time.time() - match_start
-                face_recognition_total += time.time() - face_start
             
             # Отображаем информацию о лице, если оно распознано
             if tracked_faces[track_id]["name"]:
@@ -450,58 +426,43 @@ def process_frame(frame, frame_id, out):
                 cv2.putText(annotated_frame, f"ID: {track_id}", (x1, y1 - 10),
                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         
-        processing_time = time.time() - processing_start
-        process_results_time = time.time() - process_results_start
-        
         # Проверяем, какие треки исчезли
-        check_tracks_start = time.time()
         for track_id in active_tracks - current_tracks:
             if track_id in tracked_faces:
-                # Отправляем событие конца только если:
-                # 1. Было отправлено событие начала
-                # 2. Это последний активный трек для данного person_id
                 person_id = tracked_faces[track_id]["person_id"]
                 if person_id is not None:
                     if tracked_faces[track_id]["event_sent"] and (person_id not in current_person_tracks or current_person_tracks[person_id] == track_id):
                         log_face_event(track_id, "exit", tracked_faces[track_id]["name"], person_id)
-                    else:
-                        logger.warning(f"Skipping exit event for track {track_id} (person_id: {person_id}) as it's not the last active track")
-                # Удаляем трек из словаря
                 del tracked_faces[track_id]
-        check_tracks_time = time.time() - check_tracks_start
         
         # Обновляем множество активных треков
         active_tracks = current_tracks
         
-        total_time = time.time() - start_time
-        
-        # Логируем время обработки с детальной разбивкой
-        logger.info(
-            f"Frame {frame_id} processed in {process_results_time:.3f}s | "
-            f"Copy: {copy_time:.3f}s | "
-            f"Resize: {resize_time:.3f}s | "
-            f"YOLO: {yolo_time:.3f}s | "
-            f"Process results: {process_results_time:.3f}s ("
-            f"boxes: {boxes_time:.3f}s, "
-            f"scaling: {scaling_time:.3f}s, "
-            f"processing: {processing_time:.3f}s ["
-            f"embedding: {face_embedding_total:.3f}s, "
-            f"matching: {face_matching_total:.3f}s, "
-            f"drawing: {drawing_total:.3f}s]) | "
-            f"Faces detected: {faces_processed} | "
-            f"Active tracks: {len(active_tracks)}"
-        )
-        
-        # Записываем обработанный кадр
-        out.write(annotated_frame)
+        # Записываем обработанный кадр в FFmpeg
+        try:
+            if ffmpeg_process.poll() is None:
+                ffmpeg_process.stdin.write(annotated_frame.tobytes())
+            else:
+                logger.error("FFmpeg process is not running")
+                return False
+        except IOError as e:
+            logger.error(f"Error writing to FFmpeg: {e}")
+            return False
+            
         return True
     except Exception as e:
         logger.error(f"Error in process_frame: {e}")
-        return False
+        return True
 
-def process_frames(out):
+def process_frames(ffmpeg_process):
     frame_count = 0
     total_processing_time = 0
+    start_time = time.time()
+    last_fps_time = start_time
+    consecutive_errors = 0
+    max_consecutive_errors = 5
+    frame_interval = 1.0 / 30.0  # Интервал между кадрами (30 FPS)
+    last_frame_time = start_time
     
     while True:
         if not frame_queue.empty():
@@ -512,13 +473,47 @@ def process_frames(out):
                     logger.info(f"Average frame processing time: {avg_time:.3f}s over {frame_count} frames")
                 break
             
-            start_time = time.time()
-            success = process_frame(frame, frame_count, out)
-            processing_time = time.time() - start_time
-            
-            if success:
-                total_processing_time += processing_time
+            try:
+                # Контроль времени между кадрами
+                current_time = time.time()
+                elapsed = current_time - last_frame_time
+                if elapsed < frame_interval:
+                    time.sleep(frame_interval - elapsed)
+                
+                frame_start_time = time.time()
+                success = process_frame(frame, frame_count, ffmpeg_process)
+                frame_processing_time = time.time() - frame_start_time
+                
+                if not success:
+                    consecutive_errors += 1
+                    logger.error(f"Failed to process frame (consecutive errors: {consecutive_errors})")
+                    if consecutive_errors >= max_consecutive_errors:
+                        logger.error("Too many consecutive errors, breaking processing loop")
+                        break
+                    continue
+                else:
+                    consecutive_errors = 0  # Reset error counter on success
+                
                 frame_count += 1
+                total_processing_time += frame_processing_time
+                last_frame_time = time.time()
+
+                # Вывод FPS каждые 30 секунд
+                current_time = time.time()
+                if current_time - last_fps_time >= 30:  # Проверяем каждые 30 секунд
+                    elapsed_time = current_time - last_fps_time
+                    current_fps = frame_count / elapsed_time
+                    logger.info(f"Current FPS: {current_fps:.2f}")
+                    frame_count = 0
+                    total_processing_time = 0
+                    last_fps_time = current_time
+            except Exception as e:
+                logger.error(f"Error in process_frames: {e}")
+                consecutive_errors += 1
+                if consecutive_errors >= max_consecutive_errors:
+                    logger.error("Too many consecutive errors, breaking processing loop")
+                    break
+                continue
 
 def open_capture_with_retry(url, max_retries=5, retry_delay=3):
     for attempt in range(max_retries):
@@ -538,76 +533,147 @@ def process_stream():
             cap = open_capture_with_retry(RTSP_INPUT_URL)
             if cap is None:
                 logger.error("❌ Error: Could not connect to RTSP stream after multiple attempts!")
-                time.sleep(5)  # Ждем перед следующей попыткой
+                time.sleep(5)
                 continue
 
             # Настройка параметров видео
             frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS) or 30
+            frame_interval = 1.0 / fps
 
             logger.info(f"🎥 Input stream opened: {frame_width}x{frame_height} at {fps} FPS")
             logger.info(f"🔄 Forwarding to {RTSP_OUTPUT_URL}")
 
-            # Настройка GStreamer для вывода RTSP с оптимизацией
-            out = cv2.VideoWriter(
-                f'appsrc ! videoconvert ! video/x-raw,format=I420 ! '
-                f'x264enc speed-preset=ultrafast bitrate=1024 key-int-max={int(fps*2)} ! '
-                f'video/x-h264,profile=baseline ! rtspclientsink protocols=tcp location={RTSP_OUTPUT_URL}',
-                cv2.CAP_GSTREAMER, 0, fps, (frame_width, frame_height), True
-            )
+            while True:
+                try:
+                    # Настройка FFmpeg для вывода RTSP
+                    command = [
+                        'ffmpeg',
+                        '-y',
+                        '-f', 'rawvideo',
+                        '-vcodec', 'rawvideo',
+                        '-pix_fmt', 'bgr24',
+                        '-s', f'{frame_width}x{frame_height}',
+                        '-r', str(fps),
+                        '-i', '-',
+                        '-c:v', 'libx264',
+                        '-preset', 'veryfast',  # Возвращаем veryfast для лучшего качества
+                        '-tune', 'zerolatency',
+                        '-b:v', '4000k',  # Увеличиваем битрейт
+                        '-maxrate', '4000k',
+                        '-bufsize', '8000k',
+                        '-g', str(int(fps)),
+                        '-profile:v', 'main',  # Возвращаем main профиль
+                        '-pix_fmt', 'yuv420p',
+                        '-x264opts', 'no-scenecut',  # Отключаем определение сцен
+                        '-f', 'rtsp',
+                        '-rtsp_transport', 'tcp',
+                        RTSP_OUTPUT_URL
+                    ]
+                    
+                    # Запускаем FFmpeg процесс
+                    ffmpeg_process = subprocess.Popen(
+                        command,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        universal_newlines=False
+                    )
 
-            if not out.isOpened():
-                logger.error("❌ Error: Cannot open RTSP output stream!")
-                cap.release()
-                time.sleep(5)
-                continue
-
-            # Запуск потока обработки
-            processor_thread = Thread(target=process_frames, args=(out,))
-            processor_thread.start()
-
-            # Основной цикл чтения кадров
-            frame_count = 0
-            start_time = time.time()
-            last_frame_time = time.time()
-            timeout = 10  # Таймаут в секундах
-
-            while cap.isOpened():
-                ret, frame = cap.read()
-                current_time = time.time()
-                
-                if not ret:
-                    # Проверяем, не превышен ли таймаут
-                    if current_time - last_frame_time > timeout:
-                        logger.error("❌ Error: Stream timeout - no frames received")
+                    if not ffmpeg_process:
+                        logger.error("❌ Error: Cannot start FFmpeg process!")
                         break
-                    logger.warning("⚠️ Failed to read frame from RTSP stream, retrying...")
-                    time.sleep(0.1)
+
+                    # Запускаем отдельный поток для чтения вывода FFmpeg
+                    def log_ffmpeg_output(process, stream_name):
+                        for line in process:
+                            if line:
+                                try:
+                                    decoded_line = line.decode('utf-8').strip()
+                                    if decoded_line:
+                                        logger.info(f"FFmpeg {stream_name}: {decoded_line}")
+                                except UnicodeDecodeError:
+                                    continue
+
+                    stdout_thread = Thread(target=log_ffmpeg_output, args=(ffmpeg_process.stdout, "stdout"))
+                    stderr_thread = Thread(target=log_ffmpeg_output, args=(ffmpeg_process.stderr, "stderr"))
+                    stdout_thread.daemon = True
+                    stderr_thread.daemon = True
+                    stdout_thread.start()
+                    stderr_thread.start()
+
+                    # Запуск потока обработки
+                    processor_thread = Thread(target=process_frames, args=(ffmpeg_process,))
+                    processor_thread.start()
+
+                    # Основной цикл чтения кадров
+                    frame_count = 0
+                    start_time = time.time()
+                    last_frame_time = time.time()
+                    timeout = 10  # Таймаут в секундах
+
+                    while cap.isOpened():
+                        ret, frame = cap.read()
+                        current_time = time.time()
+                        
+                        if not ret:
+                            # Проверяем, не превышен ли таймаут
+                            if current_time - last_frame_time > timeout:
+                                logger.error("❌ Error: Stream timeout - no frames received")
+                                break
+                            logger.warning("⚠️ Failed to read frame from RTSP stream, retrying...")
+                            time.sleep(0.1)
+                            continue
+
+                        # Контроль времени между кадрами
+                        elapsed = current_time - last_frame_time
+                        if elapsed < frame_interval:
+                            time.sleep(frame_interval - elapsed)
+                        
+                        last_frame_time = time.time()
+                        
+                        # Проверяем статус FFmpeg процесса перед отправкой кадра
+                        if ffmpeg_process.poll() is not None:
+                            logger.error(f"❌ FFmpeg process terminated with code {ffmpeg_process.returncode}")
+                            # Получаем последние строки вывода FFmpeg
+                            stdout, stderr = ffmpeg_process.communicate()
+                            if stdout:
+                                logger.error(f"FFmpeg stdout: {stdout}")
+                            if stderr:
+                                logger.error(f"FFmpeg stderr: {stderr}")
+                            break
+
+                        try:
+                            frame_queue.put(frame)
+                            frame_count += 1
+                        except Exception as e:
+                            logger.error(f"Error putting frame to queue: {e}")
+                            break
+
+                    # Остановка потока при выходе из цикла
+                    frame_queue.put(None)
+                    processor_thread.join()
+
+                    # Освобождение ресурсов FFmpeg
+                    try:
+                        if ffmpeg_process.poll() is None:  # Если процесс все еще работает
+                            ffmpeg_process.stdin.close()
+                            ffmpeg_process.terminate()
+                            ffmpeg_process.wait(timeout=5)
+                    except Exception as e:
+                        logger.error(f"Error closing FFmpeg process: {e}")
+
+                    logger.info("🔄 FFmpeg connection lost, attempting to reconnect...")
+                    time.sleep(5)  # Пауза перед переподключением
+
+                except Exception as e:
+                    logger.error(f"❌ Error in FFmpeg processing: {e}")
+                    time.sleep(5)  # Пауза перед следующей попыткой
                     continue
 
-                last_frame_time = current_time
-                frame_queue.put(frame)
-                frame_count += 1
-
-                # Вывод FPS каждые 30 секунд
-                if frame_count % 900 == 0:  # 30 секунд при 30 FPS
-                    elapsed_time = current_time - start_time
-                    current_fps = frame_count / elapsed_time
-                    logger.info(f"Current FPS: {current_fps:.2f}")
-                    frame_count = 0
-                    start_time = current_time
-
-            # Остановка потока при выходе из цикла
-            frame_queue.put(None)
-            processor_thread.join()
-
-            # Освобождение ресурсов
-            out.release()
+            # Освобождение ресурсов захвата
             cap.release()
-            
-            logger.info("🔄 Stream connection lost, attempting to reconnect...")
-            time.sleep(5)  # Пауза перед переподключением
             
         except Exception as e:
             logger.error(f"❌ Unexpected error in stream processing: {e}")
@@ -621,6 +687,8 @@ if __name__ == "__main__":
         # Очистка ресурсов при выходе
         if 'cap' in locals():
             cap.release()
-        if 'out' in locals():
-            out.release()
+        if 'ffmpeg_process' in locals():
+            ffmpeg_process.stdin.close()
+            ffmpeg_process.terminate()
+            ffmpeg_process.wait()
         cv2.destroyAllWindows()

@@ -14,6 +14,7 @@ service:
   ports:
     rtsp: 8554
     http: 8888
+    webrtc: 8889
 
 persistence:
   enabled: true
@@ -43,12 +44,11 @@ ingress:
     yandex.cloud/load-balancer-type: "external"
     yandex.cloud/subnet-id: "e2lafcbevjq0o2rn6qdn"  # Ваш subnet-id
   hosts:
-    - host: ""  # Доступ по IP (или укажите домен)
+    - host: ""
       paths:
         - path: /mediamtx
           pathType: Prefix
   tls: []
-
 
 env:  # Environment variables (e.g., DB connection)
   - name: RTSP_PORT

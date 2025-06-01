@@ -1,0 +1,279 @@
+FROM nvcr.io/nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install Python
+RUN apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
+
+# Install Python development
+RUN apt-get update && apt-get install -y python3-dev && rm -rf /var/lib/apt/lists/*
+
+# Install build essentials
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+
+# Install CMake
+RUN apt-get update && apt-get install -y cmake && rm -rf /var/lib/apt/lists/*
+
+# Install pkg-config
+RUN apt-get update && apt-get install -y pkg-config && rm -rf /var/lib/apt/lists/*
+
+# Install git
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Install wget
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
+# Install unzip
+RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
+
+# Install yasm
+RUN apt-get update && apt-get install -y yasm && rm -rf /var/lib/apt/lists/*
+
+# Install checkinstall
+RUN apt-get update && apt-get install -y checkinstall && rm -rf /var/lib/apt/lists/*
+
+# Install TBB
+RUN apt-get update && apt-get install -y libtbb2 libtbb-dev && rm -rf /var/lib/apt/lists/*
+
+# Install JPEG support
+RUN apt-get update && apt-get install -y libjpeg-dev && rm -rf /var/lib/apt/lists/*
+
+# Install PNG support
+RUN apt-get update && apt-get install -y libpng-dev && rm -rf /var/lib/apt/lists/*
+
+# Install TIFF support
+RUN apt-get update && apt-get install -y libtiff-dev && rm -rf /var/lib/apt/lists/*
+
+# Install video format support
+RUN apt-get update && apt-get install -y libavformat-dev && rm -rf /var/lib/apt/lists/*
+
+# Install PostgreSQL support
+RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+
+# Install video scaling support
+RUN apt-get update && apt-get install -y libswscale-dev && rm -rf /var/lib/apt/lists/*
+
+# Install V4L support
+RUN apt-get update && apt-get install -y libv4l-dev && rm -rf /var/lib/apt/lists/*
+
+# Install XVID support
+RUN apt-get update && apt-get install -y libxvidcore-dev && rm -rf /var/lib/apt/lists/*
+
+# Install H.264 support
+RUN apt-get update && apt-get install -y libx264-dev && rm -rf /var/lib/apt/lists/*
+
+# Install ATLAS
+RUN apt-get update && apt-get install -y libatlas-base-dev && rm -rf /var/lib/apt/lists/*
+
+# Install Fortran
+RUN apt-get update && apt-get install -y gfortran && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer development
+RUN apt-get update && apt-get install -y libgstreamer1.0-dev && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer base plugins development
+RUN apt-get update && apt-get install -y libgstreamer-plugins-base1.0-dev && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer bad plugins development
+RUN apt-get update && apt-get install -y libgstreamer-plugins-bad1.0-dev && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer base plugins
+RUN apt-get update && apt-get install -y gstreamer1.0-plugins-base && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer good plugins
+RUN apt-get update && apt-get install -y gstreamer1.0-plugins-good && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer bad plugins
+RUN apt-get update && apt-get install -y gstreamer1.0-plugins-bad && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer ugly plugins
+RUN apt-get update && apt-get install -y gstreamer1.0-plugins-ugly && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer libav
+RUN apt-get update && apt-get install -y gstreamer1.0-libav && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer tools
+RUN apt-get update && apt-get install -y gstreamer1.0-tools && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer X support
+RUN apt-get update && apt-get install -y gstreamer1.0-x && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer ALSA support
+RUN apt-get update && apt-get install -y gstreamer1.0-alsa && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer GL support
+RUN apt-get update && apt-get install -y gstreamer1.0-gl && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer GTK3 support
+RUN apt-get update && apt-get install -y gstreamer1.0-gtk3 && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer Qt5 support
+RUN apt-get update && apt-get install -y gstreamer1.0-qt5 && rm -rf /var/lib/apt/lists/*
+
+# Install GStreamer PulseAudio support
+RUN apt-get update && apt-get install -y gstreamer1.0-pulseaudio && rm -rf /var/lib/apt/lists/*
+
+# Install FFmpeg
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
+# Install FFmpeg development libraries
+RUN apt-get update && apt-get install -y \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswscale-dev \
+    libavfilter-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install NumPy before building OpenCV
+RUN pip3 install --no-cache-dir numpy>=1.24.0
+
+# Download OpenCV
+WORKDIR /opt
+RUN git clone --depth 1 https://github.com/opencv/opencv.git
+
+# Download OpenCV contrib
+RUN git clone --depth 1 https://github.com/opencv/opencv_contrib.git
+
+# Set CUDA environment variables
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=${CUDA_HOME}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+
+# Verify CUDA installation
+RUN nvcc --version && \
+    echo "CUDA_HOME: $CUDA_HOME" && \
+    echo "PATH: $PATH" && \
+    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+
+
+# Install GTK dependencies for OpenCV highgui
+RUN apt-get update && apt-get install -y \
+    libgtk-3-dev \
+    libcanberra-gtk3-module \
+    libcanberra-gtk3-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    freeglut3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build OpenCV with CUDA support
+WORKDIR /opt/opencv/build
+RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
+    -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D OPENCV_DNN_CUDA=ON \
+    -D ENABLE_FAST_MATH=1 \
+    -D CUDA_FAST_MATH=1 \
+    -D WITH_CUBLAS=1 \
+    -D WITH_TBB=ON \
+    -D WITH_V4L=ON \
+    -D WITH_QT=OFF \
+    -D WITH_OPENGL=ON \
+    -D WITH_GTK=ON \
+    -D WITH_GTK_2_X=OFF \
+    -D WITH_GSTREAMER=ON \
+    -D OPENCV_GENERATE_PKGCONFIG=ON \
+    -D OPENCV_ENABLE_NONFREE=ON \
+    -D INSTALL_PYTHON_EXAMPLES=OFF \
+    -D INSTALL_C_EXAMPLES=OFF \
+    -D BUILD_EXAMPLES=OFF \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_opencv_python3=ON \
+    -D BUILD_opencv_python2=OFF \
+    -D PYTHON3_EXECUTABLE=$(which python3) \
+    -D PYTHON3_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
+    -D PYTHON3_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
+    -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+    -D CUDA_CUDA_LIBRARY=/usr/local/cuda/lib64/stubs/libcuda.so \
+    -D CUDA_CUDART_LIBRARY=/usr/local/cuda/lib64/libcudart.so \
+    -D CUDA_NVCC_EXECUTABLE=/usr/local/cuda/bin/nvcc \
+    -D CUDA_INCLUDE_DIRS=/usr/local/cuda/include \
+    -D CUDA_CUBLAS_LIBRARY=/usr/local/cuda/lib64/libcublas.so \
+    -D CUDA_CUFFT_LIBRARY=/usr/local/cuda/lib64/libcufft.so \
+    -D CUDA_CURAND_LIBRARY=/usr/local/cuda/lib64/libcurand.so \
+    -D CUDA_CUSOLVER_LIBRARY=/usr/local/cuda/lib64/libcusolver.so \
+    -D CUDA_CUSPARSE_LIBRARY=/usr/local/cuda/lib64/libcusparse.so \
+    -D CUDA_NPP_LIBRARY=/usr/local/cuda/lib64/libnppc.so \
+    -D CUDA_NPPC_LIBRARY=/usr/local/cuda/lib64/libnppc.so \
+    -D CUDA_NPPIAL_LIBRARY=/usr/local/cuda/lib64/libnppial.so \
+    -D CUDA_NPPICC_LIBRARY=/usr/local/cuda/lib64/libnppicc.so \
+    -D CUDA_NPPIDEI_LIBRARY=/usr/local/cuda/lib64/libnppidei.so \
+    -D CUDA_NPPIF_LIBRARY=/usr/local/cuda/lib64/libnppif.so \
+    -D CUDA_NPPIG_LIBRARY=/usr/local/cuda/lib64/libnppig.so \
+    -D CUDA_NPPIM_LIBRARY=/usr/local/cuda/lib64/libnppim.so \
+    -D CUDA_NPPIST_LIBRARY=/usr/local/cuda/lib64/libnppist.so \
+    -D CUDA_NPPISU_LIBRARY=/usr/local/cuda/lib64/libnppisu.so \
+    -D CUDA_NPPITC_LIBRARY=/usr/local/cuda/lib64/libnppitc.so \
+    -D CUDA_NPPI_LIBRARY=/usr/local/cuda/lib64/libnppi.so \
+    -D CUDA_NPPIAL_LIBRARY=/usr/local/cuda/lib64/libnppial.so \
+    -D CUDA_NPPICC_LIBRARY=/usr/local/cuda/lib64/libnppicc.so \
+    -D CUDA_NPPIDEI_LIBRARY=/usr/local/cuda/lib64/libnppidei.so \
+    -D CUDA_NPPIF_LIBRARY=/usr/local/cuda/lib64/libnppif.so \
+    -D CUDA_NPPIG_LIBRARY=/usr/local/cuda/lib64/libnppig.so \
+    -D CUDA_NPPIM_LIBRARY=/usr/local/cuda/lib64/libnppim.so \
+    -D CUDA_NPPIST_LIBRARY=/usr/local/cuda/lib64/libnppist.so \
+    -D CUDA_NPPISU_LIBRARY=/usr/local/cuda/lib64/libnppisu.so \
+    -D CUDA_NPPITC_LIBRARY=/usr/local/cuda/lib64/libnppitc.so \
+    -D CUDA_NPPI_LIBRARY=/usr/local/cuda/lib64/libnppi.so \
+    ..
+
+# Build and install OpenCV
+RUN make -j$(nproc) && \
+    make install
+
+
+# Verify OpenCV installation with CUDA support
+RUN python3 -c "import cv2; print('OpenCV version:', cv2.__version__); print('CUDA enabled:', cv2.cuda.getCudaEnabledDeviceCount() > 0)"
+
+# Install PyTorch with CUDA support
+RUN pip3 install --no-cache-dir \
+    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Install ultralytics
+RUN pip3 install --no-cache-dir ultralytics
+
+# Install dlib
+RUN pip3 install --no-cache-dir dlib
+
+# Install requests
+RUN pip3 install --no-cache-dir requests
+
+# Set NVIDIA runtime requirements
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,video
+
+WORKDIR /app
+
+
+
+RUN pip3 install --no-cache-dir sqlalchemy psycopg2-binary lap
+
+
+
+RUN apt-get update && apt-get install -y \
+    gstreamer1.0-vaapi \
+gstreamer1.0-omx \
+gstreamer1.0-nice \
+gstreamer1.0-plugins-rtp
+
+# Install gstreamer1.0-rtsp
+RUN apt-get update && apt-get install -y gstreamer1.0-rtsp && rm -rf /var/lib/apt/lists/*
+
+# Install additional GStreamer plugins for RTSP
+RUN apt-get update && apt-get install -y \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy application files
+COPY ml_models ml_models
+COPY read_frames.py .
+
+
+CMD ["/bin/bash"]
