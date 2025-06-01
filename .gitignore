@@ -12,13 +12,11 @@ __pycache__/
 
 # frontend dependencies
 frontend/node_modules
+frontend/package-lock.json
 
 # frontend development
 frontend/public/videos
 frontend/coverage
-frontend/src/users.json
-frontend/src/models.json
-frontend/src/server.js
 frontend/build
 
 images/
