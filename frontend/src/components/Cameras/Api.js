@@ -8,8 +8,12 @@ export function getCookie(name) {
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
         while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0)
+        if (c.indexOf(nameEQ) === 0) {
+            console.log('logs from getCookie: ');
+            console.log('nameEQ.length, c.length: ', nameEQ.length, c.length);
+            console.log('c.substring: ', c.substring(nameEQ.length, c.length));
             return c.substring(nameEQ.length, c.length);
+        }
     }
     return null;
 }
@@ -55,6 +59,7 @@ export const registerUser = async (user) => {
 // Получение камер
 export const fetchCameras = async () => {
     const token = getCookie('authToken');
+    console.log('token in fetchCameras: ', token);
     const response = await fetch(`${SERVER_URL}cameras/`, {
         method: 'GET',
         headers: {
@@ -261,6 +266,7 @@ export const deleteStream = async (name) => {
 // Получение списка сотрудников
 export const fetchPersons = async () => {
     const token = getCookie('authToken');
+    console.log('token in fetchPersons: ', token);
     const response = await fetch(`${SERVER_URL}persons/`, {
         method: 'GET',
         headers: {

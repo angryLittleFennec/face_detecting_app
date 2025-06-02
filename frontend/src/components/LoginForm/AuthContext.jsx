@@ -24,6 +24,7 @@ function setCookie(name, value, days) {
             expires +
             '; path=/; Secure; SameSite=Strict'
     );
+    console.log('document.cookie:', document.cookie);
 }
 
 export const AuthProvider = ({ children }) => {
