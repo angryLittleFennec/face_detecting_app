@@ -1,13 +1,11 @@
 // Навигация в рамках приложения
 import { useNavigate } from 'react-router';
+import { useAuth } from '../LoginForm/AuthContext';
 
 const NavigationHandlers = () => {
     const navigate = useNavigate();
 
-    // Функция для удаления куки
-    function eraseCookie(name) {
-        document.cookie = name + '=; Max-Age=-99999999;';
-    }
+    const { logout } = useAuth();
 
     // Хендлеры для навигации
     const goToProfileHandler = () => navigate('/profile');
@@ -24,7 +22,7 @@ const NavigationHandlers = () => {
     const goToReportsHandler = () => navigate('/report');
     const goToStaffHandler = () => navigate('/staff');
     const logoutHandler = () => {
-        eraseCookie('authToken');
+        logout();
         navigate('/');
     };
 

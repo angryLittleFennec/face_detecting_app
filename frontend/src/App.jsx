@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router';
-import { useEffect, useState } from 'react';
-import { getCookie } from './components/Cameras/Api';
+import { AuthProvider, useAuth } from './components/LoginForm/AuthContext';
 import LoginForm from './components/LoginForm/LoginForm';
 import ProfilePage from './components/Profile/ProfilePage';
 import CamerasPage from './components/Cameras/CamerasPage';
@@ -15,27 +14,20 @@ import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPa
 import './App.css';
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(
-        !!getCookie('authToken')
+    return (
+        <AuthProvider>
+            <MainRoutes />
+        </AuthProvider>
     );
+}
 
-    useEffect(() => {
-        const token = getCookie('authToken');
-        if (token) {
-            setIsAuthenticated(true);
-        }
-    }, []);
+function MainRoutes() {
+    const { isAuthenticated } = useAuth();
 
-    // Роутинг в рамках приложения
     return (
         <div className="App">
             <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <LoginForm setIsAuthenticated={setIsAuthenticated} />
-                    }
-                />
+                <Route path="/" element={<LoginForm />} />
                 <Route
                     path="/profile"
                     element={

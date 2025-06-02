@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { loginUser, registerUser } from '../Cameras/Api';
+import { useAuth } from './AuthContext';
 
 const LoginHandlers = () => {
     const [email, setEmail] = useState('');
@@ -10,28 +11,7 @@ const LoginHandlers = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
-    // Функция для установки куки
-    function setCookie(name, value, days) {
-        let expires = '';
-        if (days) {
-            const date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = '; expires=' + date.toUTCString();
-        }
-        document.cookie =
-            name +
-            '=' +
-            (value || '') +
-            expires +
-            '; path=/; Secure; SameSite=Strict';
-        console.log(
-            name +
-                '=' +
-                (value || '') +
-                expires +
-                '; path=/; Secure; SameSite=Strict'
-        );
-    }
+    const { login } = useAuth();
 
     // При попытке входа
     const onSubmitLoginHandler = async (event) => {
@@ -42,7 +22,7 @@ const LoginHandlers = () => {
         try {
             const data = await loginUser(user);
             // Сохраняем токен в куки
-            setCookie('authToken', data.access_token, 7); // Сохраняем на 7 дней
+            login(data.access_token);
             console.log('Аутентификация прошла успешно!', data.access_token);
             navigate('/cameras');
         } catch (error) {
