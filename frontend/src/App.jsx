@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router';
+import { useEffect, useState } from 'react';
 import { getCookie } from './components/Cameras/Api';
 import LoginForm from './components/LoginForm/LoginForm';
 import ProfilePage from './components/Profile/ProfilePage';
@@ -14,25 +15,37 @@ import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPa
 import './App.css';
 
 function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        !!getCookie('authToken')
+    );
+
+    useEffect(() => {
+        const token = getCookie('authToken');
+        if (token) {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
     // Роутинг в рамках приложения
     return (
         <div className="App">
             <Routes>
-                <Route path="/" element={<LoginForm />} />
+                <Route
+                    path="/"
+                    element={
+                        <LoginForm setIsAuthenticated={setIsAuthenticated} />
+                    }
+                />
                 <Route
                     path="/profile"
                     element={
-                        getCookie('authToken') ? (
-                            <ProfilePage />
-                        ) : (
-                            <Navigate to="/" />
-                        )
+                        isAuthenticated ? <ProfilePage /> : <Navigate to="/" />
                     }
                 />
                 <Route
                     path="/cameras"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <CamerasPage />
                             </>
@@ -44,7 +57,7 @@ function App() {
                 <Route
                     path="/cameras/:id"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <CameraPage />
                             </>
@@ -56,7 +69,7 @@ function App() {
                 <Route
                     path="/cameras/settings/main"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <CamerasSettingsPage />
                             </>
@@ -68,7 +81,7 @@ function App() {
                 <Route
                     path="/cameras/settings/streams"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <StreamsSettingsPage />
                             </>
@@ -80,7 +93,7 @@ function App() {
                 <Route
                     path="/cameras/settings/detection"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <DetectionSettingsPage />
                             </>
@@ -92,7 +105,7 @@ function App() {
                 <Route
                     path="/cameras/settings/recognition"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <FaceRecognitionSettingsPage />
                             </>
@@ -104,7 +117,7 @@ function App() {
                 <Route
                     path="/cameras/settings/additional"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <AdditionalSettingsPage />
                             </>
@@ -116,7 +129,7 @@ function App() {
                 <Route
                     path="/staff"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <StaffPage />
                             </>
@@ -128,7 +141,7 @@ function App() {
                 <Route
                     path="/report"
                     element={
-                        getCookie('authToken') ? (
+                        isAuthenticated ? (
                             <>
                                 <ReportPage />
                             </>
