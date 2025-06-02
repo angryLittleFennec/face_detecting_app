@@ -3,6 +3,7 @@ import { SERVER_URL } from '../../config';
 
 // Функция для получения куки
 export function getCookie(name) {
+    console.log('logs from getCookie: ');
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
     console.log('document.cookie in getCookie: ', document.cookie);
@@ -10,7 +11,6 @@ export function getCookie(name) {
         let c = ca[i];
         while (c.charAt(0) === ' ') c = c.substring(1, c.length);
         if (c.indexOf(nameEQ) === 0) {
-            console.log('logs from getCookie: ');
             console.log('nameEQ.length, c.length: ', nameEQ.length, c.length);
             console.log('c.substring: ', c.substring(nameEQ.length, c.length));
             return c.substring(nameEQ.length, c.length);

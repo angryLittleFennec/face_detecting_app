@@ -5,6 +5,11 @@ import { useAuth } from '../LoginForm/AuthContext';
 const NavigationHandlers = () => {
     const navigate = useNavigate();
 
+    // Функция для удаления кукиAdd commentMore actions
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=-99999999;';
+    }
+
     const { logout } = useAuth();
 
     // Хендлеры для навигации
@@ -23,6 +28,7 @@ const NavigationHandlers = () => {
     const goToStaffHandler = () => navigate('/staff');
     const logoutHandler = () => {
         logout();
+        eraseCookie('authToken');
         navigate('/');
     };
 
