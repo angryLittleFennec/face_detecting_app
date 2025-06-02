@@ -22,7 +22,7 @@ class EmailService:
         )
         self.fastmail = FastMail(self.conf)
 
-    async def send_report_email(self, pdf_buffer: BytesIO) -> bool:
+    async def send_report_email(self, pdf_buffer: BytesIO, recipients: List[str]) -> bool:
         """Отправка отчета по email"""
         try:
             logger.info("Начало отправки отчета по email")
@@ -37,7 +37,7 @@ class EmailService:
                 # Создаем сообщение с путем к временному файлу
                 message = MessageSchema(
                     subject="Monthly Person Detection Report",
-                    recipients=["13x.skat.x13@gmail.com"],
+                    recipients=recipients,
                     body="В приложении находится отчет по событиям видеонаблюдения за последний месяц.",
                     subtype="html",
                     attachments=[{

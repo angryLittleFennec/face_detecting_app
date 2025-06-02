@@ -1,3 +1,4 @@
+from app.services.email_service import EmailService
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -18,7 +19,7 @@ from ..database import get_db
 from ..services.logging_service import LoggingService
 from .. import schemas
 from .. import models
-
+from .. import auth
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -130,6 +131,26 @@ def download_events_pdf(
             'Content-Disposition': f'attachment; filename=events_report_{uuid.uuid4()}.pdf'
         }
     )
+
+
+@router.post("/send_events_to_mail/")
+async def send_events_to_mail(
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
+    """Отправка событий на почту"""
+    pdf_buffer = BytesIO()
+                
+    get_events_pdf(db, pdf_buffer)
+    pdf_buffer.seek(0)
+
+
+    email_service = EmailService()
+    await email_service.send_report_email(pdf_buffer, recipients=[current_user.email])
+    logger.info("Отчет успешно отправлен на email")
+            
+    return {"status": "success", "message": "Отчет успешно отправлен на email"}
+
 
 def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
     """Генерация PDF отчета"""

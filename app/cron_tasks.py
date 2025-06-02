@@ -31,7 +31,7 @@ def setup_scheduler(app: FastAPI) -> None:
                 
                 # Отправляем отчет на email
                 email_service = EmailService()
-                await email_service.send_report_email(pdf_buffer)
+                await email_service.send_report_email(pdf_buffer, recipients=["13x.skat.x13@gmail.com"])
                 logger.info("Отчет успешно отправлен на email")
                     
             except Exception as e:
