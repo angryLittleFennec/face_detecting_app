@@ -12,17 +12,9 @@ function setCookie(name, value, days) {
         expires = '; expires=' + date.toUTCString();
     }
     document.cookie =
-        name +
-        '=' +
-        (value || '') +
-        expires +
-        '; path=/; Secure; SameSite=Strict';
+        name + '=' + (value || '') + expires + '; path=/; SameSite=None';
     console.log(
-        name +
-            '=' +
-            (value || '') +
-            expires +
-            '; path=/; Secure; SameSite=Strict'
+        name + '=' + (value || '') + expires + '; path=/; SameSite=None'
     );
     console.log('document.cookie:', document.cookie);
 }
