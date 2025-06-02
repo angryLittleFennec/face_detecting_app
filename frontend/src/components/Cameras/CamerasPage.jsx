@@ -1,7 +1,6 @@
 // Главная страница с камерами
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useState } from 'react';
 import { Link } from 'react-router';
 import CamerasContainer from './CamerasContainer';
 import CamerasHandlers from './CamerasHandlers';

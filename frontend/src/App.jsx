@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router';
+import { getCookie } from './components/Cameras/Api';
 import LoginForm from './components/LoginForm/LoginForm';
 import ProfilePage from './components/Profile/ProfilePage';
 import CamerasPage from './components/Cameras/CamerasPage';
@@ -13,11 +14,6 @@ import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPa
 import './App.css';
 
 function App() {
-    const isAuthenticated = () => {
-        const token = localStorage.getItem('token');
-        return !!token;
-    };
-
     // Роутинг в рамках приложения
     return (
         <div className="App">
@@ -26,7 +22,7 @@ function App() {
                 <Route
                     path="/profile"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <ProfilePage />
                         ) : (
                             <Navigate to="/" />
@@ -36,7 +32,7 @@ function App() {
                 <Route
                     path="/cameras"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <CamerasPage />
                             </>
@@ -48,7 +44,7 @@ function App() {
                 <Route
                     path="/cameras/:id"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <CameraPage />
                             </>
@@ -60,7 +56,7 @@ function App() {
                 <Route
                     path="/cameras/settings/main"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <CamerasSettingsPage />
                             </>
@@ -72,7 +68,7 @@ function App() {
                 <Route
                     path="/cameras/settings/streams"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <StreamsSettingsPage />
                             </>
@@ -84,7 +80,7 @@ function App() {
                 <Route
                     path="/cameras/settings/detection"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <DetectionSettingsPage />
                             </>
@@ -96,7 +92,7 @@ function App() {
                 <Route
                     path="/cameras/settings/recognition"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <FaceRecognitionSettingsPage />
                             </>
@@ -108,7 +104,7 @@ function App() {
                 <Route
                     path="/cameras/settings/additional"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <AdditionalSettingsPage />
                             </>
@@ -120,7 +116,7 @@ function App() {
                 <Route
                     path="/staff"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <StaffPage />
                             </>
@@ -132,7 +128,7 @@ function App() {
                 <Route
                     path="/report"
                     element={
-                        isAuthenticated() ? (
+                        getCookie('authToken') ? (
                             <>
                                 <ReportPage />
                             </>
