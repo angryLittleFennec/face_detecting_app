@@ -108,7 +108,7 @@ async def deploy_stream_processor(
         values = {
             "replicaCount": 1,
             "image": {
-                "repository": "angrylittlefennec/stream-processor",
+                "repository": "cr.yandex/crpa91sr9tr2i9j9gpba/stream-processor-cuda",
                 "tag": "latest",
                 "pullPolicy": "Always"
             },
@@ -124,10 +124,14 @@ async def deploy_stream_processor(
             "fullnameOverride": f"stream-processor-{config.name}",
             "resources": {
                 "limits": {
-                    "cpu": "2"
+                    "cpu": "2",
+                    "memory": "4Gi",
+                    "nvidia.com/gpu": "1"
                 },
                 "requests": {
-                    "cpu": "2"
+                    "cpu": "2",
+                    "memory": "4Gi",
+                    "nvidia.com/gpu": "1"
                 }
             },
             "env": [
