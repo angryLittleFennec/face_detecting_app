@@ -1,18 +1,22 @@
 import { useState } from 'react';
+import { SETTINGS_PASSWORD } from '../../../config';
 
 const SettingsHandlers = () => {
-    const [password, setPassword] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [password, setPassword] = useState('');
 
     const handleAdminAccess = () => {
-        setIsAdmin(true); // Пока нет ролей
+        // Пока нет ролей
+        if (password === SETTINGS_PASSWORD) {
+            setIsAdmin(true);
+        }
         // Логика получения доступа
         /*if (user.is_admin) {
             setIsAdmin(true);
         }*/
     };
 
-    return { password, isAdmin, setPassword, handleAdminAccess };
+    return { isAdmin, password, setPassword, handleAdminAccess };
 };
 
 export default SettingsHandlers;

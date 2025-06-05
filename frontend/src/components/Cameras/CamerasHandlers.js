@@ -8,7 +8,6 @@ import {
     deleteCamera,
     updateCamera,
     fetchCameraDetails,
-    downloadCameraLogs,
     addStream,
     getAllStreams,
     deleteStream,
@@ -21,6 +20,7 @@ const CamerasHandlers = (initialCameras = []) => {
     const [cameraInfo, setCameraInfo] = useState(null);
     const [selectedCamera, setSelectedCamera] = useState('');
     const [selectedCameraIndex, setSelectedCameraIndex] = useState(null);
+    const [selectedCameraId, setSelectedCameraId] = useState(null);
     const [isVideoVisible, setIsVideoVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -46,7 +46,7 @@ const CamerasHandlers = (initialCameras = []) => {
         camera_id: null,
     });
 
-    const { files } = DataHandlers();
+    const { handleFetchCameraLogsList } = DataHandlers();
 
     const resetNewStream = () => {
         setNewStream({
@@ -73,6 +73,12 @@ const CamerasHandlers = (initialCameras = []) => {
         });
     };
 
+    const resetSelectedCamera = () => {
+        setSelectedCamera('');
+        setSelectedCameraIndex(null);
+        setSelectedCameraId(null);
+    };
+
     // Добавление камеры
     const handleAddCamera = async () => {
         try {
@@ -95,8 +101,9 @@ const CamerasHandlers = (initialCameras = []) => {
 
         try {
             await updateCamera(cameraToUpdate.id, newCameraUpdate);
-            setSelectedCamera('');
-            setSelectedCameraIndex(null);
+            resetSelectedCamera();
+            // setSelectedCamera('');
+            // setSelectedCameraIndex(null);
             resetNewCameraUpdate();
             handleFetchCameras();
         } catch (error) {
@@ -110,8 +117,9 @@ const CamerasHandlers = (initialCameras = []) => {
             await deleteCamera(cameraId);
             // Обновляем состояние, удаляя камеру из списка
             setCameras(cameras.filter((camera) => camera.id !== cameraId));
-            setSelectedCamera('');
-            setSelectedCameraIndex(null);
+            resetSelectedCamera();
+            // setSelectedCamera('');
+            // setSelectedCameraIndex(null);
             resetNewCamera();
         } catch (error) {
             handleError('Ошибка при удалении камеры: ' + error);
@@ -123,9 +131,8 @@ const CamerasHandlers = (initialCameras = []) => {
         try {
             const data = await fetchCameras();
             setCameras(data);
-            console.log(data);
-            // const streamsData = await getAllStreams();
-            // console.log(`Стримы: ${streamsData}`);
+            const streamsData = await getAllStreams();
+            setStreams(streamsData.processors);
         } catch (error) {
             handleError('Ошибка при получении информации о камерах:', error);
         } finally {
@@ -147,31 +154,6 @@ const CamerasHandlers = (initialCameras = []) => {
         }
     };
 
-    // Скачивание логов камеры
-    const handleDownloadCameraLogs = async (cameraId) => {
-        try {
-            //const data = await downloadCameraLogs(cameraId);
-            const data = files;
-            console.log(data);
-            // При получении pdf файла в data
-            // // Создаем URL для data
-            // const url = window.URL.createObjectURL(data);
-
-            // // Создаем временную ссылку для скачивания
-            // const a = document.createElement('a');
-            // a.href = url;
-            // a.download = `camera_logs_${cameraId}.pdf`; // Имя файла для скачивания
-            // document.body.appendChild(a);
-            // a.click(); // Имитируем клик для скачивания
-            // a.remove(); // Удаляем ссылку из документа
-            // window.URL.revokeObjectURL(url); // Освобождаем память
-        } catch (error) {
-            handleError('Ошибка при получении логов камеры:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     // Создание стрима
     const handleAddStream = async () => {
         try {
@@ -187,7 +169,7 @@ const CamerasHandlers = (initialCameras = []) => {
     const handleFetchStreams = async () => {
         try {
             const data = await getAllStreams();
-            console.log(data);
+            setStreams(data.processors);
         } catch (error) {
             handleError('Ошибка при получении стримов:', error);
         } finally {
@@ -234,6 +216,7 @@ const CamerasHandlers = (initialCameras = []) => {
                 description: selected.description,
                 is_active: selected.is_active,
             });
+            setSelectedCameraId(selected.id);
         }
     };
 
@@ -259,6 +242,7 @@ const CamerasHandlers = (initialCameras = []) => {
         dispatch(setSelectedCameraIndexRedux(index)); // Устанавливаем индекс в Redux
         const camera = cameras[index];
         setSelectedCamera(camera.name);
+        handleFetchCameraLogsList(camera.id);
     };
 
     const handleError = (error) => {
@@ -288,6 +272,7 @@ const CamerasHandlers = (initialCameras = []) => {
         error,
         isModalSettingsOpen,
         isModalLogsOpen,
+        selectedCameraId,
         setCameras,
         setNewCamera,
         setNewCameraUpdate,
@@ -300,7 +285,6 @@ const CamerasHandlers = (initialCameras = []) => {
         handleSelectCamera,
         handleFetchCameras,
         handleFetchCameraDetails,
-        handleDownloadCameraLogs,
         handleSelectChange,
         handleCameraClick,
         handleError,
@@ -314,6 +298,7 @@ const CamerasHandlers = (initialCameras = []) => {
         handleAddStream,
         handleDeleteStream,
         handleSelectStreamChange,
+        resetSelectedCamera,
     };
 };
 

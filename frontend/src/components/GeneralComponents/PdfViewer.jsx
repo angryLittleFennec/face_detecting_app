@@ -1,4 +1,4 @@
-// Вспомогательный файл для отображения текста из pdf файла
+// Вспомогательный файл для отображения текста из pdf файла (не используется)
 import { useEffect } from 'react';
 import DataHandlers from '../DataPages/DataHandlers';
 

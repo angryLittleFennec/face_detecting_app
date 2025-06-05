@@ -1,53 +1,106 @@
 // Страница для просмотра и скачивания загруженных файлов
+import { useEffect } from 'react';
 import DataHandlers from './DataHandlers';
+import LogsFilterWindow from './LogsFilterWindow';
+import CamerasHandlers from '../Cameras/CamerasHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
+import IconButton from '../UI/IconButton';
 import './ReportPage.css';
 
 function ReportPage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
-    const { files, handleDownload } = DataHandlers();
+    const { loading, error, setLoading, handleFetchCameras } =
+        CamerasHandlers();
+
+    const {
+        files,
+        selectedLogIndex,
+        isLogsFilterWindowOpen,
+        handleFetchLogsList,
+        handleDownloadLogs,
+        handleLogClick,
+        openLogsFilterWindow,
+        closeLogsFilterWindow,
+        handleFetchPersons,
+    } = DataHandlers();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await handleFetchLogsList();
+            setLoading(false);
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        handleFetchCameras();
+        handleFetchPersons();
+        return <h2>Загрузка...</h2>;
+    }
+
+    if (error) {
+        return <h2>Ошибка: {error}</h2>;
+    }
 
     return (
         <div className="page-container">
             <div className="main-content justify-content-center">
-                <div div className="report-container">
+                <div className="report-container">
                     <div>
-                        <h1>Список файлов</h1>
+                        <h1>Список событий</h1>
                         <ul className="files-list">
-                            {files.length > 0 ? (
-                                files.map((file, index) => (
+                            {files.map((file, index) => (
+                                <div>
                                     <div className="files-list-element">
                                         <img
-                                            src={'/icons/list-element.png'}
+                                            src={
+                                                selectedLogIndex === index
+                                                    ? '/icons/list-element-active.png'
+                                                    : '/icons/list-element.png'
+                                            }
                                             alt="элемент списка"
                                         />
-                                        <li key={index}>{file.name}</li>
+                                        <li
+                                            onClick={() =>
+                                                handleLogClick(index)
+                                            }
+                                            key={index}
+                                        >
+                                            Событие №{file.id}
+                                        </li>
                                     </div>
-                                ))
-                            ) : (
-                                <div>
-                                    <p>Файлы отсутствуют</p>
+                                    {selectedLogIndex === index && (
+                                        <div className="event-description">
+                                            <p>
+                                                Тип события: {file.event_type}
+                                            </p>
+                                            <p>
+                                                Время события: {file.timestamp}
+                                            </p>
+                                            <p>Сотрудник: {file.person_id}</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            ))}
                         </ul>
                     </div>
-                    <ul>
-                        <li>
-                            {files.length > 0 ? (
-                                <div>
-                                    <button
-                                        onClick={() => handleDownload(files[0])}
-                                    >
-                                        Скачать
-                                    </button>
-                                </div>
-                            ) : (
-                                <div></div>
-                            )}
-                        </li>
-                    </ul>
+                    <div className="report-page-buttons">
+                        <button
+                            onClick={() => handleDownloadLogs()}
+                            className="report-container-button"
+                        >
+                            Скачать
+                        </button>
+                        <IconButton
+                            onClick={openLogsFilterWindow}
+                            iconSrc="/icons/filter-icon.png"
+                            altText="фильтрация"
+                            className="filter-icon-button"
+                        />
+                    </div>
                 </div>
             </div>
             <div className="left-menu">
@@ -67,6 +120,10 @@ function ReportPage() {
                         onClick={logoutHandler}
                     />
                 </div>
+                <LogsFilterWindow
+                    isOpen={isLogsFilterWindowOpen}
+                    onClose={closeLogsFilterWindow}
+                />
             </div>
         </div>
     );

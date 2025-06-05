@@ -3,16 +3,12 @@ import { SERVER_URL } from '../../config';
 
 // Функция для получения куки
 export function getCookie(name) {
-    console.log('logs from getCookie: ');
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
-    console.log('document.cookie in getCookie: ', document.cookie);
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
         while (c.charAt(0) === ' ') c = c.substring(1, c.length);
         if (c.indexOf(nameEQ) === 0) {
-            console.log('nameEQ.length, c.length: ', nameEQ.length, c.length);
-            console.log('c.substring: ', c.substring(nameEQ.length, c.length));
             return c.substring(nameEQ.length, c.length);
         }
     }
@@ -60,7 +56,6 @@ export const registerUser = async (user) => {
 // Получение камер
 export const fetchCameras = async () => {
     const token = getCookie('authToken');
-    console.log('token in fetchCameras: ', token);
     const response = await fetch(`${SERVER_URL}cameras/`, {
         method: 'GET',
         headers: {
@@ -129,7 +124,7 @@ export const updateCamera = async (cameraId, updatedCameraData) => {
     return await response.json();
 };
 
-// Получение ифнормации о выбранной камере
+// Получение информации о выбранной камере
 export const fetchCameraDetails = async (cameraId) => {
     const token = getCookie('authToken');
     const response = await fetch(`${SERVER_URL}cameras/${cameraId}`, {
@@ -147,45 +142,118 @@ export const fetchCameraDetails = async (cameraId) => {
     return response.json();
 };
 
-// Скачивание логов выбранной камеры
-export const downloadCameraLogs = async (cameraId) => {
+// Получение списка событий
+export const fetchLogsList = async () => {
     const token = getCookie('authToken');
-    const response = await fetch(
-        `${SERVER_URL}cameras/camera/${cameraId}/log/download`,
-        {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-            },
-        }
-    );
+    const response = await fetch(`${SERVER_URL}logging/events/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при получении логов камер: ${response.status}`);
+    }
+    return response.json();
+};
+
+// Получение списка событий определенного стрима
+export const fetchCameraLogsList = async (streamId) => {
+    const token = getCookie('authToken');
+    const url = new URL(`${SERVER_URL}logging/events/`);
+    url.searchParams.append('stream_processor_id', streamId);
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при получении логов камер: ${response.status}`);
+    }
+    return response.json();
+};
+
+// Получение списка событий определенного сотрудника
+export const fetchPersonLogsList = async (personId) => {
+    const token = getCookie('authToken');
+    const url = new URL(`${SERVER_URL}logging/events/`);
+    url.searchParams.append('person_id', personId);
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка при получении логов камер: ${response.status}`);
+    }
+    return response.json();
+};
+
+// Скачивание логов камер
+export const downloadLogs = async () => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}logging/events/pdf/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/pdf',
+        },
+    });
     if (!response.ok) {
         throw new Error(
             `Ошибка при получении логов камеры: ${response.status}`
         );
     }
-    return response.json();
+    return response.blob();
 };
 
-// // Скачивание логов выбранной камеры при получении в результате запроса pdf файла
-// export const downloadCameraLogs = async (cameraId) => {
-//     const token = getCookie('authToken');
-//     const response = await fetch(
-//         ${SERVER_URL}cameras/camera/${cameraId}/log/download,
-//         {
-//             method: 'GET',
-//             headers: {
-//                 Authorization: Bearer ${token},
-//                 Accept: 'application/pdf',
-//             },
-//         }
-//     );
-//     if (!response.ok) {
-//         throw new Error(`Ошибка при получении логов камеры: ${response.status}`);
-//     }
-//     return response.blob();
-// };
+// Скачивание логов определенного стрима
+export const downloadCameraLogs = async (streamId) => {
+    const token = getCookie('authToken');
+
+    const url = new URL(`${SERVER_URL}logging/events/pdf/`);
+    url.searchParams.append('stream_processor_id', streamId);
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/pdf',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении логов камеры: ${response.status}`
+        );
+    }
+    return response.blob();
+};
+
+// Скачивание логов выбранного сотрудника
+export const downloadPersonLogs = async (personId) => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}logging/events/pdf/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/pdf',
+        },
+        body: JSON.stringify({ person_id: personId }),
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении логов камеры: ${response.status}`
+        );
+    }
+    return response.blob();
+};
 
 // Создание видеопотоков
 export const addStream = async (newStream) => {
@@ -267,7 +335,6 @@ export const deleteStream = async (name) => {
 // Получение списка сотрудников
 export const fetchPersons = async () => {
     const token = getCookie('authToken');
-    console.log('token in fetchPersons: ', token);
     const response = await fetch(`${SERVER_URL}persons/`, {
         method: 'GET',
         headers: {

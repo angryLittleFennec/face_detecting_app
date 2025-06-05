@@ -1,0 +1,54 @@
+.logs-filter-window {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    margin-left: 10px;
+    margin-top: 20px;
+}
+
+.logs-filter-window input {
+    font-size: 15px;
+    font-weight: 700;
+    width: 500px;
+    padding: 10px;
+    margin-bottom: 30px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+}
+
+.logs-filter-window button {
+    font-size: 20px;
+    font-weight: 600;
+    width: 300px;
+    height: 50px;
+    margin: 0;
+    padding: 7px;
+    margin-top: 10px;
+    background-color: #414141;
+    color: #f8f8f8;
+    border: 2px solid #000000;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.logs-filter-window button:hover {
+    background-color: #f8f8f8;
+    color: #131313;
+}
+
+.logs-filter-window .dropdown {
+    margin-top: 10px;
+    background-color: white;
+    color: #131313;
+    border: #131313;
+}
+
+.logs-filter-window .reset-button {
+    font-size: 16px;
+    width: 200px;
+}
+
+.logs-filter-window .reset-button:hover {
+    text-decoration: underline;
+}

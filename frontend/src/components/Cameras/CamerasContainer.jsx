@@ -1,12 +1,14 @@
 // Контейнер с камерами
 import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
+import DataHandlers from '../DataPages/DataHandlers';
 import './CamerasContainer.css';
 
 const CamerasContainer = (props) => {
     const { currentCameras, camerasLocation, startIndex } = props;
-    const { loading, error, handleFetchCameras, handleSelectCamera } =
+    const { loading, error, streams, handleFetchCameras, handleSelectCamera } =
         CamerasHandlers();
+    const { getStreamUrl } = DataHandlers();
 
     const selectedCameraIndex = useSelector(
         (state) => state.selectedCameraIndex
@@ -47,9 +49,13 @@ const CamerasContainer = (props) => {
                             >
                                 <video controls autoPlay loop>
                                     <source
-                                        src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                        src={getStreamUrl(
+                                            currentCameras[0].id,
+                                            streams
+                                        )}
                                         type="video/mp4"
                                     />
+                                    {console.log(streams)}
                                     Ваш браузер не поддерживает видео.
                                 </video>
                             </div>
@@ -75,7 +81,10 @@ const CamerasContainer = (props) => {
                                         >
                                             <video controls autoPlay loop>
                                                 <source
-                                                    src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                                    src={getStreamUrl(
+                                                        camera.id,
+                                                        streams
+                                                    )}
                                                     type="video/mp4"
                                                 />
                                                 Ваш браузер не поддерживает
@@ -106,7 +115,7 @@ const CamerasContainer = (props) => {
                             >
                                 <video controls autoPlay loop>
                                     <source
-                                        src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                        src={getStreamUrl(camera.id, streams)}
                                         type="video/mp4"
                                     />
                                     Ваш браузер не поддерживает видео.
@@ -140,8 +149,7 @@ const CamerasContainer = (props) => {
                     >
                         <video controls autoPlay loop>
                             <source
-                                //src={camera.url}
-                                src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                src={getStreamUrl(camera.id, streams)}
                                 type="video/mp4"
                             />
                             Ваш браузер не поддерживает видео.

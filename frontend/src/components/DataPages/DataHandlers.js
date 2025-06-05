@@ -1,5 +1,4 @@
 // Функции для взаимодействия с даннными
-import { useSelector } from 'react-redux';
 import { useState, useRef } from 'react';
 import pdfToText from 'react-pdftotext';
 import {
@@ -8,14 +7,17 @@ import {
     addFace,
     updatePerson,
     deletePerson,
+    downloadLogs,
+    downloadCameraLogs,
+    downloadPersonLogs,
+    fetchLogsList,
+    fetchCameraLogsList,
+    fetchPersonLogsList,
 } from '../Cameras/Api';
-import { useDispatch } from 'react-redux';
-import { addFiles } from '../../actions';
 
 const DataHandlers = () => {
     const fileInputRef = useRef(null);
     const [extractedText, setExtractedText] = useState('');
-    const files = useSelector((state) => state.files);
     const [persons, setPersons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -27,7 +29,9 @@ const DataHandlers = () => {
     const [selectedPersonIndex, setSelectedPersonIndex] = useState(null);
     const [selectedPersonId, setSelectedPersonId] = useState(null);
     const [selectedModel, setSelectedModel] = useState('');
-    const dispatch = useDispatch();
+    const [files, setFiles] = useState([]);
+    const [selectedLogIndex, setSelectedLogIndex] = useState('');
+    const [isLogsFilterWindowOpen, setIsLogsFilterWindowOpen] = useState(false);
 
     // Извлечение текста из pdf файла
     const extractText = () => {
@@ -54,22 +58,117 @@ const DataHandlers = () => {
         return formattedText.trim();
     };
 
-    const handleUploadLogsFile = () => {
-        dispatch(addFiles('../../../public/files/person_detection_report.pdf'));
+    // Сброс выбранного сотрудника (не буквально)
+    const resetSelectedPerson = () => {
+        setSelectedPerson('');
+        setSelectedPersonIndex(null);
+        setSelectedPersonId(null);
     };
 
-    // Скачивание загруженного файла
-    const handleDownload = (file) => {
-        if (file) {
-            const fileUrl = URL.createObjectURL(file);
+    // Скачивание логов камер
+    const handleDownloadLogs = async () => {
+        try {
+            const data = await downloadLogs();
+            console.log(data);
+            // Создаем URL для data
+            const url = window.URL.createObjectURL(data);
 
-            const link = document.createElement('a');
-            link.href = fileUrl;
-            link.download = file.name;
+            // Создаем временную ссылку для скачивания
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cameras_logs.pdf`; // Имя файла для скачивания
+            document.body.appendChild(a);
+            a.click(); // Имитируем клик для скачивания
+            a.remove(); // Удаляем ссылку из документа
+            window.URL.revokeObjectURL(url); // Освобождаем память
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    // Скачивание логов выбранной камеры, параметр = id стрима
+    const handleDownloadCameraLogs = async (streamId) => {
+        try {
+            const data = await downloadCameraLogs(streamId);
+            console.log(data);
+            // Создаем URL для data
+            const url = window.URL.createObjectURL(data);
+
+            // Создаем временную ссылку для скачивания
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `camera_${streamId}_logs.pdf`; // Имя файла для скачивания
+            document.body.appendChild(a);
+            a.click(); // Имитируем клик для скачивания
+            a.remove(); // Удаляем ссылку из документа
+            window.URL.revokeObjectURL(url); // Освобождаем память
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Скачивание логов выбранного сотрудника
+    const handleDownloadPersonLogs = async (personId) => {
+        try {
+            const data = await downloadPersonLogs(personId);
+            console.log(data);
+            // Создаем URL для data
+            const url = window.URL.createObjectURL(data);
+
+            // Создаем временную ссылку для скачивания
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `person_${personId}_logs.pdf`; // Имя файла для скачивания
+            document.body.appendChild(a);
+            a.click(); // Имитируем клик для скачивания
+            a.remove(); // Удаляем ссылку из документа
+            window.URL.revokeObjectURL(url); // Освобождаем память
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Получить список событий
+    const handleFetchLogsList = async () => {
+        try {
+            const data = await fetchLogsList();
+            setFiles(data);
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Получить список событий по выбранной камере, параметр = id стрима
+    const handleFetchCameraLogsList = async (streamId) => {
+        try {
+            const data = await fetchCameraLogsList(streamId);
+            setFiles(data);
+            console.log(data);
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Получить список событий по выбранному сотруднику
+    const handleFetchPersonLogsList = async (personId) => {
+        try {
+            const data = await fetchPersonLogsList(personId);
+            setFiles(data);
+            console.log(data);
+        } catch (error) {
+            handleError('Ошибка при получении логов камеры:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -153,6 +252,8 @@ const DataHandlers = () => {
     const closeUploadWindow = () => setIsUploadWindowOpen(false);
     const openEditWindow = () => setIsEditWindowOpen(true);
     const closeEditWindow = () => setIsEditWindowOpen(false);
+    const openLogsFilterWindow = () => setIsLogsFilterWindowOpen(true);
+    const closeLogsFilterWindow = () => setIsLogsFilterWindowOpen(false);
 
     // Загрузка новых лиц
     const handleFileChange = (event) => {
@@ -201,6 +302,30 @@ const DataHandlers = () => {
         }
     };
 
+    // При нажатии на событие
+    const handleLogClick = (index) => {
+        if (selectedLogIndex === index) {
+            setSelectedLogIndex(null);
+        } else {
+            setSelectedLogIndex(index);
+        }
+    };
+
+    // Получить id стрима по id камеры
+    const getStreamId = (cameraId, streams) => {
+        const stream = streams.find((stream) => stream.camera_id === cameraId);
+        return 19;
+        //return stream ? stream.id : null;
+    };
+
+    // Получить url стрима по id камеры
+    const getStreamUrl = (cameraId, streams) => {
+        const stream = streams.find((stream) => stream.id === 19);
+        //const stream = streams.find((stream) => stream.camera_id === cameraId);
+        return stream ? stream.output_stream : null;
+    };
+
+    // Обработчик ошибок
     const handleError = (error) => {
         setError(error);
         console.error(error);
@@ -221,11 +346,19 @@ const DataHandlers = () => {
         selectedPersonIndex,
         selectedPersonId,
         selectedModel,
+        selectedLogIndex,
+        isLogsFilterWindowOpen,
         setNewPerson,
         setSelectedPerson,
         extractText,
         formatTextWithDates,
-        handleDownload,
+        handleDownloadLogs,
+        handleDownloadCameraLogs,
+        handleDownloadPersonLogs,
+        handleFetchLogsList,
+        handleFetchCameraLogsList,
+        handleFetchPersonLogsList,
+        handleLogClick,
         handleFetchPersons,
         handleCreatePerson,
         handleUpdatePerson,
@@ -239,9 +372,13 @@ const DataHandlers = () => {
         handleButtonClick,
         handleStaffSelectChange,
         handlePersonClick,
-        handleUploadLogsFile,
         handleStaffDropdownSelectChange,
         handleModelSelectChange,
+        getStreamId,
+        getStreamUrl,
+        openLogsFilterWindow,
+        closeLogsFilterWindow,
+        resetSelectedPerson,
     };
 };
 

@@ -23,7 +23,6 @@ const LoginHandlers = () => {
             const data = await loginUser(user);
             // Сохраняем токен в куки
             login(data.access_token);
-            console.log('Аутентификация прошла успешно!', data.access_token);
             navigate('/cameras');
         } catch (error) {
             console.log(error);

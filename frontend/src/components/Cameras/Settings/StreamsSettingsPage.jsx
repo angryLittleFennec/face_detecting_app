@@ -27,10 +27,10 @@ function StreamsSettingPage() {
         SettingsHandlers();
 
     // Получение списка стримов перед загрузкой страницы
-    // if (loading) {
-    //     handleFetchStreams();
-    //     return <h2>Загрузка...</h2>;
-    // }
+    if (loading) {
+        handleFetchStreams();
+        return <h2>Загрузка...</h2>;
+    }
 
     if (error) {
         return <h2>Ошибка: {error}</h2>;
@@ -118,46 +118,37 @@ function StreamsSettingPage() {
                                 </div>
                                 <div>
                                     <h3>Удаление видеопотока</h3>
-                                    <div>
-                                        <div className="text-align-left">
-                                            <select
-                                                value={selectedStream}
-                                                onChange={
-                                                    handleSelectStreamChange
-                                                }
-                                            >
-                                                <option value="" disabled>
-                                                    Выберите видеопоток
-                                                </option>
-                                                {streams.map(
-                                                    (stream, index) => (
-                                                        <option
-                                                            key={index}
-                                                            value={stream.name}
-                                                        >
-                                                            {stream.name}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                        </div>
-                                        {selectedStream && (
-                                            <div>
-                                                <button
-                                                    className="delete-button"
-                                                    onClick={() =>
-                                                        handleDeleteStream(
-                                                            streams[
-                                                                selectedStreamIndex
-                                                            ].camera_id
-                                                        )
-                                                    }
+                                    <div className="text-align-left">
+                                        <select
+                                            value={selectedStream}
+                                            onChange={handleSelectStreamChange}
+                                        >
+                                            <option value="" disabled>
+                                                Выберите видеопоток
+                                            </option>
+                                            {streams.map((stream, index) => (
+                                                <option
+                                                    key={index}
+                                                    value={stream.name}
                                                 >
-                                                    Удалить видеопоток
-                                                </button>
-                                            </div>
-                                        )}
+                                                    {stream.name}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
+                                    {selectedStream && (
+                                        <button
+                                            className="delete-button"
+                                            onClick={() =>
+                                                handleDeleteStream(
+                                                    streams[selectedStreamIndex]
+                                                        .camera_id
+                                                )
+                                            }
+                                        >
+                                            Удалить видеопоток
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}

@@ -46,7 +46,6 @@ function CamerasPage() {
         handleFetchCameras,
         handleSelectChange,
         setSelectedCamera,
-        handleFetchStreams,
     } = CamerasHandlers();
 
     const {

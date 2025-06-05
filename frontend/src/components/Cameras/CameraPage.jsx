@@ -6,7 +6,6 @@ import DataHandlers from '../DataPages/DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
-import LogsUploadButton from '../UI/LogsUploadButton';
 import trackingOptions from './TrackingOptions';
 import './CameraPage.css';
 
@@ -21,23 +20,24 @@ function CameraPage() {
 
     const {
         cameras,
+        streams,
         cameraInfo,
         loading,
         error,
         handleFetchCameras,
         handleFetchCameraDetails,
-        handleDownloadCameraLogs,
     } = CamerasHandlers();
 
     const {
-        files,
         persons,
         selectedPerson,
         selectedModel,
-        handleDownload,
         handleFetchPersons,
         handleStaffDropdownSelectChange,
         handleModelSelectChange,
+        handleDownloadCameraLogs,
+        getStreamId,
+        getStreamUrl,
     } = DataHandlers();
 
     const handleMouseDown = (e) => {
@@ -117,8 +117,7 @@ function CameraPage() {
                         <h1>{cameras[id].name}</h1>
                         <video autoPlay loop>
                             <source
-                                //src={cameras[id].url}
-                                src={`${process.env.PUBLIC_URL}/videos/Meow.mp4`}
+                                src={getStreamUrl(cameras[id].id, streams)}
                                 type="video/mp4"
                             />
                             Ваш браузер не поддерживает видео.
@@ -182,11 +181,12 @@ function CameraPage() {
                         </p>
                     </div>
                 )}
-                {/* Временная кнопка */}
-                <LogsUploadButton />
                 <button
-                    //onClick={() => handleDownloadCameraLogs(cameras[id].id)}
-                    onClick={() => handleDownload(files[0])}
+                    onClick={() =>
+                        handleDownloadCameraLogs(
+                            getStreamId(cameras[id].id, streams)
+                        )
+                    }
                 >
                     Скачать логи камеры
                 </button>

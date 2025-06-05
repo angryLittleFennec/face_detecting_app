@@ -1,4 +1,4 @@
-// Кнопка для загрузки файла в систему для теста функционала логов
+// Кнопка для загрузки файла в систему для теста функционала логов (не используется)
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addFiles } from '../../actions';

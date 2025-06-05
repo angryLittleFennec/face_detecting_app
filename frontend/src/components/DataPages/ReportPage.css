@@ -23,7 +23,7 @@
     margin-left: 50px;
 }
 
-.report-container button {
+.report-container-button {
     font-size: 20px;
     font-weight: 600;
     width: 190px;
@@ -37,7 +37,44 @@
     cursor: pointer;
 }
 
-.report-container button:hover {
+.report-container-button:hover {
     background-color: #f8f8f8;
     color: #131313;
+}
+
+.report-container li {
+    font-size: 18px;
+}
+
+.report-container li:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.files-list {
+    max-height: 620px; /* Ограничьте высоту контейнера для прокрутки */
+    overflow-y: auto; /* Добавляет вертикальную прокрутку */
+}
+
+.event-description {
+    text-align: left;
+}
+
+.filter-icon-button img {
+    display: block;
+    width: 30px;
+    height: auto;
+}
+
+.filter-icon-button {
+    vertical-align: middle;
+    padding-left: 25px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.report-page-buttons {
+    padding-left: 45px;
 }
