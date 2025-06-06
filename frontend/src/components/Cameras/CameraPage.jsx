@@ -115,22 +115,30 @@ function CameraPage() {
                 {cameras.length > 0 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        <video autoPlay loop>
-                            <source
-                                src={getStreamUrl(cameras[id].id, streams)}
-                                type="video/mp4"
-                            />
-                            Ваш браузер не поддерживает видео.
-                        </video>
-                        <canvas
-                            ref={canvasRef}
-                            width={1280}
-                            height={720}
-                            style={{ position: 'absolute', top: 0, left: 0 }}
-                            onMouseDown={handleMouseDown}
-                            onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
-                        />
+                        <div>
+                            <video controls autoPlay loop>
+                                <source
+                                    src={getStreamUrl(cameras[id].id, streams)}
+                                    type="video/mp4"
+                                />
+                                Ваш браузер не поддерживает видео.
+                            </video>
+                            {drawingEnabled && (
+                                <canvas
+                                    ref={canvasRef}
+                                    width={1280}
+                                    height={720}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                    }}
+                                    onMouseDown={handleMouseDown}
+                                    onMouseMove={handleMouseMove}
+                                    onMouseUp={handleMouseUp}
+                                />
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <h1>Камера не найдена</h1>
@@ -215,11 +223,7 @@ function CameraPage() {
                 <div className="images-container">
                     <img
                         src={`${process.env.PUBLIC_URL}/videos/человек.png`}
-                        alt="Человек"
-                    />
-                    <img
-                        src={`${process.env.PUBLIC_URL}/videos/кот.png`}
-                        alt="Кот"
+                        alt="Сотрудник №1"
                     />
                 </div>
             </div>

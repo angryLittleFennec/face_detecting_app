@@ -1,22 +1,19 @@
 // Хендлеры для редактирования персональной информации
 import { useState } from 'react';
+import { fetchCurrentUser } from '../Cameras/Api';
 
 const ProfileHandlers = () => {
-    const [isEditingMain, setIsEditingMain] = useState(false);
     const [isEditingContact, setIsEditingContact] = useState(false);
     const [isEditingAdditional, setIsEditingAdditional] = useState(false);
-    const [profileInfo, setProfileInfo] = useState({
-        firstName: 'Админ',
-        lastName: 'Админов',
-        middleName: 'Админович',
-        position: 'безработный',
-        email: 'example@email.com',
-        phone: '+79876543210',
-        about: 'пусто',
-    });
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [about, setAbout] = useState('Пусто');
 
-    const handleEditMainClick = () => {
-        setIsEditingMain(true);
+    const handleFetchCurrentUser = async () => {
+        const data = await fetchCurrentUser();
+        setUsername(data.username);
+        setEmail(data.email);
+        console.log(data);
     };
 
     const handleEditContactClick = () => {
@@ -27,14 +24,14 @@ const ProfileHandlers = () => {
         setIsEditingAdditional(true);
     };
 
-    const handleChange = (e) => {
+    const handleChangeContact = (e) => {
         const { name, value } = e.target;
-        setProfileInfo({ ...profileInfo, [name]: value });
+        setEmail(value);
     };
 
-    const handleSaveMainClick = () => {
-        setIsEditingMain(false);
-        // Здесь можно добавить код для сохранения данных на сервер
+    const handleChangeAdditional = (e) => {
+        const { name, value } = e.target;
+        setAbout(value);
     };
 
     const handleSaveContactClick = () => {
@@ -48,17 +45,19 @@ const ProfileHandlers = () => {
     };
 
     return {
-        profileInfo,
-        isEditingMain,
+        username,
+        email,
         isEditingContact,
         isEditingAdditional,
-        handleEditMainClick,
+        about,
+        setAbout,
         handleEditContactClick,
         handleEditAdditionalClick,
-        handleChange,
-        handleSaveMainClick,
+        handleChangeContact,
+        handleChangeAdditional,
         handleSaveContactClick,
         handleSaveAdditionalClick,
+        handleFetchCurrentUser,
     };
 };
 

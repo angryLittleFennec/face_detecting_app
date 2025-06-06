@@ -13,6 +13,7 @@ import {
     fetchLogsList,
     fetchCameraLogsList,
     fetchPersonLogsList,
+    sendEmail,
 } from '../Cameras/Api';
 
 const DataHandlers = () => {
@@ -151,7 +152,6 @@ const DataHandlers = () => {
         try {
             const data = await fetchCameraLogsList(streamId);
             setFiles(data);
-            console.log(data);
         } catch (error) {
             handleError('Ошибка при получении логов камеры:', error);
         } finally {
@@ -164,7 +164,6 @@ const DataHandlers = () => {
         try {
             const data = await fetchPersonLogsList(personId);
             setFiles(data);
-            console.log(data);
         } catch (error) {
             handleError('Ошибка при получении логов камеры:', error);
         } finally {
@@ -331,6 +330,15 @@ const DataHandlers = () => {
         console.error(error);
     };
 
+    const handleSendEmail = async () => {
+        try {
+            await sendEmail();
+            console.log('Список событий отправлен на почту!');
+        } catch (error) {
+            handleError('Ошибка при отправке списка событий на почту:', error);
+        }
+    };
+
     return {
         files,
         newPerson,
@@ -379,6 +387,7 @@ const DataHandlers = () => {
         openLogsFilterWindow,
         closeLogsFilterWindow,
         resetSelectedPerson,
+        handleSendEmail,
     };
 };
 

@@ -1,3 +1,4 @@
+// Вспомогательный файл для корректной аутентификации
 import { createContext, useContext, useState } from 'react';
 import { getCookie } from '../Cameras/Api';
 

@@ -76,5 +76,27 @@
 }
 
 .report-page-buttons {
-    padding-left: 45px;
+    padding-left: 120px;
+}
+
+.report-page-buttons .tooltip {
+    height: 30px;
+    color: #2e2e2e;
+    background-color: #f8f8f8;
+    font-weight: 600;
+}
+
+.email-icon-button img {
+    display: block;
+    width: 40px;
+    height: auto;
+}
+
+.email-icon-button {
+    vertical-align: middle;
+    padding-left: 25px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
 }

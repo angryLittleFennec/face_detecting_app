@@ -24,6 +24,7 @@ function ReportPage() {
         openLogsFilterWindow,
         closeLogsFilterWindow,
         handleFetchPersons,
+        handleSendEmail,
     } = DataHandlers();
 
     useEffect(() => {
@@ -99,6 +100,16 @@ function ReportPage() {
                             iconSrc="/icons/filter-icon.png"
                             altText="фильтрация"
                             className="filter-icon-button"
+                        />
+                        <ButtonWithTooltip
+                            className="email-icon-button"
+                            iconSrc="/icons/email-icon.png"
+                            altText={
+                                <>
+                                    Отправка событий <br /> на почту
+                                </>
+                            }
+                            onClick={handleSendEmail}
                         />
                     </div>
                 </div>

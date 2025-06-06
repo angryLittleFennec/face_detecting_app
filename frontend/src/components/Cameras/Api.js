@@ -53,6 +53,24 @@ export const registerUser = async (user) => {
     return response.json();
 };
 
+// Получение текущего пользователя
+export const fetchCurrentUser = async () => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}auth/me/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при получении информации о пользователе: ${response.status}`
+        );
+    }
+    return response.json();
+};
+
 // Получение камер
 export const fetchCameras = async () => {
     const token = getCookie('authToken');
@@ -450,6 +468,23 @@ export const addFace = async (personId, newFace) => {
     });
     if (!response.ok) {
         throw new Error(`Ошибка при добавлении лиц: ${response.status}`);
+    }
+    return response.json();
+};
+
+export const sendEmail = async () => {
+    const token = getCookie('authToken');
+    const response = await fetch(`${SERVER_URL}logging/send_events_to_mail/`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Ошибка при отправке событий на почту: ${response.status}`
+        );
     }
     return response.json();
 };

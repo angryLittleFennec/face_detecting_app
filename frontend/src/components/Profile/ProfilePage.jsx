@@ -1,5 +1,6 @@
 // Страница профиля
 import ProfileHandlers from './ProfileHandlers';
+import CamerasHandlers from '../Cameras/CamerasHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import ButtonWithTooltip from '../UI/ButtonWithTooltip';
 import './ProfilePage.css';
@@ -8,80 +9,39 @@ function ProfilePage() {
     const { goToCamerasHandler, logoutHandler } = NavigationHandlers();
 
     const {
-        profileInfo,
-        isEditingMain,
+        username,
+        email,
         isEditingContact,
         isEditingAdditional,
-        handleEditMainClick,
+        about,
         handleEditContactClick,
         handleEditAdditionalClick,
-        handleChange,
-        handleSaveMainClick,
+        handleChangeContact,
+        handleChangeAdditional,
         handleSaveContactClick,
         handleSaveAdditionalClick,
+        handleFetchCurrentUser,
     } = ProfileHandlers();
+
+    const { loading, error, setLoading } = CamerasHandlers();
+
+    // Получение информации о пользователе перед загрузкой страницы
+    if (loading) {
+        handleFetchCurrentUser();
+        setLoading(false);
+        return <h2>Загрузка...</h2>;
+    }
+
+    if (error) {
+        return <h2>Ошибка: {error}</h2>;
+    }
 
     return (
         <div className="page-container">
             <div className="profile-main-content">
                 <div className="profile-container-250px">
                     <h2>Основная информация</h2>
-                    {isEditingMain ? (
-                        <>
-                            <div className="profile-field">
-                                <p>Имя: </p>
-                                <input
-                                    type="text"
-                                    name="firstName"
-                                    value={profileInfo.firstName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="profile-field">
-                                <p>Фамилия: </p>
-                                <input
-                                    type="text"
-                                    name="lastName"
-                                    value={profileInfo.lastName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="profile-field">
-                                <p>Отчество: </p>
-                                <input
-                                    type="text"
-                                    name="middleName"
-                                    value={profileInfo.middleName}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="profile-field">
-                                <p>Должность: </p>
-                                <input
-                                    type="text"
-                                    name="position"
-                                    value={profileInfo.position}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <p>Имя: {profileInfo.firstName}</p>
-                            <p>Фамилия: {profileInfo.lastName}</p>
-                            <p>Отчество: {profileInfo.middleName}</p>
-                            <p>Должность: {profileInfo.position}</p>
-                        </>
-                    )}
-                    <button
-                        onClick={
-                            isEditingMain
-                                ? handleSaveMainClick
-                                : handleEditMainClick
-                        }
-                    >
-                        {isEditingMain ? 'Сохранить' : 'Редактировать'}
-                    </button>
+                    <p>Имя пользователя: {username}</p>
                 </div>
                 <div className="profile-container-200px">
                     <h2>Контактная информация</h2>
@@ -92,24 +52,14 @@ function ProfilePage() {
                                 <input
                                     type="email"
                                     name="email"
-                                    value={profileInfo.email}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="profile-field">
-                                <p>Номер телефона: </p>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={profileInfo.phone}
-                                    onChange={handleChange}
+                                    value={email}
+                                    onChange={handleChangeContact}
                                 />
                             </div>
                         </>
                     ) : (
                         <>
-                            <p>Адрес электронной почты: {profileInfo.email}</p>
-                            <p>Номер телефона: {profileInfo.phone}</p>
+                            <p>Адрес электронной почты: {email}</p>
                         </>
                     )}
                     <button
@@ -129,12 +79,12 @@ function ProfilePage() {
                             <p>О себе: </p>
                             <textarea
                                 name="about"
-                                value={profileInfo.about}
-                                onChange={handleChange}
+                                value={about}
+                                onChange={handleChangeAdditional}
                             />
                         </div>
                     ) : (
-                        <p>О себе: {profileInfo.about}</p>
+                        <p>О себе: {about}</p>
                     )}
                     <button
                         onClick={
