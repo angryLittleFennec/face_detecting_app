@@ -1,7 +1,9 @@
 // Страница отдельной камеры
 import { useParams } from 'react-router';
 import { useRef, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
+import CameraLogsWindow from './CameraLogsWindow';
 import DataHandlers from '../DataPages/DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
@@ -17,6 +19,9 @@ function CameraPage() {
     const [drawingEnabled, setDrawingEnabled] = useState(false);
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
     const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
+    const selectedCameraIndex = useSelector(
+        (state) => state.selectedCameraIndex
+    );
 
     const {
         cameras,
@@ -24,6 +29,9 @@ function CameraPage() {
         cameraInfo,
         loading,
         error,
+        isModalLogsOpen,
+        openModalLogs,
+        closeModalLogs,
         handleFetchCameras,
         handleFetchCameraDetails,
     } = CamerasHandlers();
@@ -112,6 +120,7 @@ function CameraPage() {
     return (
         <div className="page-container">
             <div className="main-content margin-right-600 margin-bottom-250 white-text">
+                {console.log(selectedCameraIndex)}
                 {cameras.length > 0 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
@@ -152,6 +161,14 @@ function CameraPage() {
                         altText="Назад"
                         onClick={goToCamerasHandler}
                     />
+                    {selectedCameraIndex != null && (
+                        <ButtonWithTooltip
+                            className="icon-button margin-top-10"
+                            iconSrc="/icons/files-icon-white.png"
+                            altText="Просмотр логов"
+                            onClick={openModalLogs}
+                        />
+                    )}
                 </div>
                 <div className="bottom-menu-part">
                     <ButtonWithTooltip
@@ -161,6 +178,10 @@ function CameraPage() {
                         onClick={logoutHandler}
                     />
                 </div>
+                <CameraLogsWindow
+                    isOpen={isModalLogsOpen}
+                    onClose={closeModalLogs}
+                />
             </div>
             <div className="results white-text">
                 <h2>Результаты идентификации</h2>

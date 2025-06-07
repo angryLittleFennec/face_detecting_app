@@ -117,6 +117,7 @@ function CamerasPage() {
 
     return (
         <div className="page-container cameras-page-container">
+            {console.log(selectedCameraIndex)}
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
                 <CamerasContainer
                     currentCameras={currentCameras}
@@ -196,12 +197,6 @@ function CamerasPage() {
                         text="Выбор сотрудника"
                     />
                     <div>
-                        <button
-                            onClick={handleFetchCameras}
-                            className="right-menu-button"
-                        >
-                            Обновить камеры
-                        </button>
                         <Dropdown
                             children={cameras}
                             selectedValue={selectedCamera}
@@ -222,23 +217,30 @@ function CamerasPage() {
                         )}
                     </div>
                 </div>
-
-                <div className="change-page-menu">
-                    <IconButton
-                        onClick={handlePrevPage}
-                        iconSrc="/icons/left-arrows-icon.png"
-                        altText="Предыдущая страница"
-                        className="right-icon-button"
-                    />
-                    <p>
-                        Страница {currentPage + 1}/{pagesCount + 1}
-                    </p>
-                    <IconButton
-                        onClick={handleNextPage}
-                        iconSrc="/icons/right-arrows-icon.png"
-                        altText="Следующая страница"
-                        className="right-icon-button"
-                    />
+                <div className="bottom-menu-part">
+                    <button
+                        onClick={handleFetchCameras}
+                        className="right-menu-button"
+                    >
+                        Обновить камеры
+                    </button>
+                    <div className="change-page-menu">
+                        <IconButton
+                            onClick={handlePrevPage}
+                            iconSrc="/icons/left-arrows-icon.png"
+                            altText="Предыдущая страница"
+                            className="right-icon-button"
+                        />
+                        <p>
+                            Страница {currentPage + 1}/{pagesCount + 1}
+                        </p>
+                        <IconButton
+                            onClick={handleNextPage}
+                            iconSrc="/icons/right-arrows-icon.png"
+                            altText="Следующая страница"
+                            className="right-icon-button"
+                        />
+                    </div>
                 </div>
             </div>
 

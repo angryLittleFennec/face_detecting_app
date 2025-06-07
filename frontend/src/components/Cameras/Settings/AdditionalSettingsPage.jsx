@@ -17,9 +17,6 @@ function AdditionalSettingsPage() {
                         <h1>Дополнительные настройки</h1>
                         <h3>Уведомление о событиях</h3>
                         <NotificationSelector />
-                        <button className="settings-container-button">
-                            Подтвердить
-                        </button>
                     </div>
                 </div>
             </div>

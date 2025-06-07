@@ -1,21 +1,31 @@
 // Форма для настройки уведомлений
 import { useState } from 'react';
+import ProfileHandlers from '../../Profile/ProfileHandlers';
+import CamerasHandlers from '../CamerasHandlers';
 import './NotificationSelector.css';
 
 const NotificationSelector = () => {
     const [selectedOption, setSelectedOption] = useState('');
-    const [inputValue, setInputValue] = useState('');
+
+    const { email, handleFetchCurrentUser, handleChangeContact } =
+        ProfileHandlers();
+
+    const { loading, error, setLoading } = CamerasHandlers();
 
     // Смена выбора в выпадающем списке
     const handleOptionChange = (event) => {
         setSelectedOption(event.target.value);
-        setInputValue('');
     };
 
-    // Ввод данных в поле ввода
-    const handleInputChange = (event) => {
-        setInputValue(event.target.value);
-    };
+    if (loading) {
+        handleFetchCurrentUser();
+        setLoading(false);
+        return <h2>Загрузка...</h2>;
+    }
+
+    if (error) {
+        return <h2>Ошибка: {error}</h2>;
+    }
 
     return (
         <div className="notification-selector-container">
@@ -36,17 +46,22 @@ const NotificationSelector = () => {
             {selectedOption && (
                 <div className="notification-input">
                     <label htmlFor="notification-input">
-                        Введите почтовый адрес:
+                        Адрес для отправки уведомлений:
                     </label>
                     <br />
                     <input
                         className="text-input"
                         id="notification-input"
                         type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
+                        value={email}
+                        onChange={handleChangeContact}
                         placeholder={'example@email.com'}
                     />
+                    <div className="text-align-center">
+                        <button className="settings-container-button">
+                            Подтвердить
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
