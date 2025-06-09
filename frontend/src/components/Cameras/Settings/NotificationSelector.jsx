@@ -1,5 +1,5 @@
 // Форма для настройки уведомлений
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProfileHandlers from '../../Profile/ProfileHandlers';
 import CamerasHandlers from '../CamerasHandlers';
 import './NotificationSelector.css';

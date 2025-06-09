@@ -310,25 +310,25 @@ export const getAllStreams = async () => {
 };
 
 // Получение определенного видеопотока (в данный момент такой запрос отсутствует)
-export const getStream = async (cameraId) => {
-    const token = getCookie('authToken');
-    const response = await fetch(
-        `${SERVER_URL}kubernetes/stream-processors/${cameraId}`,
-        {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-            },
-        }
-    );
-    if (!response.ok) {
-        throw new Error(
-            `Ошибка при получении стрима ${cameraId}: ${response.status}`
-        );
-    }
-    return response.json();
-};
+// export const getStream = async (cameraId) => {
+//     const token = getCookie('authToken');
+//     const response = await fetch(
+//         `${SERVER_URL}kubernetes/stream-processors/${cameraId}`,
+//         {
+//             method: 'GET',
+//             headers: {
+//                 Authorization: `Bearer ${token}`,
+//                 Accept: 'application/json',
+//             },
+//         }
+//     );
+//     if (!response.ok) {
+//         throw new Error(
+//             `Ошибка при получении стрима ${cameraId}: ${response.status}`
+//         );
+//     }
+//     return response.json();
+// };
 
 // Удалить видеопоток
 export const deleteStream = async (name) => {

@@ -2,44 +2,88 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Dropdown from './Dropdown';
 
-describe('Dropdown component', () => {
+describe('Dropdown Component', () => {
+    const mockOnChange = jest.fn(); // Создаем мок для функции onChange
+
     const options = [
-        { value: 'option1', label: 'Option 1' },
-        { value: 'option2', label: 'Option 2' },
-        { value: 'option3', label: 'Option 3' },
+        { name: 'Option 1', index: 1 },
+        { name: 'Option 2', index: 2 },
+        { name: 'Option 3', index: 3 },
     ];
 
+    beforeEach(() => {
+        jest.clearAllMocks(); // Сброс мока перед каждым тестом
+    });
+
+    test('renders dropdown with correct initial text', () => {
+        render(
+            <Dropdown
+                selectedValue=""
+                onChange={mockOnChange}
+                text="Select an option"
+                children={options}
+            />
+        );
+
+        const dropdown = screen.getByRole('combobox'); // Находим элемент select
+        expect(dropdown).toBeInTheDocument(); // Проверяем, что элемент существует
+        expect(dropdown).toHaveValue(''); // Проверяем, что значение по умолчанию пустое
+        expect(dropdown).toHaveTextContent('Select an option'); // Проверяем текст по умолчанию
+    });
+
     test('renders dropdown with options', () => {
-        render(<Dropdown>{options}</Dropdown>);
+        render(
+            <Dropdown
+                selectedValue=""
+                onChange={mockOnChange}
+                text="Select an option"
+                children={options}
+            />
+        );
 
-        // Проверяем, что элемент select существует
-        const selectElement = screen.getByRole('combobox');
-        expect(selectElement).toBeInTheDocument();
+        const dropdown = screen.getByRole('combobox');
+        expect(dropdown).toHaveValue('');
+        fireEvent.change(dropdown, { target: { value: options[0].name } }); // Изменяем значение
 
-        // Проверяем, что все опции отображаются
+        expect(mockOnChange).toHaveBeenCalledTimes(1); // Проверяем, что onChange был вызван
+        expect(dropdown).toHaveValue('Option 1'); // Проверяем, что значение изменилось на Option 1
+    });
+
+    test('renders all options correctly', () => {
+        render(
+            <Dropdown
+                selectedValue=""
+                onChange={mockOnChange}
+                text="Select an option"
+                children={options}
+            />
+        );
+
+        const dropdown = screen.getByRole('combobox');
+
+        // Проверяем наличие всех опций
+        const optionElements = screen.getAllByRole('option');
+        expect(optionElements.length).toBe(options.length + 1); // +1 для опции по умолчанию
+
+        // Проверяем текст каждой опции
         options.forEach((option) => {
-            expect(screen.getByText(option.label)).toBeInTheDocument();
+            expect(screen.getByText(option.name)).toBeInTheDocument();
         });
     });
 
-    test('initially selected value is "none"', () => {
-        render(<Dropdown>{options}</Dropdown>);
+    test('disables the default option', () => {
+        render(
+            <Dropdown
+                selectedValue=""
+                onChange={mockOnChange}
+                text="Select an option"
+                children={options}
+            />
+        );
 
-        const selectElement = screen.getByRole('combobox');
-
-        // Проверяем, что изначально выбранное значение равно "none"
-        expect(selectElement.value).toBe('none');
-    });
-
-    test('selecting an option updates the selected value', () => {
-        render(<Dropdown>{options}</Dropdown>);
-
-        const selectElement = screen.getByRole('combobox');
-
-        // Изменяем значение dropdown
-        fireEvent.change(selectElement, { target: { value: 'option2' } });
-
-        // Проверяем, что выбранное значение обновилось
-        expect(selectElement.value).toBe('option2');
+        const defaultOption = screen.getByRole('option', {
+            name: 'Select an option',
+        });
+        expect(defaultOption).toBeDisabled(); // Проверяем, что опция по умолчанию отключена
     });
 });

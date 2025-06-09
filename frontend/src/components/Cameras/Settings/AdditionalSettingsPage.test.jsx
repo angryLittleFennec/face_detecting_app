@@ -1,71 +1,58 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AdditionalSettingsPage from './AdditionalSettingsPage';
-import NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
+import * as NavigationHandlers from '../../GeneralComponents/NavigationHandlers';
 
-// Мокаем NavigationHandlers
+// Мокаем NavigationHandlers для тестирования
 jest.mock('../../GeneralComponents/NavigationHandlers');
+jest.mock('./NotificationSelector', () => () => (
+    <div>NotificationSelector</div>
+));
+jest.mock('../../UI/ButtonWithTooltip', () => ({ onClick, altText }) => (
+    <button onClick={onClick} aria-label={altText}>
+        {altText}
+    </button>
+));
 
-describe('AdditionalSettingsPage Component', () => {
-    let onLogout;
-    let goToCamerasHandler;
-    let logoutHandler;
-    let goToNotificationSettingsHandler;
-    let goToSettingsHandler;
-
+describe('AdditionalSettingsPage', () => {
     beforeEach(() => {
-        onLogout = jest.fn();
-        goToCamerasHandler = jest.fn();
-        logoutHandler = jest.fn();
-        goToNotificationSettingsHandler = jest.fn();
-        goToSettingsHandler = jest.fn();
-
-        // Настраиваем мок для NavigationHandlers
-        NavigationHandlers.mockReturnValue({
-            goToCamerasHandler,
-            logoutHandler,
-            goToNotificationSettingsHandler,
-            goToSettingsHandler,
+        NavigationHandlers.default.mockReturnValue({
+            goToCamerasHandler: jest.fn(),
+            logoutHandler: jest.fn(),
         });
+
+        render(<AdditionalSettingsPage />);
     });
 
-    test('renders correctly', () => {
-        render(<AdditionalSettingsPage onLogout={onLogout} />);
-
-        // Проверяем наличие заголовка
+    test('renders the main elements', () => {
         expect(
-            screen.getByText('Дополнительные настройки')
+            screen.getByText(/Дополнительные настройки/i)
         ).toBeInTheDocument();
-
-        // Проверяем наличие кнопок
-        expect(
-            screen.getByRole('button', { name: /камеры/i })
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: /уведомления/i })
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: /дополнительно/i })
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Уведомление о событиях/i)).toBeInTheDocument();
     });
 
-    test('calls navigation handlers on button clicks', () => {
-        render(<AdditionalSettingsPage onLogout={onLogout} />);
+    test('renders the back and logout buttons', () => {
+        const backButton = screen.getByText(/Назад/i);
+        const logoutButton = screen.getByText(/Выход/i);
 
-        // Клик по кнопке "Камеры"
-        fireEvent.click(screen.getByRole('button', { name: /камеры/i }));
-        expect(goToSettingsHandler).toHaveBeenCalledTimes(1);
+        expect(backButton).toBeInTheDocument();
+        expect(logoutButton).toBeInTheDocument();
+    });
 
-        // Клик по кнопке "Уведомления"
-        fireEvent.click(screen.getByRole('button', { name: /уведомления/i }));
-        expect(goToNotificationSettingsHandler).toHaveBeenCalledTimes(1);
+    test('calls goToCamerasHandler when back button is clicked', () => {
+        const { goToCamerasHandler } = NavigationHandlers();
 
-        // Клик по кнопке "Назад"
-        fireEvent.click(screen.getByRole('button', { name: /назад/i }));
-        expect(goToCamerasHandler).toHaveBeenCalledTimes(1);
+        const backButton = screen.getByText(/Назад/i);
+        fireEvent.click(backButton);
 
-        // Клик по кнопке "Выход"
-        fireEvent.click(screen.getByRole('button', { name: /выход/i }));
-        expect(logoutHandler).toHaveBeenCalledTimes(1);
+        expect(goToCamerasHandler).toHaveBeenCalled();
+    });
+
+    test('calls logoutHandler when logout button is clicked', () => {
+        const { logoutHandler } = NavigationHandlers();
+
+        const logoutButton = screen.getByText(/Выход/i);
+        fireEvent.click(logoutButton);
+
+        expect(logoutHandler).toHaveBeenCalled();
     });
 });

@@ -1,69 +1,66 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { useDispatch } from 'react-redux';
+import { render, fireEvent } from '@testing-library/react';
 import FileUploadButton from './FileUploadButton';
-import { addFiles } from '../../actions';
 
-// Мокаем useDispatch
-jest.mock('react-redux', () => ({
-    useDispatch: jest.fn(),
-}));
-
-describe('FileUploadButton Component', () => {
-    const mockDispatch = jest.fn();
+describe('FileUploadButton', () => {
+    let onClickMock;
+    let onChangeMock;
+    let fileRef;
 
     beforeEach(() => {
-        useDispatch.mockReturnValue(mockDispatch);
+        onClickMock = jest.fn();
+        onChangeMock = jest.fn();
+        fileRef = React.createRef(); // Создаем реф для input
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    test('renders button correctly', () => {
+        const { getByText } = render(
+            <FileUploadButton
+                onClick={onClickMock}
+                onChange={onChangeMock}
+                fileRef={fileRef}
+            />
+        );
+
+        // Проверяем, что кнопка отображается с правильным текстом
+        expect(getByText('Загрузить фотографии')).toBeInTheDocument();
     });
 
-    test('renders the button and initial file name', () => {
-        render(<FileUploadButton />);
+    test('calls onClick when button is clicked', () => {
+        const { getByText } = render(
+            <FileUploadButton
+                onClick={onClickMock}
+                onChange={onChangeMock}
+                fileRef={fileRef}
+            />
+        );
 
-        const button = screen.getByRole('button', { name: /выбрать файл/i });
-        const fileNameDisplay = screen.getByText(/загруженный файл:/i);
+        const button = getByText('Загрузить фотографии');
+        fireEvent.click(button);
 
-        expect(button).toBeInTheDocument();
-        expect(fileNameDisplay).toBeInTheDocument();
-        expect(fileNameDisplay).toHaveTextContent('Загруженный файл: ');
+        // Проверяем, что функция onClick была вызвана
+        expect(onClickMock).toHaveBeenCalledTimes(1);
     });
 
-    test('calls dispatch with selected files on file change', () => {
-        const file = new File(['file content'], 'example.txt', {
-            type: 'text/plain',
+    test('calls onChange when a file is selected', () => {
+        const { getByLabelText } = render(
+            <FileUploadButton
+                onClick={onClickMock}
+                onChange={onChangeMock}
+                fileRef={fileRef}
+            />
+        );
+
+        // Создаем событие изменения для input
+        const fileInput = fileRef.current; // Получаем доступ к рефу
+        const file = new File(['dummy content'], 'example.jpeg', {
+            type: 'image/jpeg',
         });
-        const fileList = [file];
 
-        render(<FileUploadButton />);
+        // Симулируем изменение input
+        fireEvent.change(fileInput, { target: { files: [file] } });
 
-        const input = screen.getByLabelText(/выбрать файл/i);
-
-        // Программный клик по input для выбора файла
-        fireEvent.change(input, {
-            target: { files: fileList },
-        });
-
-        expect(mockDispatch).toHaveBeenCalledWith(addFiles(fileList));
-        expect(
-            screen.getByText(/загруженный файл: example.txt/i)
-        ).toBeInTheDocument();
-    });
-
-    test('displays "Нет файла" when no file is selected', () => {
-        render(<FileUploadButton />);
-
-        const input = screen.getByLabelText(/выбрать файл/i);
-
-        // Программный клик по input без выбора файла
-        fireEvent.change(input, {
-            target: { files: [] },
-        });
-
-        expect(
-            screen.getByText(/загруженный файл: нет файла/i)
-        ).toBeInTheDocument();
+        // Проверяем, что функция onChange была вызвана
+        expect(onChangeMock).toHaveBeenCalledTimes(1);
     });
 });

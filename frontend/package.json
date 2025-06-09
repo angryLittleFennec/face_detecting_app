@@ -51,9 +51,7 @@
             "src/**/*.{js,jsx}",
             "!src/index.js",
             "!src/store.js",
-            "!src/components/Cameras/TrackingOptions.js",
-            "!src/App.jsx",
-            "!src/components/Cameras/Api.js"
+            "!src/components/Cameras/TrackingOptions.js"
         ],
         "coverageReporters": [
             "text",

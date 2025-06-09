@@ -1,74 +1,114 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import StaffPage from './StaffPage';
+import * as DataHandlers from './DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 
+jest.mock('./DataHandlers');
 jest.mock('../GeneralComponents/NavigationHandlers');
 
 describe('StaffPage Component', () => {
-    const onLogoutMock = jest.fn();
-    const goToCamerasHandlerMock = jest.fn();
-    const goToFilesHandlerMock = jest.fn();
-    const goToStaffHandlerMock = jest.fn();
-    const goToDataHandlerMock = jest.fn();
-    const logoutHandlerMock = jest.fn();
+    let mockGoToCamerasHandler;
+    let mockLogoutHandler;
+    let mockFetchPersons;
+    let mockHandleDeletePerson;
+    let mockOpenUploadWindow;
+    let mockCloseUploadWindow;
+    let mockOpenEditWindow;
+    let mockCloseEditWindow;
+    let mockHandlePersonClick;
 
     beforeEach(() => {
+        mockGoToCamerasHandler = jest.fn();
+        mockLogoutHandler = jest.fn();
+        mockFetchPersons = jest.fn();
+        mockHandleDeletePerson = jest.fn();
+        mockOpenUploadWindow = jest.fn();
+        mockCloseUploadWindow = jest.fn();
+        mockOpenEditWindow = jest.fn();
+        mockCloseEditWindow = jest.fn();
+        mockHandlePersonClick = jest.fn();
+
         NavigationHandlers.mockReturnValue({
-            goToCamerasHandler: goToCamerasHandlerMock,
-            goToFilesHandler: goToFilesHandlerMock,
-            goToStaffHandler: goToStaffHandlerMock,
-            goToDataHandler: goToDataHandlerMock,
-            logoutHandler: logoutHandlerMock,
+            goToCamerasHandler: mockGoToCamerasHandler,
+            logoutHandler: mockLogoutHandler,
+        });
+
+        DataHandlers.__setMockFetchPersons(mockFetchPersons);
+        DataHandlers.__setMockHandleDeletePerson(mockHandleDeletePerson);
+        DataHandlers.__setMockOpenUploadWindow(mockOpenUploadWindow);
+        DataHandlers.__setMockCloseUploadWindow(mockCloseUploadWindow);
+        DataHandlers.__setMockOpenEditWindow(mockOpenEditWindow);
+        DataHandlers.__setMockCloseEditWindow(mockCloseEditWindow);
+        DataHandlers.__setMockHandlePersonClick(mockHandlePersonClick);
+    });
+
+    // afterEach(() => {
+    //     jest.clearAllMocks();
+    // });
+
+    test('renders loading state', async () => {
+        DataHandlers.__setLoading(true); // Устанавливаем состояние загрузки
+
+        const { getByText } = render(<StaffPage />);
+
+        expect(getByText('Загрузка...')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(mockFetchPersons).toHaveBeenCalled(); // Проверяем, что функция получения сотрудников была вызвана
         });
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    test('renders list of employees', async () => {
+        const mockPersons = [
+            { id: 1, name: 'John Doe', faces: [] },
+            { id: 2, name: 'Jane Smith', faces: [] },
+        ];
+
+        DataHandlers.__setPersons(mockPersons); // Устанавливаем список сотрудников
+        DataHandlers.__setLoading(false); // Устанавливаем состояние загрузки в false
+
+        const { getByText } = render(<StaffPage />);
+
+        await waitFor(() => {
+            expect(getByText('Список сотрудников')).toBeInTheDocument();
+            expect(getByText('John Doe')).toBeInTheDocument();
+            expect(getByText('Jane Smith')).toBeInTheDocument();
+        });
     });
 
-    test('renders correctly', () => {
-        render(<StaffPage onLogout={onLogoutMock} />);
+    test('handles delete button click', async () => {
+        const mockPersons = [{ id: 1, name: 'John Doe', faces: [] }];
 
-        expect(screen.getByText('Список сотрудников')).toBeInTheDocument();
-        expect(
-            screen.getByText('Здесь будет отображаться список сотрудников...')
-        ).toBeInTheDocument();
+        DataHandlers.__setPersons(mockPersons);
+        DataHandlers.__setLoading(false);
+
+        window.confirm = jest.fn(() => true); // Мокаем confirm для имитации подтверждения удаления
+
+        const { getByText } = render(<StaffPage />);
+
+        await waitFor(() => {
+            expect(getByText('John Doe')).toBeInTheDocument();
+        });
+
+        fireEvent.click(getByText('Удалить')); // Нажимаем кнопку "Удалить"
+
+        expect(window.confirm).toHaveBeenCalledWith('удалить?'); // Проверяем, что confirm был вызван
+        expect(mockHandleDeletePerson).toHaveBeenCalledWith(1); // Проверяем, что функция удаления была вызвана с правильным ID
     });
 
-    test('renders all buttons', () => {
-        render(<StaffPage onLogout={onLogoutMock} />);
+    test('navigates to cameras on button click', () => {
+        const { getByAltText } = render(<StaffPage />);
 
-        expect(screen.getByAltText('Назад')).toBeInTheDocument();
-        expect(screen.getByAltText('Загрузка файлов')).toBeInTheDocument();
-        expect(screen.getByAltText('Список файлов')).toBeInTheDocument();
-        expect(screen.getByAltText('Сотрудники')).toBeInTheDocument();
-        expect(screen.getByAltText('Выход')).toBeInTheDocument();
+        fireEvent.click(getByAltText('Назад')); // Нажимаем кнопку "Назад"
+
+        expect(mockGoToCamerasHandler).toHaveBeenCalled(); // Проверяем, что обработчик навигации был вызван
     });
 
-    test('calls navigation handlers on button clicks', () => {
-        render(<StaffPage onLogout={onLogoutMock} />);
+    test('logs out on button click', () => {
+        const { getByAltText } = render(<StaffPage />);
 
-        fireEvent.click(screen.getByAltText('Назад'));
-        expect(goToCamerasHandlerMock).toHaveBeenCalled();
+        fireEvent.click(getByAltText('Выход')); // Нажимаем кнопку "Выход"
 
-        fireEvent.click(screen.getByAltText('Загрузка файлов'));
-        expect(goToDataHandlerMock).toHaveBeenCalled();
-
-        fireEvent.click(screen.getByAltText('Список файлов'));
-        expect(goToFilesHandlerMock).toHaveBeenCalled();
-
-        fireEvent.click(screen.getByAltText('Сотрудники'));
-        expect(goToStaffHandlerMock).toHaveBeenCalled();
-
-        fireEvent.click(screen.getByAltText('Выход'));
-        expect(logoutHandlerMock).toHaveBeenCalled();
-    });
-
-    test('calls onLogout when logout button is clicked', () => {
-        render(<StaffPage onLogout={onLogoutMock} />);
-
-        fireEvent.click(screen.getByAltText('Выход'));
-        expect(onLogoutMock).toHaveBeenCalled();
+        expect(mockLogoutHandler).toHaveBeenCalled(); // Проверяем, что обработчик выхода был вызван
     });
 });

@@ -84,7 +84,6 @@ const StaffEditWindow = ({ isOpen, onClose }) => {
                         fileRef={fileInputRef}
                     />
                 )}
-                {console.log(newFace)}
                 {newFace.length > 0 && (
                     <button className="close-button" onClick={handleAddFace}>
                         Загрузить в систему

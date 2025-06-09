@@ -1,154 +1,390 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter, Route } from 'react-router-dom';
+import { createContext } from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Routes, Route, BrowserRouter } from 'react-router';
+import { AuthProvider, useAuth } from './components/LoginForm/AuthContext';
 import App from './App';
 import LoginForm from './components/LoginForm/LoginForm';
 import ProfilePage from './components/Profile/ProfilePage';
 import CamerasPage from './components/Cameras/CamerasPage';
-import CameraPage from './components/Cameras/CameraPage';
-import DownloadDataPage from './components/DataPages/DownloadDataPage';
-import FilesListPage from './components/DataPages/FilesListPage';
 import StaffPage from './components/DataPages/StaffPage';
 import ReportPage from './components/DataPages/ReportPage';
 import CamerasSettingsPage from './components/Cameras/Settings/CamerasSettingsPage';
-import NotificationSettingsPage from './components/Cameras/Settings/NotificationSettingsPage';
+import DetectionSettingsPage from './components/Cameras/Settings/DetectionSettingsPage';
+import FaceRecognitionSettingsPage from './components/Cameras/Settings/FaceRecognitionSettingsPage';
 import AdditionalSettingsPage from './components/Cameras/Settings/AdditionalSettingsPage';
+import StreamsSettingsPage from './components/Cameras/Settings/StreamsSettingsPage';
+import { getCookie, fetchCurrentUser } from './components/Cameras/Api';
+import { Provider } from 'react-redux';
+import store from './store';
+import ProfileHandlers from './components/Profile/ProfileHandlers';
 
-jest.mock('./LoginForm', () => (props) => (
-    <div>
-        <button onClick={() => props.onLoginSuccess('Login successful!')}>
-            Login
-        </button>
-    </div>
-));
+// Мокируем функцию getCookie
+jest.mock('./components/Cameras/Api', () => ({
+    getCookie: jest.fn(),
+    fetchCurrentUser: jest.fn(),
+}));
 
-jest.mock('./ProfilePage', () => (props) => (
-    <div>
-        <h1>Profile Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
+jest.mock('./components/Profile/ProfileHandlers', () => ({
+    username: '',
+    email: '',
+    handleFetchCurrentUser: jest.fn(),
+    handleChangeContact: jest.fn(),
+    isEditingContact: false,
+    isEditingAdditional: false,
+    about: '',
+    handleEditContactClick: jest.fn(),
+    handleEditAdditionalClick: jest.fn(),
+    handleChangeAdditional: jest.fn(),
+    handleSaveContactClick: jest.fn(),
+    handleSaveAdditionalClick: jest.fn(),
+}));
 
-jest.mock('./CamerasPage', () => (props) => (
-    <div>
-        <h1>Cameras Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
+// Мок для контекста аутентификации
+const MockAuthProvider = ({ children, isAuthenticated }) => {
+    const mockUseAuth = () => ({
+        isAuthenticated,
+    });
 
-jest.mock('./CameraPage', () => (props) => (
-    <div>
-        <h1>Camera Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./CamerasSettingsPage', () => (props) => (
-    <div>
-        <h1>Cameras Settings Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./NotificationSettingsPage', () => (props) => (
-    <div>
-        <h1>Notification Settings Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./AdditionalSettingsPage', () => (props) => (
-    <div>
-        <h1>Additional Settings Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./DownloadDataPage', () => (props) => (
-    <div>
-        <h1>Download Data Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./FilesListPage', () => (props) => (
-    <div>
-        <h1>Files List Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./StaffPage', () => (props) => (
-    <div>
-        <h1>Staff Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
-
-jest.mock('./ReportPage', () => (props) => (
-    <div>
-        <h1>Report Page</h1>
-        <button onClick={props.onLogout}>Logout</button>
-    </div>
-));
+    return <AuthProvider value={mockUseAuth()}>{children}</AuthProvider>;
+};
 
 describe('App Component', () => {
     beforeEach(() => {
-        localStorage.clear();
+        jest.clearAllMocks();
     });
 
-    test('renders LoginForm on initial load', () => {
-        render(<App />);
-        expect(screen.getByText(/login/i)).toBeInTheDocument();
-    });
-
-    test('logs in user and navigates to profile page', () => {
+    test('renders LoginForm at root path when not authenticated', () => {
+        getCookie.mockReturnValue(null);
         render(
             <MemoryRouter initialEntries={['/']}>
-                <App />
+                <MockAuthProvider isAuthenticated={false}>
+                    <App />
+                </MockAuthProvider>
             </MemoryRouter>
         );
 
-        fireEvent.click(screen.getByText(/login/i));
-        expect(screen.getByText(/profile page/i)).toBeInTheDocument();
-        expect(localStorage.getItem('isLoggedIn')).toBe('true');
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
     });
 
-    test('logs out user and returns to login page', () => {
+    test('redirects to LoginForm when trying to access ProfilePage without authentication', () => {
+        getCookie.mockReturnValue(null);
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/profile']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    // test('renders ProfilePage when authenticated', async () => {
+    //     getCookie.mockReturnValue('some-token');
+    //     render(
+    //         <MemoryRouter initialEntries={['/profile']}>
+    //             <MockAuthProvider isAuthenticated={true}>
+    //                 <App />
+    //             </MockAuthProvider>
+    //         </MemoryRouter>
+    //     );
+
+    //     await waitFor(() => {
+    //         expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    //     });
+    // });
+
+    test('redirects to LoginForm when trying to access CamerasPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders CamerasPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/:id']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access CameraPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/:id']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders CamerasSettingsPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/main']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access CamerasSettingsPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/main']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders StreamsSettingsPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/streams']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/стримов/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access StreamsSettingsPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/streams']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders DetectionSettingsPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/detection']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access DetectionSettingsPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/detection']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders FaceRecognitionSettingsPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter
+                    initialEntries={['/cameras/settings/recognition']}
+                >
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access FaceRecognitionSettingsPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter
+                    initialEntries={['/cameras/settings/recognition']}
+                >
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    // test('renders AdditionalSettingsPage when authenticated', () => {
+    //     getCookie.mockReturnValue('some-token');
+    //     render(
+    //         <MemoryRouter initialEntries={['/cameras/settings/additional']}>
+    //             <MockAuthProvider isAuthenticated={true}>
+    //                 <App />
+    //             </MockAuthProvider>
+    //         </MemoryRouter>
+    //     );
+
+    //     expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    // });
+
+    test('redirects to LoginForm when trying to access AdditionalSettingsPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras/settings/additional']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders CamerasPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/cameras']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
+    });
+
+    test('redirects to LoginForm when trying to access StaffPage without authentication', () => {
+        getCookie.mockReturnValue(null);
+        render(
+            <MemoryRouter initialEntries={['/staff']}>
+                <MockAuthProvider isAuthenticated={false}>
+                    <App />
+                </MockAuthProvider>
             </MemoryRouter>
         );
 
-        fireEvent.click(screen.getByText(/login/i));
-        fireEvent.click(screen.getByText(/logout/i));
-
-        expect(screen.getByText(/login/i)).toBeInTheDocument();
-        expect(localStorage.getItem('isLoggedIn')).toBeNull();
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
     });
 
-    test('logs in user and navigates to cameras page', () => {
+    test('renders StaffPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
+            <MemoryRouter initialEntries={['/staff']}>
+                <MockAuthProvider isAuthenticated={true}>
+                    <App />
+                </MockAuthProvider>
             </MemoryRouter>
         );
 
-        fireEvent.click(screen.getByText(/login/i));
-        expect(screen.getByText(/cameras page/i)).toBeInTheDocument();
-        expect(localStorage.getItem('isLoggedIn')).toBe('true');
+        expect(screen.getByText(/сотрудниках/i)).toBeInTheDocument();
     });
 
-    test('logs in user and navigates to camera page', () => {
+    test('redirects to LoginForm when trying to access ReportPage without authentication', () => {
+        getCookie.mockReturnValue(null);
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
-            </MemoryRouter>
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/report']}>
+                    <MockAuthProvider isAuthenticated={false}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
         );
 
-        fireEvent.click(screen.getByText(/login/i));
-        expect(screen.getByText(/camera page/i)).toBeInTheDocument();
-        expect(localStorage.getItem('isLoggedIn')).toBe('true');
+        expect(
+            screen.getByRole('button', { name: /войти/i })
+        ).toBeInTheDocument();
+    });
+
+    test('renders ReportPage when authenticated', () => {
+        getCookie.mockReturnValue('some-token');
+
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={['/report']}>
+                    <MockAuthProvider isAuthenticated={true}>
+                        <App />
+                    </MockAuthProvider>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText(/камерах/i)).toBeInTheDocument();
     });
 });

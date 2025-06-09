@@ -102,8 +102,6 @@ const CamerasHandlers = (initialCameras = []) => {
         try {
             await updateCamera(cameraToUpdate.id, newCameraUpdate);
             resetSelectedCamera();
-            // setSelectedCamera('');
-            // setSelectedCameraIndex(null);
             resetNewCameraUpdate();
             handleFetchCameras();
         } catch (error) {
@@ -118,8 +116,6 @@ const CamerasHandlers = (initialCameras = []) => {
             // Обновляем состояние, удаляя камеру из списка
             setCameras(cameras.filter((camera) => camera.id !== cameraId));
             resetSelectedCamera();
-            // setSelectedCamera('');
-            // setSelectedCameraIndex(null);
             resetNewCamera();
         } catch (error) {
             handleError('Ошибка при удалении камеры: ' + error);
@@ -230,13 +226,6 @@ const CamerasHandlers = (initialCameras = []) => {
         setSelectedStreamIndex(index);
     };
 
-    // Не используется
-    const handleCameraClick = (index) => {
-        const camera = cameras[index];
-        setSelectedCamera(camera.name);
-        setSelectedCameraIndex(index);
-    };
-
     // Для выбора камеры
     const handleSelectCamera = (index) => {
         dispatch(setSelectedCameraIndexRedux(index)); // Устанавливаем индекс в Redux
@@ -286,7 +275,6 @@ const CamerasHandlers = (initialCameras = []) => {
         handleFetchCameras,
         handleFetchCameraDetails,
         handleSelectChange,
-        handleCameraClick,
         handleError,
         toggleVideo,
         openModalSettings,

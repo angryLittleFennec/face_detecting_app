@@ -1,66 +1,171 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ProfilePage from './ProfilePage'; // Путь к вашему компоненту
-import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
+import ProfilePage from './ProfilePage';
+import * as ProfileHandlers from './ProfileHandlers';
+import * as CamerasHandlers from '../Cameras/CamerasHandlers';
+import * as NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 
-// Мокаем NavigationHandlers
+jest.mock('./ProfileHandlers');
+jest.mock('../Cameras/CamerasHandlers');
 jest.mock('../GeneralComponents/NavigationHandlers');
 
-describe('ProfilePage Component', () => {
-    const mockLogout = jest.fn();
-    const mockGoToCamerasHandler = jest.fn();
-    const mockLogoutHandler = jest.fn();
-
+describe('ProfilePage', () => {
     beforeEach(() => {
-        // Настраиваем мок для NavigationHandlers
-        NavigationHandlers.mockReturnValue({
-            goToCamerasHandler: mockGoToCamerasHandler,
-            logoutHandler: mockLogoutHandler,
+        NavigationHandlers.default.mockReturnValue({
+            goToCamerasHandler: jest.fn(),
+            logoutHandler: jest.fn(),
+        });
+
+        CamerasHandlers.default.mockReturnValue({
+            loading: false,
+            error: null,
+            setLoading: jest.fn(),
         });
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    test('renders loading state', () => {
+        CamerasHandlers.default.mockReturnValue({
+            loading: true,
+            error: null,
+            setLoading: jest.fn(),
+        });
+        ProfileHandlers.default.mockReturnValue({
+            username: '',
+            email: '',
+            isEditingContact: false,
+            isEditingAdditional: false,
+            about: '',
+            handleEditContactClick: jest.fn(),
+            handleEditAdditionalClick: jest.fn(),
+            handleChangeContact: jest.fn(),
+            handleChangeAdditional: jest.fn(),
+            handleSaveContactClick: jest.fn(),
+            handleSaveAdditionalClick: jest.fn(),
+            handleFetchCurrentUser: jest.fn(),
+        });
+
+        render(<ProfilePage />);
+
+        expect(screen.getByText(/Загрузка.../)).toBeInTheDocument();
     });
 
-    test('renders profile information correctly', () => {
-        render(<ProfilePage onLogout={mockLogout} />);
+    test('renders error state', () => {
+        CamerasHandlers.default.mockReturnValue({
+            loading: false,
+            error: 'Ошибка загрузки',
+            setLoading: jest.fn(),
+        });
+        ProfileHandlers.default.mockReturnValue({
+            username: '',
+            email: '',
+            isEditingContact: false,
+            isEditingAdditional: false,
+            about: '',
+            handleEditContactClick: jest.fn(),
+            handleEditAdditionalClick: jest.fn(),
+            handleChangeContact: jest.fn(),
+            handleChangeAdditional: jest.fn(),
+            handleSaveContactClick: jest.fn(),
+            handleSaveAdditionalClick: jest.fn(),
+            handleFetchCurrentUser: jest.fn(),
+        });
 
-        expect(screen.getByText(/основная информация/i)).toBeInTheDocument();
-        expect(screen.getByText(/имя: админ/i)).toBeInTheDocument();
-        expect(screen.getByText(/фамилия: админов/i)).toBeInTheDocument();
-        expect(screen.getByText(/отчество: админович/i)).toBeInTheDocument();
-        expect(screen.getByText(/должность: безработный/i)).toBeInTheDocument();
+        render(<ProfilePage />);
 
-        expect(screen.getByText(/контактная информация/i)).toBeInTheDocument();
-        expect(
-            screen.getByText(/адрес электронной почты: example@email.com/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/номер телефона: +79876543210/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/дополнительная информация/i)
-        ).toBeInTheDocument();
-        expect(screen.getByText(/о себе: пусто/i)).toBeInTheDocument();
+        expect(screen.getByText(/Ошибка: Ошибка загрузки/)).toBeInTheDocument();
     });
 
-    test('calls goToCamerasHandler when back button is clicked', () => {
-        render(<ProfilePage onLogout={mockLogout} />);
+    test('renders profile information', () => {
+        CamerasHandlers.default.mockReturnValue({
+            loading: false,
+            error: null,
+            setLoading: jest.fn(),
+        });
+        ProfileHandlers.default.mockReturnValue({
+            username: 'testuser',
+            email: 'test@example.com',
+            isEditingContact: false,
+            isEditingAdditional: false,
+            about: 'Информация о пользователе',
+            handleEditContactClick: jest.fn(),
+            handleEditAdditionalClick: jest.fn(),
+            handleChangeContact: jest.fn(),
+            handleChangeAdditional: jest.fn(),
+            handleSaveContactClick: jest.fn(),
+            handleSaveAdditionalClick: jest.fn(),
+            handleFetchCurrentUser: jest.fn(),
+        });
 
-        const backButton = screen.getByAltText(/назад/i);
-        fireEvent.click(backButton);
+        render(<ProfilePage />);
 
-        expect(mockGoToCamerasHandler).toHaveBeenCalledTimes(1);
+        expect(screen.getByText(/Имя пользователя:/)).toHaveTextContent(
+            'Имя пользователя: testuser'
+        );
+        expect(screen.getByText(/Адрес электронной почты:/)).toHaveTextContent(
+            'Адрес электронной почты: test@example.com'
+        );
+        expect(screen.getByText(/О себе:/)).toHaveTextContent(
+            'О себе: Информация о пользователе'
+        );
     });
 
-    test('calls logoutHandler when logout button is clicked', () => {
-        render(<ProfilePage onLogout={mockLogout} />);
+    test('allows editing contact information', () => {
+        CamerasHandlers.default.mockReturnValue({
+            loading: false,
+            error: null,
+            setLoading: jest.fn(),
+        });
+        const mockEditContactClick = jest.fn();
+        ProfileHandlers.default.mockReturnValue({
+            username: 'testuser',
+            email: 'test@example.com',
+            isEditingContact: false,
+            isEditingAdditional: false,
+            about: 'Информация о пользователе',
+            handleEditContactClick: mockEditContactClick,
+            handleEditAdditionalClick: jest.fn(),
+            handleChangeContact: jest.fn(),
+            handleChangeAdditional: jest.fn(),
+            handleSaveContactClick: jest.fn(),
+            handleSaveAdditionalClick: jest.fn(),
+            handleFetchCurrentUser: jest.fn(),
+        });
 
-        const logoutButton = screen.getByAltText(/выход/i);
-        fireEvent.click(logoutButton);
+        render(<ProfilePage />);
 
-        expect(mockLogoutHandler).toHaveBeenCalledTimes(1);
+        const editButton = screen.getAllByText(/Редактировать/);
+        fireEvent.click(editButton);
+
+        expect(mockEditContactClick).toHaveBeenCalled();
+    });
+
+    test('allows saving edited contact information', () => {
+        CamerasHandlers.default.mockReturnValue({
+            loading: false,
+            error: null,
+            setLoading: jest.fn(),
+        });
+        const mockSaveContactClick = jest.fn();
+        ProfileHandlers.default.mockReturnValue({
+            username: 'testuser',
+            email: 'test@example.com',
+            isEditingContact: true,
+            isEditingAdditional: false,
+            about: 'Информация о пользователе',
+            handleEditContactClick: jest.fn(),
+            handleEditAdditionalClick: jest.fn(),
+            handleChangeContact: jest.fn(),
+            handleChangeAdditional: jest.fn(),
+            handleSaveContactClick: mockSaveContactClick,
+            handleSaveAdditionalClick: jest.fn(),
+            handleFetchCurrentUser: jest.fn(),
+        });
+
+        render(<ProfilePage />);
+
+        const saveButton = screen.getByText(/Сохранить/);
+        fireEvent.click(saveButton);
+
+        expect(mockSaveContactClick).toHaveBeenCalled();
     });
 });

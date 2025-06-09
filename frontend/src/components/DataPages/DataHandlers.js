@@ -1,6 +1,5 @@
 // Функции для взаимодействия с даннными
 import { useState, useRef } from 'react';
-import pdfToText from 'react-pdftotext';
 import {
     fetchPersons,
     addPerson,
@@ -18,7 +17,6 @@ import {
 
 const DataHandlers = () => {
     const fileInputRef = useRef(null);
-    const [extractedText, setExtractedText] = useState('');
     const [persons, setPersons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -34,31 +32,6 @@ const DataHandlers = () => {
     const [selectedLogIndex, setSelectedLogIndex] = useState('');
     const [isLogsFilterWindowOpen, setIsLogsFilterWindowOpen] = useState(false);
 
-    // Извлечение текста из pdf файла
-    const extractText = () => {
-        if (files) {
-            const file = files[0];
-            pdfToText(file)
-                .then((text) => setExtractedText(text))
-                .catch((error) =>
-                    console.error('Failed to extract text from pdf')
-                );
-        }
-    };
-
-    // Форматирование текста
-    const formatTextWithDates = (text) => {
-        const lines = text.split('.');
-
-        const formattedText = lines
-            .map((line, index) => {
-                return `\n${line}`;
-            })
-            .join('');
-
-        return formattedText.trim();
-    };
-
     // Сброс выбранного сотрудника (не буквально)
     const resetSelectedPerson = () => {
         setSelectedPerson('');
@@ -70,7 +43,6 @@ const DataHandlers = () => {
     const handleDownloadLogs = async () => {
         try {
             const data = await downloadLogs();
-            console.log(data);
             // Создаем URL для data
             const url = window.URL.createObjectURL(data);
 
@@ -93,7 +65,6 @@ const DataHandlers = () => {
     const handleDownloadCameraLogs = async (streamId) => {
         try {
             const data = await downloadCameraLogs(streamId);
-            console.log(data);
             // Создаем URL для data
             const url = window.URL.createObjectURL(data);
 
@@ -116,7 +87,6 @@ const DataHandlers = () => {
     const handleDownloadPersonLogs = async (personId) => {
         try {
             const data = await downloadPersonLogs(personId);
-            console.log(data);
             // Создаем URL для data
             const url = window.URL.createObjectURL(data);
 
@@ -343,7 +313,6 @@ const DataHandlers = () => {
         files,
         newPerson,
         newFace,
-        extractedText,
         persons,
         isUploadWindowOpen,
         isEditWindowOpen,
@@ -358,8 +327,6 @@ const DataHandlers = () => {
         isLogsFilterWindowOpen,
         setNewPerson,
         setSelectedPerson,
-        extractText,
-        formatTextWithDates,
         handleDownloadLogs,
         handleDownloadCameraLogs,
         handleDownloadPersonLogs,

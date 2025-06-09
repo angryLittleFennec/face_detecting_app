@@ -2,7 +2,7 @@
 const FileUploadButton = ({ onClick, onChange, fileRef }) => {
     return (
         <div>
-            <button onClick={onClick}>Добавить фотографии</button>
+            <button onClick={onClick}>Загрузить фотографии</button>
             <input
                 type="file"
                 ref={fileRef}

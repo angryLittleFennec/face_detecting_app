@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ButtonWithTooltip from './ButtonWithTooltip';
 
@@ -8,9 +7,9 @@ describe('ButtonWithTooltip', () => {
     beforeEach(() => {
         render(
             <ButtonWithTooltip
+                className="tooltip"
                 iconSrc="icon.png"
                 altText="Icon"
-                tooltipText="Tooltip text"
                 onClick={mockOnClick}
             />
         );
@@ -22,7 +21,7 @@ describe('ButtonWithTooltip', () => {
 
         expect(button).toBeInTheDocument();
         expect(icon).toBeInTheDocument();
-        expect(screen.queryByText('Tooltip text')).not.toBeVisible(); // Tooltip не должен быть видим изначально
+        expect(screen.queryByText('Icon')).not.toBeVisible(); // Tooltip не должен быть видим изначально
     });
 
     test('shows tooltip on mouse enter', () => {
@@ -30,7 +29,7 @@ describe('ButtonWithTooltip', () => {
 
         fireEvent.mouseEnter(button);
 
-        const tooltip = screen.getByText('Tooltip text');
+        const tooltip = screen.getByText('Icon');
         expect(tooltip).toBeVisible(); // Tooltip должен стать видимым
         expect(tooltip).toHaveStyle('visibility: visible'); // Проверяем стиль
         expect(tooltip).toHaveStyle('opacity: 1'); // Проверяем стиль
@@ -42,7 +41,7 @@ describe('ButtonWithTooltip', () => {
         fireEvent.mouseEnter(button);
         fireEvent.mouseLeave(button);
 
-        const tooltip = screen.getByText('Tooltip text');
+        const tooltip = screen.getByText('Icon');
         expect(tooltip).not.toBeVisible(); // Tooltip должен стать невидимым
         expect(tooltip).toHaveStyle('visibility: hidden'); // Проверяем стиль
         expect(tooltip).toHaveStyle('opacity: 0'); // Проверяем стиль

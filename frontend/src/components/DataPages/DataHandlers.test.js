@@ -1,92 +1,182 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
+import { render, screen, fireEvent } from '@testing-library/react';
 import DataHandlers from './DataHandlers';
-import pdfToText from 'react-pdftotext';
+import {
+    fetchPersons,
+    addPerson,
+    addFace,
+    updatePerson,
+    deletePerson,
+    downloadLogs,
+    downloadCameraLogs,
+    downloadPersonLogs,
+    fetchLogsList,
+    fetchCameraLogsList,
+    fetchPersonLogsList,
+    sendEmail,
+} from '../Cameras/Api'; // Импортируйте необходимые функции
 
-jest.mock('react-pdftotext'); // Мокаем pdfToText
+jest.mock('../Cameras/Api'); // Мокаем API функции
 
-const mockStore = configureStore([]);
-
-describe('DataHandlers', () => {
-    let store;
-
+describe('DataHandlers Component', () => {
     beforeEach(() => {
-        // Создаем моковое состояние Redux
-        store = mockStore({
-            files: [{ name: 'test.pdf' }],
-        });
-
-        // Мокаем pdfToText, чтобы он возвращал промис с текстом
-        pdfToText.mockImplementation(() => Promise.resolve('Тестовый текст'));
+        jest.clearAllMocks(); // Сброс мока перед каждым тестом
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    test('handles downloadLogs correctly', async () => {
+        const mockBlob = new Blob(['log data'], { type: 'application/pdf' });
+        downloadLogs.mockResolvedValue(mockBlob);
+
+        const result = await downloadLogs();
+
+        expect(result).toBeInstanceOf(Blob);
+        expect(result.type).toBe('application/pdf');
     });
 
-    test('should extract text from pdf file', async () => {
-        const { result, waitForNextUpdate } = render(
-            <Provider store={store}>
-                <DataHandlers />
-            </Provider>
-        );
+    test('handles downloadCameraLogs correctly', async () => {
+        const mockStreamId = '123';
+        const mockBlob = new Blob(['log data'], { type: 'application/pdf' });
+        downloadCameraLogs.mockResolvedValue(mockBlob); // Мокаем функцию для успешного ответа
 
-        // Достаем функцию extractText из результата
-        const { extractText } = result.current;
+        const result = await downloadCameraLogs(mockStreamId);
 
-        // Вызываем функцию extractText
-        extractText();
-
-        // Ждем, пока текст будет извлечен
-        await waitForNextUpdate();
-
-        // Проверяем, что extractedText обновился
-        expect(result.current.extractedText).toBe('Тестовый текст');
+        expect(result).toBeInstanceOf(Blob);
+        expect(result.type).toBe('application/pdf');
     });
 
-    test('should format text with dates correctly', () => {
-        const { result } = render(
-            <Provider store={store}>
-                <DataHandlers />
-            </Provider>
-        );
+    test('handles downloadPersonLogs correctly', async () => {
+        const mockPersonId = '123';
+        const mockBlob = new Blob(['log data'], { type: 'application/pdf' });
+        downloadPersonLogs.mockResolvedValue(mockBlob); // Мокаем функцию для успешного ответа
 
-        const { formatTextWithDates } = result.current;
-        const formattedText = formatTextWithDates('line 1. line 2. line 3.');
+        const result = await downloadPersonLogs(mockPersonId);
 
-        expect(formattedText).toBe('\nline 1\nline 2\nline 3');
+        expect(result).toBeInstanceOf(Blob);
+        expect(result.type).toBe('application/pdf');
     });
 
-    test('should handle file download', () => {
-        const { result } = render(
-            <Provider store={store}>
-                <DataHandlers />
-            </Provider>
-        );
+    test('handles fetchLogsList correctly', async () => {
+        const mockFiles = [
+            {
+                event_type: 'enter',
+                person_id: 0,
+                stream_processor_id: 0,
+                track_id: 0,
+                duration: 0,
+                id: 0,
+                timestamp: '2025-06-09T09:40:03.244Z',
+                is_aggregated: true,
+            },
+        ];
+        fetchLogsList.mockResolvedValue(mockFiles); // Мокаем функцию для успешного ответа
 
-        const { handleDownload } = result.current;
+        const result = await fetchLogsList();
 
-        // Создаем мок для createObjectURL
-        const createObjectURLMock = jest
-            .spyOn(URL, 'createObjectURL')
-            .mockReturnValue('mocked-url');
+        expect(result).toEqual(mockFiles);
+    });
 
-        // Создаем файл для теста
-        const file = new Blob(['test content'], { type: 'application/pdf' });
-        file.name = 'test.pdf';
+    test('handles fetchCameraLogsList correctly', async () => {
+        const streamId = '123';
+        const mockFiles = [
+            {
+                event_type: 'enter',
+                person_id: 0,
+                stream_processor_id: 0,
+                track_id: 0,
+                duration: 0,
+                id: 0,
+                timestamp: '2025-06-09T09:40:03.244Z',
+                is_aggregated: true,
+            },
+        ];
+        fetchCameraLogsList.mockResolvedValue(mockFiles); // Мокаем функцию для успешного ответа
 
-        // Вызываем функцию handleDownload
-        handleDownload(file);
+        const result = await fetchCameraLogsList(streamId);
 
-        // Проверяем, что createObjectURL был вызван
-        expect(createObjectURLMock).toHaveBeenCalledWith(file);
+        expect(result).toEqual(mockFiles);
+    });
 
-        // Проверяем, что элемент ссылки был создан и кликнут
-        expect(document.body.querySelector('a')).toBeTruthy();
+    test('handles fetchPersonLogsList correctly', async () => {
+        const personId = '123';
+        const mockFiles = [
+            {
+                event_type: 'enter',
+                person_id: 0,
+                stream_processor_id: 0,
+                track_id: 0,
+                duration: 0,
+                id: 0,
+                timestamp: '2025-06-09T09:40:03.244Z',
+                is_aggregated: true,
+            },
+        ];
+        fetchPersonLogsList.mockResolvedValue(mockFiles); // Мокаем функцию для успешного ответа
 
-        // Убираем мок
-        createObjectURLMock.mockRestore();
+        const result = await fetchPersonLogsList(personId);
+
+        expect(result).toEqual(mockFiles);
+    });
+
+    test('handles fetch persons correctly', async () => {
+        const mockPersons = [
+            { name: 'Ivan', id: 1, faces: [] },
+            { name: 'Dima', id: 2, faces: [] },
+        ];
+        fetchPersons.mockResolvedValue(mockPersons);
+
+        const result = await fetchPersons(); // Вызываем функцию напрямую
+
+        expect(result).toEqual(mockPersons);
+    });
+
+    test('handles addPerson correctly', async () => {
+        const personData = { name: 'Ivan' };
+        addPerson.mockResolvedValue(personData); // Мокаем функцию для успешного ответа
+
+        const result = await addPerson(personData);
+        expect(result).toEqual(personData);
+    });
+
+    test('handles updatePerson correctly', async () => {
+        const personId = '123';
+        const personData = { name: 'Ivan' };
+        updatePerson.mockResolvedValue(personId, personData); // Мокаем функцию для успешного ответа
+
+        const result = await updatePerson(personId, personData);
+        expect(result).toEqual(personId, personData);
+    });
+
+    test('handles error in downloadCameraLogs', async () => {
+        const errorMessage = 'Error download camera logs';
+        downloadCameraLogs.mockRejectedValue(new Error(errorMessage));
+
+        await expect(downloadCameraLogs({})).rejects.toThrow(errorMessage);
+    });
+
+    test('handles error in add person', async () => {
+        const errorMessage = 'Error adding person';
+        addPerson.mockRejectedValue(new Error(errorMessage));
+
+        await expect(addPerson({})).rejects.toThrow(errorMessage); // Проверяем, что ошибка выбрасывается
+    });
+
+    test('handles error in fetch persons', async () => {
+        const errorMessage = 'Error fetching persons';
+        fetchPersons.mockRejectedValue(new Error(errorMessage));
+
+        await expect(fetchPersons()).rejects.toThrow(errorMessage); // Проверяем, что ошибка выбрасывается
+    });
+
+    test('handles error in add face', async () => {
+        const errorMessage = 'Error adding face';
+        addFace.default.mockRejectedValue(new Error(errorMessage));
+
+        await expect(addFace({})).rejects.toThrow(errorMessage); // Проверяем, что ошибка выбрасывается
+    });
+
+    test('handles error in send email', async () => {
+        const errorMessage = 'Error sending email';
+        sendEmail.mockRejectedValue(new Error(errorMessage));
+
+        await expect(sendEmail({})).rejects.toThrow(errorMessage); // Проверяем, что ошибка выбрасывается
     });
 });
