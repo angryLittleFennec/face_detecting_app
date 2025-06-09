@@ -1,0 +1,27 @@
+.video-js {
+    width: 100%;
+}
+
+.cameras-first-location .video-js {
+    height: 800px;
+}
+
+.cameras-second-location .video-js {
+    height: 400px;
+}
+
+.cameras-third-location-big .video-js {
+    height: 520px;
+}
+
+.cameras-third-location-small-right .video-js {
+    height: 250px;
+}
+
+.cameras-third-location-small .video-js {
+    height: 250px;
+}
+
+.cameras-fourth-location .video-js {
+    height: 270px;
+}

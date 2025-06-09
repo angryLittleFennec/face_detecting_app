@@ -117,7 +117,6 @@ function CamerasPage() {
 
     return (
         <div className="page-container cameras-page-container">
-            {console.log(selectedCameraIndex)}
             <div className="main-content margin-right-250 margin-bottom-50 white-text">
                 <CamerasContainer
                     currentCameras={currentCameras}

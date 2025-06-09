@@ -2,6 +2,7 @@
 import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
 import DataHandlers from '../DataPages/DataHandlers';
+import HlsPlayer from './HlsPlayer';
 import './CamerasContainer.css';
 
 const CamerasContainer = (props) => {
@@ -47,17 +48,12 @@ const CamerasContainer = (props) => {
                                             : 'none',
                                 }}
                             >
-                                <video controls autoPlay loop>
-                                    <source
-                                        src={getStreamUrl(
-                                            currentCameras[0].id,
-                                            streams
-                                        )}
-                                        type="video/mp4"
-                                    />
-                                    {console.log(streams)}
-                                    Ваш браузер не поддерживает видео.
-                                </video>
+                                <HlsPlayer
+                                    url={getStreamUrl(
+                                        currentCameras[0].id,
+                                        streams
+                                    )}
+                                />
                             </div>
                             <div className="cameras-column">
                                 {currentCameras
@@ -79,17 +75,12 @@ const CamerasContainer = (props) => {
                                                         : 'none',
                                             }}
                                         >
-                                            <video controls autoPlay loop>
-                                                <source
-                                                    src={getStreamUrl(
-                                                        camera.id,
-                                                        streams
-                                                    )}
-                                                    type="video/mp4"
-                                                />
-                                                Ваш браузер не поддерживает
-                                                видео.
-                                            </video>
+                                            <HlsPlayer
+                                                url={getStreamUrl(
+                                                    currentCameras[0].id,
+                                                    streams
+                                                )}
+                                            />
                                         </div>
                                     ))}
                             </div>
@@ -113,13 +104,12 @@ const CamerasContainer = (props) => {
                                             : 'none',
                                 }}
                             >
-                                <video controls autoPlay loop>
-                                    <source
-                                        src={getStreamUrl(camera.id, streams)}
-                                        type="video/mp4"
-                                    />
-                                    Ваш браузер не поддерживает видео.
-                                </video>
+                                <HlsPlayer
+                                    url={getStreamUrl(
+                                        currentCameras[0].id,
+                                        streams
+                                    )}
+                                />
                             </div>
                         ))}
                     </div>
@@ -147,14 +137,9 @@ const CamerasContainer = (props) => {
                                     : 'none',
                         }}
                     >
-                        <video controls autoPlay loop>
-                            <source
-                                src={getStreamUrl(camera.id, streams)}
-                                type="video/mp4"
-                            />
-                            Ваш браузер не поддерживает видео.
-                        </video>
-                        {camera.name}
+                        <HlsPlayer
+                            url={getStreamUrl(currentCameras[0].id, streams)}
+                        />
                     </div>
                 ))
             ) : (

@@ -90,3 +90,7 @@ video {
 .margin-top-10 {
     margin-top: 10px;
 }
+
+.solo-camera .video-js {
+    height: 600px;
+}

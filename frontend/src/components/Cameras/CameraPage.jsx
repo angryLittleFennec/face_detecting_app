@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import CamerasHandlers from './CamerasHandlers';
 import CameraLogsWindow from './CameraLogsWindow';
+import HlsPlayer from './HlsPlayer';
 import DataHandlers from '../DataPages/DataHandlers';
 import NavigationHandlers from '../GeneralComponents/NavigationHandlers';
 import Dropdown from '../UI/Dropdown';
@@ -124,14 +125,10 @@ function CameraPage() {
                 {cameras.length > 0 ? (
                     <div className="camera-container">
                         <h1>{cameras[id].name}</h1>
-                        <div>
-                            <video controls autoPlay loop>
-                                <source
-                                    src={getStreamUrl(cameras[id].id, streams)}
-                                    type="video/mp4"
-                                />
-                                Ваш браузер не поддерживает видео.
-                            </video>
+                        <div className="solo-camera">
+                            <HlsPlayer
+                                url={getStreamUrl(cameras[id].id, streams)}
+                            />
                             {drawingEnabled && (
                                 <canvas
                                     ref={canvasRef}
@@ -241,12 +238,7 @@ function CameraPage() {
             </div>
             <div className="faces-feed white-text">
                 <h2>Лента выявленных лиц</h2>
-                <div className="images-container">
-                    <img
-                        src={`${process.env.PUBLIC_URL}/videos/человек.png`}
-                        alt="Сотрудник №1"
-                    />
-                </div>
+                <div className="images-container"></div>
             </div>
         </div>
     );
