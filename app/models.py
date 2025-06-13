@@ -69,7 +69,6 @@ class Event(Base):
     duration = Column(Integer, nullable=True)
     is_aggregated = Column(Boolean, default=False)
     
-    # Связи
     person = relationship("Person", backref="events")
     stream_processor = relationship("StreamProcessor", backref="events")
     

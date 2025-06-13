@@ -14,7 +14,6 @@ from concurrent.futures import ThreadPoolExecutor
 from .. import models, schemas, database, auth
 from ..schemas import StreamProcessorConfig, StreamProcessorResponse, StreamProcessorList
 
-# Настройка логгера
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -24,16 +23,14 @@ router = APIRouter(
 )
 
 NAMESPACE = 'default'
-HELM_TIMEOUT = "300s"  # 5 минут таймаут для Helm
-HELM_ATOMIC = True     # Откат при ошибке
-HELM_WAIT = True       # Ждать готовности подов
+HELM_TIMEOUT = "300s"
+HELM_ATOMIC = True 
+HELM_WAIT = True
 IP = "84.252.134.89"
 
 
-# Получаем абсолютный путь к директории проекта
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Путь к чарту stream-processor
 HELM_CHART_PATH = Path('/app/helm/stream-processor')
 logger.debug(f"Helm chart path: {HELM_CHART_PATH}")
 
@@ -75,7 +72,6 @@ async def deploy_stream_processor(
 ):
     logger.info(f"Starting stream processor deployment for camera_id: {config.camera_id}")
     try:
-        # Проверяем существование процессора с таким именем
         existing_processor = db.query(models.StreamProcessor).filter(models.StreamProcessor.name == config.name).first()
         if existing_processor:
             logger.error(f"Stream processor with name {config.name} already exists")
@@ -84,7 +80,6 @@ async def deploy_stream_processor(
                 detail=f"Stream processor with name {config.name} already exists"
             )
 
-        # Проверяем существование камеры, если указан camera_id
         if config.camera_id:
             logger.debug(f"Checking camera existence: {config.camera_id}")
             camera = db.query(models.Camera).filter(models.Camera.id == config.camera_id).first()
@@ -95,7 +90,6 @@ async def deploy_stream_processor(
                     detail=f"Camera with id {config.camera_id} not found"
                 )
 
-        # Проверяем существование чарта
         logger.debug(f"Checking helm chart existence at: {HELM_CHART_PATH}")
         if not HELM_CHART_PATH.exists():
             logger.error(f"Helm chart not found at {HELM_CHART_PATH}")
@@ -104,7 +98,6 @@ async def deploy_stream_processor(
                 detail=f"Helm chart not found at {HELM_CHART_PATH}"
             )
 
-        # Создаем временный values.yaml с захардкоженными значениями
         values = {
             "replicaCount": 1,
             "image": {
@@ -152,7 +145,6 @@ async def deploy_stream_processor(
             yaml.dump(values, f)
         logger.debug(f"Values file written to: {values_path}")
 
-        # Деплоим с помощью Helm
         release_name = f"stream-processor-{config.name}"
         cmd = [
             "helm",
@@ -176,7 +168,6 @@ async def deploy_stream_processor(
                 detail=f"Failed to deploy stream processor: {stderr}"
             )
 
-        # Сохраняем информацию в БД
         stream_processor = models.StreamProcessor(
             name=config.name,
             camera_id=config.camera_id,
@@ -247,7 +238,6 @@ async def delete_stream_processor(
                 detail=f"Failed to delete stream processor: {stderr}"
             )
 
-        # Удаляем запись из БД
         db.delete(stream_processor)
         db.commit()
 
@@ -294,7 +284,6 @@ async def get_stream_processor_status(
         
         if returncode != 0:
             logger.error(f"Helm command failed: {stderr}")
-            # Если релиз не найден в Helm, но есть в БД, возвращаем специальный статус
             if "not found" in stderr.lower():
                 return {
                     "name": name,

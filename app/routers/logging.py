@@ -107,9 +107,7 @@ def cleanup_events(days_to_keep: int = Query(7, ge=1, le=365), db: Session = Dep
 def cleanup_all_events(db: Session = Depends(get_db)):
     """Полная очистка всех событий и агрегаций"""
     logging_service = LoggingService(db)
-    # Удаляем все события
     db.query(models.Event).delete()
-    # Удаляем все агрегации
     db.query(models.EventAggregation).delete()
     db.commit()
     return {"status": "success", "message": "Все события и агрегации успешно удалены"}
@@ -155,10 +153,8 @@ async def send_events_to_mail(
 def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
     """Генерация PDF отчета"""
     try:
-        # Регистрируем шрифт
         pdfmetrics.registerFont(TTFont('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
         
-        # Создаем документ
         doc = SimpleDocTemplate(
             pdf_buffer,
             pagesize=letter,
@@ -168,7 +164,6 @@ def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
             bottomMargin=30
         )
         
-        # Создаем стили
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(
             name='CustomTitle',
@@ -182,14 +177,11 @@ def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
             fontSize=10
         ))
         
-        # Создаем элементы документа
         elements = []
         
-        # Добавляем заголовок
         elements.append(Paragraph("Отчет по событиям", styles['CustomTitle']))
         elements.append(Spacer(1, 20))
         
-        # Получаем данные
         logging_service = LoggingService(db)
         end_time = datetime.now()
         start_time = end_time - timedelta(days=30)
@@ -198,7 +190,6 @@ def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
         if not grouped_events:
             elements.append(Paragraph("Событий не найдено", styles['CustomBody']))
         else:
-            # Создаем таблицу
             data = [['ID', 'Имя', 'Камера', 'Вход', 'Выход', 'Длит.']]
             for event in grouped_events:
                 data.append([
@@ -210,12 +201,11 @@ def get_events_pdf(db: Session, pdf_buffer: io.BytesIO):
                     f"{event['duration']:.1f}"
                 ])
             
-            # Создаем таблицу с фиксированными размерами колонок
             table = Table(data, colWidths=[40, 80, 40, 60, 60, 40])
             table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (-1, -1), 'DejaVuSans'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),  # Размер шрифта для заголовка
-                ('FONTSIZE', (0, 1), (-1, -1), 9),   # Размер шрифта для данных
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),

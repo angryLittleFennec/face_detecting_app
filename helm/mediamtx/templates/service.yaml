@@ -5,11 +5,11 @@ metadata:
 spec:
   type: {{ .Values.service.type | default "ClusterIP" }}
   selector:
-    app: {{ .Release.Name }}  # Должно совпадать с лейблами Deployment
+    app: {{ .Release.Name }}
   ports:
     - name: rtsp
-      port: {{ .Values.service.ports.rtsp }}  # Порт сервиса для RTSP (например, 8554)
-      targetPort: {{ .Values.service.ports.rtsp }}  # Порт контейнера
+      port: {{ .Values.service.ports.rtsp }}
+      targetPort: {{ .Values.service.ports.rtsp }}
     - name: http
-      port: {{ .Values.service.ports.http }}  # Порт сервиса для HTTP (например, 8888)
-      targetPort: {{ .Values.service.ports.http }}  # Порт контейнера
+      port: {{ .Values.service.ports.http }}
+      targetPort: {{ .Values.service.ports.http }}

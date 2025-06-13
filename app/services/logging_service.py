@@ -36,8 +36,7 @@ class LoggingService:
                 query = query.filter(models.Event.timestamp <= end_time)
 
             results = query.offset(skip).limit(limit).all()
-            
-            # Преобразуем результаты в список событий с именами
+
             events_with_names = []
             for event, person_name in results:
                 event_dict = {
@@ -74,10 +73,8 @@ class LoggingService:
                 end_time=end_time
             )
             
-            # Сортируем события по времени
             events.sort(key=lambda x: x['timestamp'])
             
-            # Словарь для хранения последних событий входа для каждой пары (person_id, processor_id)
             last_enter = {}
             result = []
             
@@ -97,10 +94,8 @@ class LoggingService:
                             'exit_time': event['timestamp'],
                             'duration': event['duration']
                         })
-                        # Удаляем использованное событие входа
                         del last_enter[key]
             
-            # Сортируем по времени входа
             result.sort(key=lambda x: x['enter_time'])
             return result
         except Exception as e:
@@ -114,7 +109,6 @@ class LoggingService:
     ) -> List[dict]:
         """Получение событий для PDF-отчета"""
         try:
-            # Если время не указано, берем последний месяц
             if not end_time:
                 end_time = datetime.now()
             if not start_time:
@@ -130,12 +124,10 @@ class LoggingService:
 
     def aggregate_events(self):
         """Агрегирует необработанные события"""
-        # Получаем все необработанные события
         events = self.db.query(models.Event).filter(
             models.Event.is_aggregated == False
         ).all()
         
-        # Словарь для хранения агрегаций по ключу (person_id, stream_processor_id, date, hour)
         aggregations = {}
         
         for event in events:
@@ -154,10 +146,9 @@ class LoggingService:
                 )
                 self.db.add(aggregations[key])
             
-            # Обновляем статистику
             if event.event_type == models.EventType.ENTER:
                 aggregations[key].total_entries += 1
-            else:  # EXIT
+            else:
                 aggregations[key].total_exits += 1
                 if event.duration:
                     if aggregations[key].avg_duration is None:

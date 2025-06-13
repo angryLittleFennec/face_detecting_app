@@ -10,7 +10,6 @@ from . import models, database
 from .routers import cameras, persons, faces, kuber, auth, db, logging as logging_router
 from .cron_tasks import setup_scheduler
 
-# Настройка логгера
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -29,13 +28,11 @@ async def lifespan(app: FastAPI):
     # Загрузка ML моделей при старте
     logger.info("ML модели успешно загружены")
     
-    # Настройка планировщика
     setup_scheduler(app)
     logger.info("Планировщик задач успешно настроен")
     
     yield
     
-    # Очистка при завершении
     logger.info("Приложение завершает работу")
 
 app = FastAPI(
@@ -47,7 +44,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-#config.load_incluster_config()
 try:
     config.load_kube_config()
     logger.info("Kubernetes конфигурация загружена")

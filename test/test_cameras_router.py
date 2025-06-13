@@ -13,13 +13,11 @@ def db():
     """Фикстура для создания тестовой базы данных"""
     db = SessionLocal()
     try:
-        # Очищаем все таблицы перед каждым тестом
         for table in reversed(Base.metadata.sorted_tables):
             db.execute(table.delete())
         db.commit()
         yield db
     finally:
-        # Очищаем все таблицы после каждого теста
         for table in reversed(Base.metadata.sorted_tables):
             db.execute(table.delete())
         db.commit()
@@ -72,7 +70,7 @@ def test_create_camera_invalid_url(db, test_user, auth_headers):
     """Тест создания камеры с неверным URL"""
     camera_data = {
         "name": "Test Camera",
-        "url": "http://test.com/stream",  # Не RTSP URL
+        "url": "http://test.com/stream",
         "description": "Test camera description",
         "is_active": True
     }
@@ -82,7 +80,6 @@ def test_create_camera_invalid_url(db, test_user, auth_headers):
 
 def test_get_cameras_empty(db, test_user, auth_headers):
     """Тест получения пустого списка камер"""
-    # Очищаем таблицу камер
     db.query(models.Camera).delete()
     db.commit()
     
@@ -92,11 +89,9 @@ def test_get_cameras_empty(db, test_user, auth_headers):
 
 def test_get_cameras_list(db, test_user, auth_headers):
     """Тест получения списка камер"""
-    # Очищаем таблицу камер
     db.query(models.Camera).delete()
     db.commit()
     
-    # Создаем несколько камер
     cameras = []
     for i in range(3):
         camera = models.Camera(
@@ -119,7 +114,6 @@ def test_get_cameras_list(db, test_user, auth_headers):
 
 def test_get_camera_by_id(db, test_user, auth_headers):
     """Тест получения камеры по ID"""
-    # Создаем камеру
     camera = models.Camera(
         name="Test Camera",
         url="rtsp://test.com/stream",
@@ -145,7 +139,6 @@ def test_get_camera_not_found(db, test_user, auth_headers):
 
 def test_update_camera_success(db, test_user, auth_headers):
     """Тест успешного обновления камеры"""
-    # Создаем камеру
     camera = models.Camera(
         name="Test Camera",
         url="rtsp://test.com/stream",
@@ -156,7 +149,6 @@ def test_update_camera_success(db, test_user, auth_headers):
     db.commit()
     db.refresh(camera)
     
-    # Обновляем камеру
     update_data = {
         "name": "Updated Camera",
         "url": "rtsp://test.com/updated",
@@ -171,7 +163,6 @@ def test_update_camera_success(db, test_user, auth_headers):
     assert data["description"] == update_data["description"]
     assert data["is_active"] == update_data["is_active"]
     
-    # Проверяем, что изменения сохранились в базе
     db.refresh(camera)
     assert camera.name == update_data["name"]
     assert camera.url == update_data["url"]
@@ -192,7 +183,6 @@ def test_update_camera_not_found(db, test_user, auth_headers):
 
 def test_update_camera_invalid_url(db, test_user, auth_headers):
     """Тест обновления камеры с неверным URL"""
-    # Создаем камеру
     camera = models.Camera(
         name="Test Camera",
         url="rtsp://test.com/stream",
@@ -203,10 +193,9 @@ def test_update_camera_invalid_url(db, test_user, auth_headers):
     db.commit()
     db.refresh(camera)
     
-    # Пытаемся обновить с неверным URL
     update_data = {
         "name": "Updated Camera",
-        "url": "http://test.com/updated",  # Не RTSP URL
+        "url": "http://test.com/updated",
         "description": "Updated description",
         "is_active": False
     }
@@ -216,7 +205,6 @@ def test_update_camera_invalid_url(db, test_user, auth_headers):
 
 def test_delete_camera_success(db, test_user, auth_headers):
     """Тест успешного удаления камеры"""
-    # Создаем камеру
     camera = models.Camera(
         name="Test Camera",
         url="rtsp://test.com/stream",

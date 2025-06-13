@@ -27,14 +27,11 @@ class EmailService:
         try:
             logger.info("Начало отправки отчета по email")
             
-            # Создаем временный файл
             with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
-                # Записываем содержимое буфера во временный файл
                 temp_file.write(pdf_buffer.getvalue())
                 temp_file_path = temp_file.name
             
             try:
-                # Создаем сообщение с путем к временному файлу
                 message = MessageSchema(
                     subject="Monthly Person Detection Report",
                     recipients=recipients,
@@ -45,14 +42,11 @@ class EmailService:
                         "filename": "person_detection_report.pdf"
                     }]
                 )
-                
-                # Отправляем письмо
                 await self.fastmail.send_message(message)
                 logger.info("Отчет успешно отправлен по email")
                 return True
                 
             finally:
-                # Удаляем временный файл
                 if os.path.exists(temp_file_path):
                     os.unlink(temp_file_path)
             

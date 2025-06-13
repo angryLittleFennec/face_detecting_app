@@ -6,7 +6,6 @@ from fastapi import FastAPI, Depends, HTTPException
 from .database import get_db, engine
 import uvicorn
 
-# Создаем FastAPI приложение
 app = FastAPI(
     title="Logging Service",
     description="Сервис для логирования событий",
@@ -19,7 +18,6 @@ class LoggingService:
 
     def create_event(self, event: schemas.EventCreate) -> models.Event:
         """Создание нового события"""
-        # Проверяем существование человека
         if not self.db.query(models.Person).filter(models.Person.id == event.person_id).first():
             raise HTTPException(
                 status_code=404,
@@ -27,7 +25,6 @@ class LoggingService:
             )
             
         event_dict = event.dict()
-        # Преобразуем строковое значение в Enum
         event_dict['event_type'] = models.EventType(event_dict['event_type'])
         db_event = models.Event(**event_dict)
         self.db.add(db_event)
@@ -52,12 +49,10 @@ class LoggingService:
         if stream_processor_id:
             query = query.filter(models.Event.stream_processor_id == stream_processor_id)
         if start_time:
-            # Преобразуем start_time в UTC, если он не в UTC
             if start_time.tzinfo is None:
                 start_time = start_time.replace(tzinfo=UTC)
             query = query.filter(models.Event.timestamp >= start_time)
         if end_time:
-            # Преобразуем end_time в UTC, если он не в UTC
             if end_time.tzinfo is None:
                 end_time = end_time.replace(tzinfo=UTC)
             query = query.filter(models.Event.timestamp <= end_time)
@@ -66,7 +61,6 @@ class LoggingService:
 
     def aggregate_events(self):
         """Агрегирует необработанные события"""
-        # Получаем все необработанные события
         events = self.db.query(models.Event).filter(
             models.Event.is_aggregated == False
         ).all()
@@ -75,7 +69,6 @@ class LoggingService:
             date = event.timestamp.date()
             hour = event.timestamp.hour
             
-            # Находим или создаем запись агрегации
             aggregation = self.db.query(models.EventAggregation).filter(
                 models.EventAggregation.person_id == event.person_id,
                 models.EventAggregation.stream_processor_id == event.stream_processor_id,
@@ -98,10 +91,9 @@ class LoggingService:
                 self.db.add(aggregation)
                 self.db.flush()
             
-            # Обновляем статистику
             if event.event_type == models.EventType.ENTER:
                 aggregation.total_entries = (aggregation.total_entries or 0) + 1
-            else:  # EXIT
+            else:
                 aggregation.total_exits = (aggregation.total_exits or 0) + 1
                 if event.duration:
                     if aggregation.avg_duration is None:

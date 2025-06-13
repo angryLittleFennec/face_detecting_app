@@ -16,7 +16,7 @@ ingress:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
-    - host: ""  # Пустой хост для доступа по IP
+    - host: ""
       paths:
         - path: /
           pathType: Prefix

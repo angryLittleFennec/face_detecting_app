@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from jose import jwt, JWTError
 import sys
 import types
-# import dlib  # Удалено, чтобы мок работал корректно
 import pydantic
 from fastapi.testclient import TestClient
 from app.main import app
@@ -132,52 +131,6 @@ def test_camera_schema_validation():
 def test_invalid_email_schema():
     with pytest.raises(pydantic.ValidationError):
         schemas.UserCreate(email="notanemail", username="user", password="password")
-
-# Тесты вспомогательных функций (например, загрузка моделей dlib)
-# def test_load_ml_models(monkeypatch):
-#     """Тест загрузки ML моделей с моками dlib"""
-#     from app.main import load_ml_models
-#     import sys
-#     import types
-#     # Создаём мок dlib
-#     mock_dlib = types.ModuleType("dlib")
-#     mock_dlib.get_frontal_face_detector = lambda: "mock_detector"
-#     mock_dlib.shape_predictor = lambda x: "mock_predictor"
-#     mock_dlib.face_recognition_model_v1 = lambda x: "mock_rec_model"
-#     sys.modules["dlib"] = mock_dlib
-#     class DummyApp:
-#         state = type('state', (), {})()
-#     app_obj = DummyApp()
-#     load_ml_models(app_obj)
-#     assert hasattr(app_obj.state, "face_detector")
-#     assert hasattr(app_obj.state, "shape_predictor")
-#     assert hasattr(app_obj.state, "face_rec_model")
-#     del sys.modules["dlib"]
-
-# def test_load_ml_models_error(monkeypatch):
-#     """Тест обработки ошибок при загрузке ML моделей с моками dlib"""
-#     from app.main import load_ml_models
-#     import sys
-#     import types
-#     # Создаём мок dlib с ошибкой
-#     mock_dlib = types.ModuleType("dlib")
-#     def raise_error():
-#         raise Exception("Test error")
-#     mock_dlib.get_frontal_face_detector = raise_error
-#     mock_dlib.shape_predictor = lambda x: "mock_predictor"
-#     mock_dlib.face_recognition_model_v1 = lambda x: "mock_rec_model"
-#     sys.modules["dlib"] = mock_dlib
-#     class DummyApp:
-#         state = type('state', (), {})()
-#     app_obj = DummyApp()
-#     try:
-#         with pytest.raises(Exception) as exc_info:
-#             load_ml_models(app_obj)
-#         assert str(exc_info.value) == "Test error"
-#     finally:
-#         del sys.modules["dlib"]
-
-# Дополнительные тесты моделей
 
 def test_user_model_is_superuser():
     user = models.User(id=2, email="a@b.com", username="admin", hashed_password="x", is_active=True, is_superuser=True, created_at=datetime.utcnow())

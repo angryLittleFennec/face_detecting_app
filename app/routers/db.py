@@ -4,7 +4,6 @@ import logging
 
 from .. import models, database, auth
 
-# Настройка логгера
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -37,11 +36,9 @@ async def reset_database(
         #         detail="Требуются права суперпользователя"
         #     )
 
-        # Удаляем все таблицы
         logger.info("Dropping all tables...")
         models.Base.metadata.drop_all(bind=database.engine)
         
-        # Создаем таблицы заново
         logger.info("Creating all tables...")
         models.Base.metadata.create_all(bind=database.engine)
         

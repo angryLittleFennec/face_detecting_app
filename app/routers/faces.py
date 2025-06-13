@@ -30,7 +30,6 @@ async def upload_faces(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth.get_current_active_user)
 ):
-    # Проверяем существование человека
     person = db.query(Person).filter(Person.id == person_id).first()
     if not person:
         raise HTTPException(
@@ -70,7 +69,6 @@ def get_face_embedding(image_data: bytes, app) -> np.ndarray:
         image = Image.open(BytesIO(image_data))
         img_array = np.array(image)
         
-        # Detect faces
         dets = app.state.face_detector(img_array, 1)
         if not dets:
             raise HTTPException(
@@ -78,7 +76,6 @@ def get_face_embedding(image_data: bytes, app) -> np.ndarray:
                 detail="No face detected in the image"
             )
             
-        # Get face descriptor
         shape = app.state.shape_predictor(img_array, dets[0])
         descriptor = app.state.face_rec_model.compute_face_descriptor(img_array, shape)
         return np.array(descriptor)

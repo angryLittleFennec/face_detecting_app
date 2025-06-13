@@ -15,21 +15,18 @@ logger = logging.getLogger(__name__)
 def setup_scheduler(app: FastAPI) -> None:
     """Настройка планировщика задач"""
     
-    @repeat_every(seconds=3600)  # Каждый час
+    @repeat_every(months=2592000)  # Каждый месяц
     async def send_report_task() -> None:
         """Задача отправки отчета"""
         try:
             logger.info("Начало выполнения задачи отправки отчета")
             db = SessionLocal()
             try:
-                # Создаем буфер для PDF
                 pdf_buffer = BytesIO()
                 
-                # Генерируем PDF используя ту же логику, что и в роутере
                 get_events_pdf(db, pdf_buffer)
                 pdf_buffer.seek(0)
                 
-                # Отправляем отчет на email
                 email_service = EmailService()
                 await email_service.send_report_email(pdf_buffer, recipients=["13x.skat.x13@gmail.com"])
                 logger.info("Отчет успешно отправлен на email")
@@ -43,8 +40,6 @@ def setup_scheduler(app: FastAPI) -> None:
         except Exception as e:
             logger.error(f"Критическая ошибка в задаче: {str(e)}", exc_info=True)
     
-    # Регистрируем задачу в приложении
     app.state.send_report_task = send_report_task
     
-    # Запускаем задачу сразу при старте
     asyncio.create_task(send_report_task()) 

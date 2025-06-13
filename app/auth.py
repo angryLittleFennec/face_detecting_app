@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .database import get_db
 
-# Настройки JWT
-SECRET_KEY = "your-secret-key-here"  # В продакшене используйте безопасный ключ
+SECRET_KEY = "your-secret-key-here"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
