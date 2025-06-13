@@ -1,5 +1,0 @@
-numpy<2
-ultralytics
-dlib
-python-multipart
-sqlalchemy
