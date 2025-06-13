@@ -86,8 +86,8 @@ class EventAggregation(Base):
     date = Column(Date, nullable=False)
     hour = Column(Integer, nullable=False)
     
-    total_entries = Column(Integer, default=0)
-    total_exits = Column(Integer, default=0)
+    total_entries = Column(Integer, default=0, nullable=False)
+    total_exits = Column(Integer, default=0, nullable=False)
     avg_duration = Column(Integer, nullable=True)
     max_duration = Column(Integer, nullable=True)
     min_duration = Column(Integer, nullable=True)

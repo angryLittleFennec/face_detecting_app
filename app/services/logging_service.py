@@ -135,40 +135,38 @@ class LoggingService:
             models.Event.is_aggregated == False
         ).all()
         
+        # Словарь для хранения агрегаций по ключу (person_id, stream_processor_id, date, hour)
+        aggregations = {}
+        
         for event in events:
             date = event.timestamp.date()
             hour = event.timestamp.hour
+            key = (event.person_id, event.stream_processor_id, date, hour)
             
-            # Находим или создаем запись агрегации
-            aggregation = self.db.query(models.EventAggregation).filter(
-                models.EventAggregation.person_id == event.person_id,
-                models.EventAggregation.stream_processor_id == event.stream_processor_id,
-                models.EventAggregation.date == date,
-                models.EventAggregation.hour == hour
-            ).first()
-            
-            if not aggregation:
-                aggregation = models.EventAggregation(
+            if key not in aggregations:
+                aggregations[key] = models.EventAggregation(
                     person_id=event.person_id,
                     stream_processor_id=event.stream_processor_id,
                     date=date,
-                    hour=hour
+                    hour=hour,
+                    total_entries=0,
+                    total_exits=0
                 )
-                self.db.add(aggregation)
+                self.db.add(aggregations[key])
             
             # Обновляем статистику
             if event.event_type == models.EventType.ENTER:
-                aggregation.total_entries += 1
+                aggregations[key].total_entries += 1
             else:  # EXIT
-                aggregation.total_exits += 1
+                aggregations[key].total_exits += 1
                 if event.duration:
-                    if aggregation.avg_duration is None:
-                        aggregation.avg_duration = event.duration
+                    if aggregations[key].avg_duration is None:
+                        aggregations[key].avg_duration = event.duration
                     else:
-                        aggregation.avg_duration = (aggregation.avg_duration + event.duration) // 2
+                        aggregations[key].avg_duration = (aggregations[key].avg_duration + event.duration) // 2
                     
-                    aggregation.max_duration = max(aggregation.max_duration or 0, event.duration)
-                    aggregation.min_duration = min(aggregation.min_duration or float('inf'), event.duration)
+                    aggregations[key].max_duration = max(aggregations[key].max_duration or 0, event.duration)
+                    aggregations[key].min_duration = min(aggregations[key].min_duration or float('inf'), event.duration)
             
             event.is_aggregated = True
         

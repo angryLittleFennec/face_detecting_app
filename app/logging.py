@@ -1,13 +1,10 @@
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import List, Optional
 from . import models, schemas
 from fastapi import FastAPI, Depends, HTTPException
 from .database import get_db, engine
 import uvicorn
-
-# Создаем таблицы при запуске
-models.Base.metadata.create_all(bind=engine)
 
 # Создаем FastAPI приложение
 app = FastAPI(
@@ -55,8 +52,14 @@ class LoggingService:
         if stream_processor_id:
             query = query.filter(models.Event.stream_processor_id == stream_processor_id)
         if start_time:
+            # Преобразуем start_time в UTC, если он не в UTC
+            if start_time.tzinfo is None:
+                start_time = start_time.replace(tzinfo=UTC)
             query = query.filter(models.Event.timestamp >= start_time)
         if end_time:
+            # Преобразуем end_time в UTC, если он не в UTC
+            if end_time.tzinfo is None:
+                end_time = end_time.replace(tzinfo=UTC)
             query = query.filter(models.Event.timestamp <= end_time)
             
         return query.offset(skip).limit(limit).all()
@@ -85,23 +88,31 @@ class LoggingService:
                     person_id=event.person_id,
                     stream_processor_id=event.stream_processor_id,
                     date=date,
-                    hour=hour
+                    hour=hour,
+                    total_entries=0,
+                    total_exits=0,
+                    avg_duration=None,
+                    max_duration=None,
+                    min_duration=None
                 )
                 self.db.add(aggregation)
+                self.db.flush()
             
             # Обновляем статистику
             if event.event_type == models.EventType.ENTER:
-                aggregation.total_entries += 1
+                aggregation.total_entries = (aggregation.total_entries or 0) + 1
             else:  # EXIT
-                aggregation.total_exits += 1
+                aggregation.total_exits = (aggregation.total_exits or 0) + 1
                 if event.duration:
                     if aggregation.avg_duration is None:
                         aggregation.avg_duration = event.duration
                     else:
                         aggregation.avg_duration = (aggregation.avg_duration + event.duration) // 2
-                    
-                    aggregation.max_duration = max(aggregation.max_duration or 0, event.duration)
-                    aggregation.min_duration = min(aggregation.min_duration or float('inf'), event.duration)
+                    aggregation.max_duration = max(aggregation.max_duration or event.duration, event.duration)
+                    if aggregation.min_duration is None:
+                        aggregation.min_duration = event.duration
+                    else:
+                        aggregation.min_duration = min(aggregation.min_duration, event.duration)
             
             event.is_aggregated = True
         
@@ -140,11 +151,12 @@ class LoggingService:
         total_entries = sum(1 for e in events if e.event_type == models.EventType.ENTER)
         total_exits = sum(1 for e in events if e.event_type == models.EventType.EXIT)
         durations = [e.duration for e in events if e.duration is not None]
-        
+        unique_people = len(set(e.person_id for e in events if e.person_id is not None))
         return schemas.EventStats(
             total_events=len(events),
             total_entries=total_entries,
             total_exits=total_exits,
+            unique_people=unique_people,
             avg_duration=sum(durations) / len(durations) if durations else None,
             max_duration=max(durations) if durations else None,
             min_duration=min(durations) if durations else None
@@ -176,6 +188,18 @@ def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
     """Создание нового события"""
     logging_service = LoggingService(db)
     return logging_service.create_event(event)
+
+@app.get("/aggregations/", response_model=List[schemas.EventAggregation])
+def get_aggregations(
+    person_id: Optional[int] = None,
+    stream_processor_id: Optional[int] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    db: Session = Depends(get_db)
+):
+    """Получение агрегированных данных"""
+    logging_service = LoggingService(db)
+    return logging_service.get_aggregations(person_id, stream_processor_id, start_date, end_date)
 
 if __name__ == "__main__":
     uvicorn.run(
